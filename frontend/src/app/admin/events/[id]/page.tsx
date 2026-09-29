@@ -1,0 +1,10 @@
+import { EventAdminView, type Tab } from "./event-admin";
+
+const TABS: Tab[] = ["settings", "access", "members", "photos", "moderation", "quality"];
+
+export default async function AdminEventPage({ params, searchParams }: PageProps<"/admin/events/[id]">) {
+  const { id } = await params;
+  const { tab } = await searchParams;
+  const initialTab = TABS.find((t) => t === tab) ?? "settings";
+  return <EventAdminView id={id} initialTab={initialTab} />;
+}

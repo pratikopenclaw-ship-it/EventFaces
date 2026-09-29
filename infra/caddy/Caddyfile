@@ -1,0 +1,10 @@
+# TLS termination + HTTP/2/3. Caddy obtains and renews certificates automatically.
+# It *replaces* any client-supplied X-Forwarded-For with the real client IP, which is
+# why the API runs with TRUSTED_PROXY_HOPS=1 behind it.
+{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 12MB
+	}
+	reverse_proxy web:3000
+}

@@ -1,0 +1,89 @@
+name: eventfaces
+
+x-backend: &backend
+  build: ./backend
+  env_file: .env
+  volumes:
+    - ./backend:/app
+  depends_on:
+    db: { condition: service_healthy }
+    redis: { condition: service_healthy }
+    s3: { condition: service_healthy }
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./backend/scripts/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    ports: ["5432:5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      retries: 20
+
+  # Local S3-compatible storage. (MinIO images are no longer published, so we use
+  # SeaweedFS; production points S3_* at R2/S3 instead.)
+  s3:
+    image: chrislusf/seaweedfs:latest
+    entrypoint: ["/entrypoint.sh"]
+    env_file: .env
+    volumes:
+      - ./infra/seaweedfs/entrypoint.sh:/entrypoint.sh:ro
+      - s3data:/data
+    ports: ["8333:8333"]
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "8333"]
+      interval: 3s
+      retries: 30
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["8025:8025"]
+
+  api:
+    <<: *backend
+    command: sh -c "alembic upgrade head && python -m app.cli init-storage && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 5s
+      retries: 30
+
+  worker:
+    <<: *backend
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 -Q celery,index
+
+  beat:
+    <<: *backend
+    command: celery -A app.workers.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
+
+  web:
+    build:
+      context: ./frontend
+      target: dev
+    environment:
+      API_INTERNAL_URL: http://api:8000
+      STORAGE_PUBLIC_ORIGIN: http://localhost:8333
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports: ["3000:3000"]
+    depends_on:
+      api: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  s3data:

@@ -1,0 +1,85 @@
+# Production stack: Caddy (TLS) → Next.js → FastAPI; Celery worker + beat; Postgres; Redis.
+# Object storage (R2/S3) and SMTP are external services configured via .env.prod.
+#   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+name: eventfaces-prod
+
+x-backend: &backend
+  build: ./backend
+  env_file: .env.prod
+  restart: unless-stopped
+  depends_on:
+    db: { condition: service_healthy }
+    redis: { condition: service_healthy }
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web]
+
+  web:
+    build:
+      context: ./frontend
+      target: prod
+      args:
+        API_INTERNAL_URL: http://api:8000
+        STORAGE_PUBLIC_ORIGIN: ${S3_PUBLIC_ENDPOINT_URL}
+    restart: unless-stopped
+    depends_on:
+      api: { condition: service_healthy }
+
+  api:
+    <<: *backend
+    # No --reload, no bind mount. Each worker lazily loads the face model (~0.5 GB RAM).
+    command: sh -c "alembic upgrade head && python -m app.cli init-storage && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 --no-server-header"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      retries: 30
+
+  worker:
+    <<: *backend
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 -Q celery,index
+
+  beat:
+    <<: *backend
+    # Exactly ONE beat instance: it schedules retention and cleanup jobs.
+    command: celery -A app.workers.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
+
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  pgdata:
+  redisdata:
+  caddy_data:
+  caddy_config:

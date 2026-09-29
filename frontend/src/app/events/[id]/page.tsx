@@ -1,0 +1,32 @@
+"use client";
+
+import { useParams } from "next/navigation";
+
+import { Alert, PageHeader, formatDate } from "@/components/ui";
+import type { EventPublic } from "@/lib/types";
+import { useApi } from "@/lib/use-api";
+
+import { FindPhotos } from "./find-photos";
+import { GuestUpload } from "./guest-upload";
+
+export default function EventPage() {
+  const { id } = useParams<{ id: string }>();
+  const { data: event, error, loading } = useApi<EventPublic>(`/api/events/${id}`);
+
+  if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (error || !event) {
+    return <Alert>{error?.status === 403 ? "You don't have access to this event." : error?.message}</Alert>;
+  }
+
+  return (
+    <>
+      <PageHeader title={event.name} subtitle={formatDate(event.date)} />
+      {event.description && <p className="-mt-4 mb-8 max-w-2xl whitespace-pre-line text-ink/70">{event.description}</p>}
+      <div className="space-y-10">
+        <FindPhotos event={event} />
+        {/* Uploading doesn't need face-search consent: that consent covers the user's own selfie. */}
+        {event.guest_upload_enabled && <GuestUpload event={event} />}
+      </div>
+    </>
+  );
+}

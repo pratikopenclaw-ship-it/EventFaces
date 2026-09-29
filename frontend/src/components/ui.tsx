@@ -1,0 +1,130 @@
+import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
+
+const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
+
+type Variant = "primary" | "secondary" | "danger" | "ghost";
+
+const variants: Record<Variant, string> = {
+  primary: "bg-ink text-paper hover:bg-ink/85",
+  secondary: "border border-line bg-paper text-ink hover:bg-mist",
+  danger: "bg-alarm text-white hover:bg-alarm/85",
+  ghost: "text-ink/70 hover:text-ink hover:bg-mist",
+};
+
+export function Button({
+  variant = "primary",
+  className,
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant }) {
+  return (
+    <button
+      className={cx(
+        "inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition",
+        "disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+        variants[variant],
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+const fieldBase =
+  "w-full rounded-lg border border-line bg-paper px-3 py-2 text-sm text-ink placeholder:text-ink/40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20";
+
+export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
+  return <input {...props} className={cx(fieldBase, props.className)} />;
+}
+
+export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return <textarea {...props} className={cx(fieldBase, "min-h-24", props.className)} />;
+}
+
+export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
+  return <select {...props} className={cx(fieldBase, props.className)} />;
+}
+
+export function Field({ label, hint, children }: { label: string; hint?: ReactNode; children: ReactNode }) {
+  return (
+    <label className="block space-y-1.5">
+      <span className="text-sm font-medium text-ink">{label}</span>
+      {children}
+      {hint && <span className="block text-xs text-ink/55">{hint}</span>}
+    </label>
+  );
+}
+
+export function Toggle({
+  label,
+  hint,
+  checked,
+  onChange,
+}: {
+  label: string;
+  hint?: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-start gap-3">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="mt-0.5 size-4 accent-accent"
+      />
+      <span>
+        <span className="block text-sm font-medium text-ink">{label}</span>
+        {hint && <span className="block text-xs text-ink/55">{hint}</span>}
+      </span>
+    </label>
+  );
+}
+
+export function Card({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cx("rounded-2xl border border-line bg-paper p-6", className)}>{children}</div>;
+}
+
+export function Alert({ kind = "error", children }: { kind?: "error" | "success" | "info"; children: ReactNode }) {
+  const styles = {
+    error: "border-alarm/30 bg-alarm/5 text-alarm",
+    success: "border-leaf/30 bg-leaf/5 text-leaf",
+    info: "border-accent/30 bg-accent/5 text-ink",
+  }[kind];
+  return (
+    <div role={kind === "error" ? "alert" : "status"} className={cx("rounded-lg border px-3 py-2 text-sm", styles)}>
+      {children}
+    </div>
+  );
+}
+
+export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
+  const styles = {
+    neutral: "bg-mist text-ink/70",
+    good: "bg-leaf/10 text-leaf",
+    warn: "bg-amber-100 text-amber-800",
+    bad: "bg-alarm/10 text-alarm",
+  }[tone];
+  return <span className={cx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", styles)}>{children}</span>;
+}
+
+export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: ReactNode; actions?: ReactNode }) {
+  return (
+    <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 className="font-display text-3xl tracking-tight text-ink">{title}</h1>
+        {subtitle && <p className="mt-1 text-sm text-ink/60">{subtitle}</p>}
+      </div>
+      {actions && <div className="flex gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+export function formatDate(value: string | null): string {
+  if (!value) return "No date";
+  return new Date(value.length === 10 ? `${value}T00:00:00` : value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}

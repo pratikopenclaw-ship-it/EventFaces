@@ -1,0 +1,86 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+
+import { VerifyBanner } from "@/components/verify-banner";
+import { Alert, Badge, Button, Card, Field, Input, PageHeader, formatDate } from "@/components/ui";
+import type { EventListItem } from "@/lib/types";
+import { useApi } from "@/lib/use-api";
+
+/** Accepts a full join link (…/join/<slug>?code=…) or a bare slug. */
+function parseJoinLink(value: string): { slug: string; code: string } | null {
+  const trimmed = value.trim();
+  try {
+    const url = new URL(trimmed);
+    const slug = url.pathname.match(/\/join\/([^/]+)/)?.[1];
+    return slug ? { slug, code: url.searchParams.get("code") ?? "" } : null;
+  } catch {
+    return /^[a-z0-9-]+$/.test(trimmed) ? { slug: trimmed, code: "" } : null;
+  }
+}
+
+export default function MyEventsPage() {
+  const { data: events, error, loading } = useApi<EventListItem[]>("/api/events");
+  const [joinError, setJoinError] = useState<string | null>(null);
+  const router = useRouter();
+
+  function onJoin(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const parsed = parseJoinLink(String(new FormData(e.currentTarget).get("link") ?? ""));
+    if (!parsed) {
+      setJoinError("Paste the event link you received (it contains /join/…).");
+      return;
+    }
+    const qs = parsed.code ? `?code=${encodeURIComponent(parsed.code)}` : "";
+    router.push(`/join/${parsed.slug}${qs}`);
+  }
+
+  const attending = events?.filter((e) => e.my_role === "attendee") ?? [];
+
+  return (
+    <>
+      <VerifyBanner />
+      <PageHeader title="My events" subtitle="Events you've joined." />
+      <div className="grid gap-8 md:grid-cols-[1fr_320px]">
+        <div className="space-y-3">
+          {loading && <p className="text-sm text-ink/50">Loading…</p>}
+          {error && error.status !== 403 && <Alert>{error.message}</Alert>}
+          {!loading && attending.length === 0 && (
+            <Card className="text-center text-sm text-ink/60">
+              You haven&apos;t joined any events yet. Use the link or QR code from the organizer.
+            </Card>
+          )}
+          {attending.map((event) => (
+            <Link
+              key={event.id}
+              href={`/events/${event.id}`}
+              className="block rounded-2xl border border-line bg-paper p-5 transition hover:border-ink/30"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-medium">{event.name}</h2>
+                  <p className="text-sm text-ink/55">{formatDate(event.date)}</p>
+                </div>
+                {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
+              </div>
+            </Link>
+          ))}
+        </div>
+        <Card>
+          <h2 className="mb-3 font-medium">Join an event</h2>
+          <form onSubmit={onJoin} className="space-y-3">
+            {joinError && <Alert>{joinError}</Alert>}
+            <Field label="Event link" hint="Paste the link from the organizer.">
+              <Input name="link" placeholder="https://…/join/summer-party-x7k2" required />
+            </Field>
+            <Button type="submit" className="w-full">
+              Continue
+            </Button>
+          </form>
+        </Card>
+      </div>
+    </>
+  );
+}

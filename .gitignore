@@ -1,0 +1,23 @@
+.env
+.env.*
+!.env.example
+*.json.key
+secrets/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# Node
+node_modules/
+.next/
+next-env.d.ts
+
+.DS_Store
+
+# Browser automation artifacts
+.playwright-mcp/
+
+.env.prod
