@@ -18,24 +18,28 @@ export function Nav() {
         <div className="flex items-center gap-1 text-sm">
           {user ? (
             <>
-              <Link href="/events" className="rounded-lg px-3 py-2 text-ink/70 hover:bg-mist hover:text-ink">
+              <Link href="/events" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
                 My events
               </Link>
               {isAdmin && (
-                <Link href="/admin/events" className="rounded-lg px-3 py-2 text-ink/70 hover:bg-mist hover:text-ink">
+                <Link href="/admin/events" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
                   Manage
                 </Link>
               )}
-              <Link href="/account" className="hidden rounded-lg px-3 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:inline">
-                {user.email}
+              <Link href="/account" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
+                <span className="sm:hidden">Account</span>
+                <span className="hidden sm:inline">{user.email}</span>
               </Link>
-              <Button variant="ghost" onClick={() => void logout()}>
-                Log out
-              </Button>
+              {/* On phones there's no room for four items: Log out lives on the Account page. */}
+              <span className="hidden sm:inline">
+                <Button variant="ghost" onClick={() => void logout()}>
+                  Log out
+                </Button>
+              </span>
             </>
           ) : (
             <>
-              <Link href="/login" className="rounded-lg px-3 py-2 text-ink/70 hover:bg-mist hover:text-ink">
+              <Link href="/login" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
                 Log in
               </Link>
               <Link href="/signup" className="rounded-lg bg-ink px-3 py-2 font-medium text-paper hover:bg-ink/85">

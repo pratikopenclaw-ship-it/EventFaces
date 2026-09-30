@@ -3,6 +3,7 @@ import logging
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DataError
+from sqlalchemy.exc import TimeoutError as PoolTimeout
 from starlette.requests import Request
 from starlette.responses import Response
 
@@ -10,6 +11,7 @@ from app.api.csrf import CSRFMiddleware
 from app.api.routes import auth, events, invites, join, members, moderation, photos, privacy, search, uploads
 from app.core.config import get_settings
 from app.core.logging import install as redact_access_logs
+from app.core.security import HashingBusy
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +37,24 @@ def create_app() -> FastAPI:
         response.headers.setdefault("Cross-Origin-Resource-Policy", "same-origin")
         response.headers.setdefault("X-Frame-Options", "DENY")
         return response
+
+    @app.exception_handler(HashingBusy)
+    async def hashing_busy(request: Request, exc: HashingBusy) -> Response:
+        return JSONResponse(
+            {"detail": "Lots of people are signing in right now. Please try again in a few seconds."},
+            status_code=503,
+            headers={"Retry-After": "5"},
+        )
+
+    @app.exception_handler(PoolTimeout)
+    async def pool_exhausted(request: Request, exc: PoolTimeout) -> Response:
+        # Overload, not a bug: answer like every other capacity limit (SEC-042).
+        log.warning("Database connection pool exhausted")
+        return JSONResponse(
+            {"detail": "The service is very busy right now. Please try again in a few seconds."},
+            status_code=503,
+            headers={"Retry-After": "5"},
+        )
 
     @app.exception_handler(DataError)
     async def invalid_data(request: Request, exc: DataError) -> Response:

@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 
 import { Alert, Button, Field, Input, Select, Textarea, Toggle } from "@/components/ui";
 import type { EventAdmin, EventInput } from "@/lib/types";
+import { useApi } from "@/lib/use-api";
 
 /** ISO timestamp → value for <input type="datetime-local"> in the browser's timezone. */
 function toLocalInput(iso: string | null): string {
@@ -38,6 +39,7 @@ export function EventForm({
   onSubmit: (input: EventInput) => Promise<void>;
 }) {
   const [v, setV] = useState<EventInput>(initial);
+  const serviceAccount = useApi<{ email: string | null }>("/api/drive/service-account");
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -97,7 +99,19 @@ export function EventForm({
           />
         </Field>
         <div className="md:col-span-2">
-          <Field label="Google Drive folder" hint="Folder URL or ID. Share it with the service account email (Phase 2).">
+          <Field
+            label="Google Drive folder"
+            hint={
+              serviceAccount.data?.email ? (
+                <>
+                  Folder URL or ID. Share the folder (Viewer access) with{" "}
+                  <span className="break-all font-mono">{serviceAccount.data.email}</span>.
+                </>
+              ) : (
+                "Folder URL or ID. Drive import also needs a service account configured on the server (see README)."
+              )
+            }
+          >
             <Input
               value={v.drive_folder ?? ""}
               onChange={(e) => set("drive_folder", e.target.value || null)}

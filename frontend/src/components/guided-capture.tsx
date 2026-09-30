@@ -59,8 +59,27 @@ function installTelemetryGuard(): void {
   };
 }
 
+// MediaPipe's WASM runtime prints informational lines through console.error ("INFO:
+// Created TensorFlow Lite XNNPACK delegate for CPU.", glog "W0929 …" warnings). The Next
+// dev overlay shows them as red errors. Route only those known shapes to console.debug;
+// anything else still reaches console.error unchanged (UX-008).
+const MEDIAPIPE_INFO = [/^INFO: /, /^[IW]\d{4} \d{2}:\d{2}:\d{2}/, /^Graph successfully started running/];
+let consoleFilterInstalled = false;
+
+export function isMediapipeInfo(first: unknown): boolean {
+  return typeof first === "string" && MEDIAPIPE_INFO.some((re) => re.test(first));
+}
+
+function installConsoleFilter(): void {
+  if (consoleFilterInstalled) return;
+  consoleFilterInstalled = true;
+  const original = console.error.bind(console);
+  console.error = (...args: unknown[]) => (isMediapipeInfo(args[0]) ? console.debug(...args) : original(...args));
+}
+
 async function loadLandmarker(): Promise<FaceLandmarker> {
   installTelemetryGuard();
+  installConsoleFilter();
   const { FaceLandmarker, FilesetResolver } = await import("@mediapipe/tasks-vision");
   // Self-hosted runtime + model: no requests to third parties.
   const fileset = await FilesetResolver.forVisionTasks("/mediapipe/wasm");

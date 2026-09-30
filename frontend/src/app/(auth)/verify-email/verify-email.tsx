@@ -10,7 +10,7 @@ import { post } from "@/lib/api";
 
 type State = "verifying" | "ok" | "failed";
 
-export function VerifyEmail({ token }: { token: string }) {
+export function VerifyEmail({ token, joining }: { token: string; joining: string | null }) {
   const [state, setState] = useState<State>(token ? "verifying" : "failed");
   const [error, setError] = useState<string>(token ? "" : "This link is missing its token.");
   const [resent, setResent] = useState(false);
@@ -41,9 +41,9 @@ export function VerifyEmail({ token }: { token: string }) {
   if (state === "ok") {
     return (
       <AuthCard title="Email verified">
-        <p className="mb-4 text-sm text-ink/70">You can now join events.</p>
-        <Link href="/events" className="text-accent hover:underline">
-          Continue →
+        <p className="mb-4 text-sm text-ink/70">{joining ? "Log in to finish joining the event." : "You can now join events."}</p>
+        <Link href={joining ?? "/events"} className="text-accent hover:underline">
+          {joining ? "Continue to the event →" : "Continue →"}
         </Link>
       </AuthCard>
     );

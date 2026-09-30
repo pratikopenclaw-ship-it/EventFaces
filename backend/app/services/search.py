@@ -31,7 +31,7 @@ from app.models import (
     User,
 )
 from app.services import imaging, selfie_quality
-from app.services.faces import detect_faces
+from app.services.faces import current_model_id, detect_faces
 from app.services.selfie_quality import ShotResult
 
 # Bump when the consent text changes materially; users are asked again.
@@ -99,6 +99,7 @@ def search_faces(
         .join(Photo, Photo.id == Face.photo_id)
         .where(
             Face.event_id == event_id,
+            Face.model == current_model_id(),  # never compare embeddings across models
             Photo.event_id == event_id,  # belt and braces: both sides must be this event
             Photo.status == PhotoStatus.published,
         )

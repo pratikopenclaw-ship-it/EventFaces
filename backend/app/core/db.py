@@ -16,7 +16,14 @@ CONNECT_ARGS: dict[str, Any] = {
     "connect_timeout": 5,
     "options": f"-c statement_timeout={get_settings().db_statement_timeout_ms}",
 }
-engine = create_engine(get_settings().database_url, pool_pre_ping=True, pool_timeout=10, connect_args=CONNECT_ARGS)
+engine = create_engine(
+    get_settings().database_url,
+    pool_pre_ping=True,
+    pool_size=get_settings().db_pool_size,
+    max_overflow=get_settings().db_max_overflow,
+    pool_timeout=10,
+    connect_args=CONNECT_ARGS,
+)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False)
 
 

@@ -17,6 +17,7 @@ docker compose exec api pytest -q                    # backend tests (test DB ev
 docker compose exec api pytest tests/test_auth.py::test_login_rate_limited
 docker compose exec api alembic revision -m "msg"    # new migration (hand-write ops; files are NNNN_slug.py)
 docker compose exec api python -m app.cli create-superadmin --email x@example.com
+docker compose exec api python -m app.cli reindex-faces   # after changing FACE_ENGINE
 cd frontend && npm run lint && npx next typegen && npx tsc --noEmit && npm run build
 scripts/security-scan.sh                             # all scanners; must stay 18/18 PASS (see SECURITY_QA_REPORT.md)
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web && (cd frontend && npx playwright test)   # e2e; `docker compose up -d api` to switch back
@@ -61,6 +62,8 @@ Mailpit (dev email) UI: http://localhost:8025 — also has a JSON API at `/api/v
 - Face-model work (seconds, serialized per process) must never run while the request holds a DB connection or row lock: commit/rollback first (search route, removal submit). `tests/test_pool_starvation.py` enforces it; the k6 load test found the pool exhaustion this prevents.
 - Every authorization change must keep `tests/test_authz_matrix.py` green; a new endpoint fails its completeness check until added to `OPS`. Rate-limited endpoints are listed in `tests/test_endpoint_contracts.py::RATE_LIMITED`.
 - Client timestamps are `UtcDatetime` (timezone required, normalized to UTC). Images are checked against `IMAGE_MAX_PIXELS`/`SELFIE_MAX_PIXELS` from the header before decoding. `Settings` refuses insecure production config; keep new secrets in that validator.
+- The face model is behind `services/face_engine.FaceEngine` (`FACE_ENGINE`); only `services/faces.py` calls it. Faces store `model` and `search_faces` filters on the current model; never compare embeddings across models (`tests/test_face_engine.py`, mutation-checked).
+- Password hashing (Argon2, ~64 MiB each) goes through `security.hash_password`/`verify_password`, which cap concurrency per process; callers must commit/rollback first so no pooled connection is held while hashing (`tests/test_password_hashing.py`). Pool exhaustion and every capacity limit answer 503 + Retry-After, never 500.
 - Indexes created in migrations must also be declared on the models (`tests/test_migrations.py` compares schema and metadata).
 
 ## Conventions

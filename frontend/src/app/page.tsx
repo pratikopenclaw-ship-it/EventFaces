@@ -17,8 +17,8 @@ export default function Home() {
           Find every photo of you.
         </h1>
         <p className="mt-6 max-w-md text-lg text-ink/70">
-          Join your event, take one selfie, and see the photos you appear in. Your selfie is deleted the moment the
-          search finishes.
+          Join your event, take a quick selfie, and see the photos you appear in. Your selfies are deleted as soon as
+          matching finishes.
         </p>
         <div className="mt-8 flex gap-3">
           {user ? (

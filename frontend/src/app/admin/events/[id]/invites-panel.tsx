@@ -111,7 +111,7 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
               <tr key={i.id} className="border-b border-line last:border-0">
                 <td className="px-5 py-3">{i.email}</td>
                 <td className="px-5 py-3">
-                  <Badge tone={TONE[i.status]}>{i.status}</Badge>
+                  <Badge tone={TONE[i.status]}>{i.status.charAt(0).toUpperCase() + i.status.slice(1)}</Badge>
                 </td>
                 <td className="px-5 py-3 text-ink/70">
                   {i.accepted_at

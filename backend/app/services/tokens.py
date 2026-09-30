@@ -103,3 +103,12 @@ def rotate_refresh_token(db: Session, raw: str, grace: timedelta) -> AuthToken |
     if token.session_id is None:  # issued before sessions existed
         token.session_id = uuid.uuid4()
     return token
+
+
+def find_valid_token(db: Session, raw: str, kind: TokenKind) -> AuthToken | None:
+    """Read-only validity check (no lock, not consumed): lets callers reject bad links
+    before doing expensive work such as password hashing."""
+    token = db.scalar(select(AuthToken).where(AuthToken.token_hash == hash_token(raw), AuthToken.kind == kind))
+    if token is None or token.used_at is not None or token.expires_at <= utcnow():
+        return None
+    return token

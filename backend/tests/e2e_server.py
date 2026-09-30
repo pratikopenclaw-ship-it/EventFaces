@@ -252,7 +252,17 @@ def guest_photo() -> Response:
 
 app.include_router(router)
 
+def warm_fixtures() -> None:
+    """Build the fixture selfie frames once, up front: they are generated with the face
+    model, and 60 load-test users fetching them at once would otherwise all build them."""
+    selfie_set(0)
+    for shot in ("front", "left", "right", "dark", "blurry"):
+        selfie(shot)
+    guest_photo()
+
+
 if __name__ == "__main__":
     migrate_fresh()
     reset()
+    warm_fixtures()
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="warning")  # noqa: S104  # nosec B104 - container-internal

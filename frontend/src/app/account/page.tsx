@@ -11,7 +11,7 @@ import type { ConsentInfo } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
 export default function AccountPage() {
-  const { user, reload } = useSession();
+  const { user, reload, logout } = useSession();
   const consent = useApi<ConsentInfo>("/api/me/face-consent");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -42,7 +42,15 @@ export default function AccountPage() {
 
   return (
     <>
-      <PageHeader title="Your account" subtitle={user.email} />
+      <PageHeader
+        title="Your account"
+        subtitle={user.email}
+        actions={
+          <Button variant="secondary" onClick={() => void logout()}>
+            Log out
+          </Button>
+        }
+      />
       <div className="grid max-w-2xl gap-6">
         <Card>
           <h2 className="font-medium">Face-search consent</h2>

@@ -82,6 +82,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    # 2 API processes x (DB_POOL_SIZE + DB_MAX_OVERFLOW = 30) + Celery worker/beat pools
+    # can exceed Postgres' default of 100 connections under a burst (SEC-042).
+    command: ["postgres", "-c", "max_connections=200"]
     volumes:
       - pgdata:/var/lib/postgresql/data
     mem_limit: 2g

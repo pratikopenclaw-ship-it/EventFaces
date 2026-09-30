@@ -83,7 +83,7 @@ export function MembersPanel({ eventId }: { eventId: string }) {
                   <td className="px-5 py-3">{m.email}</td>
                   <td className="px-5 py-3 capitalize">{m.role}</td>
                   <td className="px-5 py-3">
-                    <Badge tone={STATUS_TONE[m.status]}>{m.status}</Badge>
+                    <Badge tone={STATUS_TONE[m.status]}>{m.status.charAt(0).toUpperCase() + m.status.slice(1)}</Badge>
                   </td>
                   <td className="px-5 py-3 text-ink/70">{formatDate(m.joined_at)}</td>
                   <td className="px-5 py-3 text-right">

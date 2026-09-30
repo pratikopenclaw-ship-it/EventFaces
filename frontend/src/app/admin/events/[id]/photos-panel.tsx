@@ -94,7 +94,7 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
               <p className="text-sm text-ink/70">Loading…</p>
             ) : !s.drive_configured ? (
               <Alert kind="info">
-                Drive import isn&apos;t configured on the server. Set <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> (see
+                Drive import isn&apos;t configured on the server. Set <code className="break-all">GOOGLE_SERVICE_ACCOUNT_JSON</code> (see
                 README).
               </Alert>
             ) : !s.folder_id ? (

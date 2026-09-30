@@ -45,7 +45,7 @@ export default function AdminEventsPage() {
               <div>
                 <p className="font-medium">{event.name}</p>
                 <p className="text-sm text-ink/70">
-                  {formatDate(event.date)} · {event.photo_count.toLocaleString()}{" "}
+                  {event.date && `${formatDate(event.date)} · `}{event.photo_count.toLocaleString()}{" "}
                   {event.photo_count === 1 ? "photo" : "photos"}
                 </p>
               </div>

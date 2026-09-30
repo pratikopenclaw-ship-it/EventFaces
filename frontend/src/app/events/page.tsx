@@ -47,15 +47,18 @@ export default function MyEventsPage() {
               href={`/events/${event.id}`}
               className="block rounded-2xl border border-line bg-paper p-5 transition hover:border-ink/30"
             >
-              <div className="flex items-center justify-between gap-4">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
                   <h2 className="font-medium">{event.name}</h2>
-                  <p className="text-sm text-ink/70">{formatDate(event.date)}</p>
+                  {event.date && <p className="text-sm text-ink/70">{formatDate(event.date)}</p>}
                 </div>
-                {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
-                {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}
-                {event.search_state === "done" && <Badge tone="good">Photos ready</Badge>}
+                <div className="flex flex-wrap gap-1.5">
+                  {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}
+                  {event.search_state === "done" && <Badge tone="good">Photos ready</Badge>}
+                  {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
+                </div>
               </div>
+              <p className="mt-3 text-sm font-medium text-accent">Find my photos →</p>
             </Link>
           ))}
         </div>

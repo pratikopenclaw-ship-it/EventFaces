@@ -35,6 +35,7 @@ class DeleteMeIn(BaseModel):
 @router.delete("/me")
 def delete_me(body: DeleteMeIn, response: Response, user: CurrentUser, db: DB, background: BackgroundTasks) -> dict:
     rate_limit.enforce(f"delete-me:{user.id}", rate_limit.Limit(5, 3600))
+    db.commit()  # no pooled connection held while hashing (SEC-041)
     if not verify_password(body.password, user.password_hash):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Password is incorrect")
     email = user.email

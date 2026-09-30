@@ -18,6 +18,7 @@ import json
 import logging
 import queue
 import threading
+import time
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -36,6 +37,11 @@ from app.services.search import FACE_CONSENT_VERSION, SelfieRejected, run_search
 log = logging.getLogger(__name__)
 
 STATUS_TTL_SECONDS = 24 * 3600  # status only; the selfies themselves are gone long before
+# Each process heart-beats while it can run queued jobs. A queued job whose owner stopped
+# beating (restart, crash) is reported "expired" within HEARTBEAT_TTL, not after the TTL.
+BOOT_ID = uuid.uuid4().hex
+HEARTBEAT_TTL_SECONDS = 30
+HEARTBEAT_EVERY_SECONDS = 10
 
 
 class QueueFull(Exception):
@@ -73,6 +79,18 @@ def _key(user_id: uuid.UUID, event_id: uuid.UUID) -> str:
     return f"searchjob:{user_id}:{event_id}"
 
 
+def _claim_key(user_id: uuid.UUID, event_id: uuid.UUID) -> str:
+    return f"searchjob:{user_id}:{event_id}:claim"  # same prefix: forget_user() removes it too
+
+
+def _alive_key(boot_id: str) -> str:
+    return f"searchqueue:alive:{boot_id}"
+
+
+def _heartbeat() -> None:
+    get_redis().set(_alive_key(BOOT_ID), "1", ex=HEARTBEAT_TTL_SECONDS)
+
+
 def _set_status(user_id: uuid.UUID, event_id: uuid.UUID, state: str, **extra: Any) -> None:
     record = {"state": state, "updated_at": now().isoformat(), **extra}
     get_redis().set(_key(user_id, event_id), json.dumps(record), ex=STATUS_TTL_SECONDS)
@@ -87,7 +105,10 @@ def _decode(raw: str | None) -> dict[str, Any]:
         return {"state": "none"}
     if record.get("state") == "queued":
         queued_at = datetime.fromisoformat(record["queued_at"])
-        if (now() - queued_at).total_seconds() > get_settings().search_queue_ttl_seconds:
+        owner = record.get("owner")
+        if (now() - queued_at).total_seconds() > get_settings().search_queue_ttl_seconds or (
+            owner and not get_redis().exists(_alive_key(owner))
+        ):
             record["state"] = "expired"  # lost (e.g. server restart): ask the user to search again
     return record
 
@@ -124,10 +145,15 @@ def enqueue(user_id: uuid.UUID, event_id: uuid.UUID, shots: list[tuple[str, byte
     with _lock:
         if _queue.qsize() >= s.search_overflow_queue_size or _bytes + job.size > s.search_queue_max_bytes:
             raise QueueFull
-        if get_status(user_id, event_id)["state"] == "queued":
-            raise AlreadyQueued
+        # Atomic across API processes: one queued search per user+event.
+        r = get_redis()
+        if not r.set(_claim_key(user_id, event_id), BOOT_ID, nx=True, ex=s.search_queue_ttl_seconds):
+            if get_status(user_id, event_id)["state"] == "queued":
+                raise AlreadyQueued
+            r.set(_claim_key(user_id, event_id), BOOT_ID, ex=s.search_queue_ttl_seconds)  # stale claim (lost job)
+        _heartbeat()
         _bytes += job.size
-        _set_status(user_id, event_id, "queued", queued_at=now().isoformat())
+        _set_status(user_id, event_id, "queued", queued_at=now().isoformat(), owner=BOOT_ID)
         _queue.put(job)
     _ensure_worker()
 
@@ -148,7 +174,14 @@ def _ensure_worker() -> None:
 
 def _work() -> None:
     global _inflight, _bytes  # noqa: PLW0603
+    last_beat = 0.0
     while not _stop.is_set():
+        if time.monotonic() - last_beat > HEARTBEAT_EVERY_SECONDS:
+            try:
+                _heartbeat()
+                last_beat = time.monotonic()
+            except Exception:  # Redis blip: the next loop retries
+                log.warning("Search queue heartbeat failed")
         try:
             job = _queue.get(timeout=0.2)
         except queue.Empty:
@@ -172,6 +205,10 @@ def _work() -> None:
                 _inflight -= 1
                 _bytes -= job.size
             job.shots = []  # drop the selfies
+            try:
+                get_redis().delete(_claim_key(job.user_id, job.event_id))
+            except Exception:  # the claim expires with the TTL anyway
+                log.warning("Could not release queued-search claim")
 
 
 def process(job: Job) -> None:

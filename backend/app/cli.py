@@ -40,6 +40,33 @@ def create_superadmin(email: str, password: str | None) -> None:
     print(f"Super admin ready: {email}")
 
 
+def reindex_faces(all_photos: bool = False) -> int:
+    """Queue re-indexing after a FACE_ENGINE change. By default only photos with faces from
+    another model; `all_photos` also re-scans photos where the old model found no faces.
+    Events whose face data was deleted by retention are skipped. Returns photos queued."""
+    from app.models import Event, Face, Photo, PhotoStatus
+    from app.services.faces import current_model_id
+    from app.workers.tasks import index_photo
+
+    model = current_model_id()
+    with SessionLocal() as db:
+        q = (
+            select(Photo.id)
+            .join(Event, Event.id == Photo.event_id)
+            .where(
+                Photo.original_key.is_not(None),
+                Photo.status.not_in([PhotoStatus.rejected, PhotoStatus.removed]),
+                Event.retention_completed_at.is_(None),
+            )
+        )
+        if not all_photos:
+            q = q.where(select(Face.id).where(Face.photo_id == Photo.id, Face.model != model).exists())
+        ids = list(db.scalars(q))
+    for photo_id in ids:
+        index_photo.delay(str(photo_id))
+    return len(ids)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -47,9 +74,13 @@ def main() -> None:
     p.add_argument("--email", required=True)
     p.add_argument("--password", help="Omit to be prompted (recommended)")
     sub.add_parser("init-storage", help="Create the object storage bucket if missing")
+    r = sub.add_parser("reindex-faces", help="Re-embed photos with the current FACE_ENGINE")
+    r.add_argument("--all", action="store_true", help="Also re-scan photos with no faces from the old model")
     args = parser.parse_args()
     if args.command == "create-superadmin":
         create_superadmin(args.email, args.password)
+    elif args.command == "reindex-faces":
+        print(f"Queued {reindex_faces(all_photos=args.all)} photo(s) for re-indexing")
     elif args.command == "init-storage":
         ensure_bucket()
         try:

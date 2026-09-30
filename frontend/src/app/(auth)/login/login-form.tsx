@@ -7,7 +7,7 @@ import { AuthCard } from "@/components/auth-card";
 import { Alert, Button, Field, Input } from "@/components/ui";
 import { post } from "@/lib/api";
 
-export function LoginForm({ next }: { next: string }) {
+export function LoginForm({ next, joining }: { next: string; joining: string | null }) {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -27,13 +27,17 @@ export function LoginForm({ next }: { next: string }) {
 
   return (
     <AuthCard
-      title="Welcome back"
+      title={joining ? "Log in to join the event" : "Welcome back"}
       subtitle={
         <>
-          New here?{" "}
-          <Link className="text-accent underline underline-offset-2" href="/signup">
+          {joining ? "New to EventFaces? " : "New here? "}
+          <Link
+            className="text-accent underline underline-offset-2"
+            href={joining ? `/signup?next=${encodeURIComponent(joining)}` : "/signup"}
+          >
             Create an account
           </Link>
+          {joining && " and we'll bring you back to the event after you confirm your email."}
         </>
       }
     >

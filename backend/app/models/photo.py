@@ -21,6 +21,7 @@ from app.core.db import Base
 from app.models.enums import IndexStatus, PhotoSource, PhotoStatus, SyncStatus
 
 EMBEDDING_DIM = 512
+DEFAULT_FACE_MODEL = "insightface/buffalo_l"  # model of every face indexed before migration 0009
 
 
 class Photo(Base):
@@ -85,6 +86,9 @@ class Face(Base):
     bbox: Mapped[list[float]] = mapped_column(ARRAY(Float), nullable=False)  # x1, y1, x2, y2 (px)
     det_score: Mapped[float] = mapped_column(Float, nullable=False)
     embedding: Mapped[list[float]] = mapped_column(Vector(EMBEDDING_DIM), nullable=False)
+    # The engine/model that produced the embedding (FaceEngine.model_id). Embeddings from
+    # different models aren't comparable: search only looks at the current model's faces.
+    model: Mapped[str] = mapped_column(String(64), nullable=False, server_default=DEFAULT_FACE_MODEL)
 
 
 class DriveSyncRun(Base):

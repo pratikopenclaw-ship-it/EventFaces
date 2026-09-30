@@ -8,9 +8,15 @@ from app.models.enums import UserRole
 Password = Field(min_length=10, max_length=128)
 
 
+# Where to continue after email verification (UX-003): only an event's join page, with an
+# optional access code, so the emailed link can never become an open redirect.
+JOIN_DESTINATION = r"^/join/[a-z0-9-]{1,80}(\?code=[A-Za-z0-9]{1,32})?$"
+
+
 class SignupIn(BaseModel):
     email: EmailStr
     password: str = Password
+    next: str | None = Field(default=None, max_length=130, pattern=JOIN_DESTINATION)
 
 
 class LoginIn(BaseModel):
