@@ -357,6 +357,26 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
   - A success resets the count. After a manual "Try again", any further rejection pauses again, so it never loops.
 - **Regression:** `frontend/e2e/retry-loop.spec.ts`. A blurry front frame (passes the browser's check, fails the server's sharpness gate) produces exactly 2 search submits, then the paused state with the reason and "Try again", and no third submit over 8 s. "Try again" re-arms at the rejected shot. **Mutation-checked:** with the pause disabled (`AUTO_RETRIES_AFTER_REJECTION = 99`) the test fails.
 
+## Scanner results
+
+| Tool | Scope | Initial | Final | Notes |
+|---|---|---|---|---|
+| pip-audit | backend + ML requirements | 33 vulns / 4 pkgs | **0** | SEC-001 |
+| bandit | `backend/app` all severities | 3 (2×B101, 1×B105) | **0** | B105 = token-type name → `# nosec` with justification |
+| ruff (E,F,W,B,S,UP,SIM,PL,RUF,ASYNC,PERF) | `backend/app` | 10 | **0** | 2 `PLW0603` test-injection hooks justified inline |
+| mypy | whole app; strict on 12 authn/authz modules | 42 (+6 strict) | **0** | |
+| semgrep (python, owasp-top-ten, secrets, js, ts, react, dockerfile, docker-compose) | repo | 2 | **0** | README placeholder reworded (was a false positive); SEC-006 |
+| gitleaks | full git history + working tree | 0 history / 18 tree | **0** | 18 were generated, git-ignored caches → path allowlist in `.gitleaks.toml` |
+| npm audit | frontend | 0 | **0** | |
+| eslint + eslint-plugin-security | frontend | 17 warnings | **0** | `detect-object-injection` off with justification (SEC-007) |
+| tsc --noEmit | frontend | 0 | **0** | |
+| trivy config | Dockerfiles | 0 | **0** | compose checked by `scripts/check_compose.py` (trivy doesn't parse compose) |
+| trivy image | prod API / web images | 133 / 8 HIGH | **44 / 0** (re-run 2026-09-30: 0 fixable) | 44 = base-Debian, no upstream fix → R-1 |
+| pip-audit re-run (2026-09-30) | dev + prod API image | 7 (pip 25.0.1 ×6, pytest 8.3.5) | **0** | SEC-040 |
+| ZAP baseline | web app, **production image** (re-run 2026-09-30) | 0 FAIL, 10 WARN | **0 FAIL, 6 WARN** | Each WARN justified below (§ZAP warnings) |
+| ZAP API scan (OpenAPI), unauthenticated | API | 0 FAIL, 2 WARN | 0 FAIL, 1 WARN | CORP fixed; `ef_csrf` not HttpOnly = double-submit design (test-enforced) |
+| ZAP API scan, **authenticated** | API | — | 0 FAIL | ~6,500 attack requests, **0 × 5xx, 0 tracebacks**. The first two "authenticated" runs were silently unauthenticated (ZAP's replacer does not add missing headers; 0 × 200). Fixed with `scripts/zap_auth_proxy.py`, verified by response mix (200s present, no 401s). |
+
 ### ZAP warnings: justification (production image, 2026-09-30)
 
 | ID | Alert | Instances | Why it stays |
