@@ -8,6 +8,7 @@ with a link (never photos or counts)."""
 
 import re
 import time
+import uuid
 from collections.abc import Callable, Iterator
 from datetime import timedelta
 from typing import Any
@@ -207,3 +208,81 @@ def test_queue_memory_is_bounded_in_bytes(world: World, attendee: TestClient, sa
     r = search_as(attendee, world.event, LEFT_PERSON)
     assert r.status_code == 503, r.text
     assert search_queue.pending() == 0
+
+
+# --- delta pass: restarts, cross-process duplicates, result links ---------------------------
+
+
+def test_restart_is_detected_quickly_not_after_the_ttl(world: World, attendee: TestClient, saturated: Callable[[], None]) -> None:  # noqa: F811
+    """A server restart loses queued selfies. The job's owner stops heart-beating, so the
+    status turns "expired" within seconds instead of after SEARCH_QUEUE_TTL_SECONDS."""
+    assert search_as(attendee, world.event, LEFT_PERSON).status_code == 202
+    assert _status(attendee, world.event.id)["state"] == "queued"
+    search_queue.stop()  # the process dies: worker and in-memory queue gone...
+    for key in get_redis().scan_iter("searchqueue:alive:*"):
+        get_redis().delete(key)  # ...and its heartbeat lapses
+    assert _status(attendee, world.event.id)["state"] == "expired"
+
+
+def test_duplicate_queueing_is_atomic_across_processes(world: World, attendee: TestClient, saturated: Callable[[], None]) -> None:  # noqa: F811
+    """Two API processes each have their own queue; the per-user+event claim lives in Redis."""
+    user_id = uuid.UUID(attendee.get("/api/me").json()["id"])
+    shots = [("front", b"x" * 10)]
+    search_queue.enqueue(user_id, world.event.id, shots)
+    search_queue.reset()  # another process: empty local queue, same Redis
+    with pytest.raises(search_queue.AlreadyQueued):
+        search_queue.enqueue(user_id, world.event.id, shots)
+
+
+def test_parallel_duplicate_submits_queue_once(world: World, attendee: TestClient, saturated: Callable[[], None]) -> None:  # noqa: F811
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    from tests.conftest import PASSWORD, new_client
+
+    clients = []
+    for _ in range(4):
+        c = new_client()
+        c.post("/api/auth/login", json={"email": "att@example.com", "password": PASSWORD})
+        clients.append(c)
+    barrier = Barrier(len(clients))
+
+    def go(c: TestClient) -> int:
+        token = c.post(f"/api/events/{world.event.id}/capture-token").json()["token"]
+        body, headers = selfie_body(selfie_set(LEFT_PERSON))
+        headers["x-capture-token"] = token
+        barrier.wait()
+        return c.post(f"/api/events/{world.event.id}/search?source=camera", content=body, headers=headers).status_code
+
+    with ThreadPoolExecutor(len(clients)) as pool:
+        codes = sorted(pool.map(go, clients))
+    assert codes.count(202) == 1 and all(c in (202, 409) for c in codes), codes
+    assert search_queue.pending() == 1
+
+
+def test_result_link_shows_only_the_viewers_own_results(
+    world: World, attendee: TestClient, saturated: Callable[[], None], mailer: FakeMailer, make_user, login_as, add_member, db: Session  # type: ignore[no-untyped-def]  # noqa: F811
+) -> None:
+    """The email link is the plain event page (no token): opened by anyone else it shows
+    *their* results or nothing, never the recipient's; it stops working when access ends."""
+    assert search_as(attendee, world.event, LEFT_PERSON).status_code == 202
+    saturated()
+    _wait_for(attendee, world.event.id, {"done"})
+    mail = next(m for m in reversed(mailer.outbox) if m.to == "att@example.com")
+    path = "/" + mail.body.split("/", 3)[3].split()[0]  # /events/<id>
+    assert path == f"/events/{world.event.id}"
+    assert len(attendee.get(f"/api/events/{world.event.id}/my-photos").json()) >= 1  # reusable by its owner
+
+    other = make_user("other-guest@example.com")
+    add_member(world.event, other)
+    other_client = login_as(other)
+    assert other_client.get(f"/api/events/{world.event.id}/my-photos").json() == []
+    assert _status(other_client, world.event.id)["state"] == "none"
+    assert login_as(make_user("stranger@example.com")).get(f"/api/events/{world.event.id}/my-photos").status_code == 403
+
+    user_id = db.scalar(select(User.id).where(User.email == "att@example.com"))
+    m = db.get(EventMember, (world.event.id, user_id))
+    assert m is not None
+    m.expires_at = utcnow() - timedelta(seconds=1)  # access ended: the old link no longer works
+    db.commit()
+    assert attendee.get(f"/api/events/{world.event.id}/my-photos").status_code == 403

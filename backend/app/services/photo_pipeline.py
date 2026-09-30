@@ -31,7 +31,7 @@ from app.models import (
 )
 from app.services import imaging
 from app.services.drive import DriveAccessError, DriveFileTooLarge, get_drive_client
-from app.services.faces import detect_faces
+from app.services.faces import current_model_id, detect_faces
 
 log = logging.getLogger(__name__)
 
@@ -191,6 +191,7 @@ def index_photo(db: Session, photo_id: uuid.UUID) -> int:
 
     img = Image.open(io.BytesIO(storage.get_bytes(photo.original_key))).convert("RGB")
     faces = detect_faces(img)
+    model = current_model_id()
 
     # Detection is slow; the photo may have been rejected/removed meanwhile. Re-read it
     # under a row lock (moderation takes the same lock) and never write embeddings for
@@ -215,6 +216,7 @@ def index_photo(db: Session, photo_id: uuid.UUID) -> int:
             bbox=list(f.bbox),
             det_score=f.det_score,
             embedding=f.embedding.tolist(),
+            model=model,
         )
         for f in faces
     )

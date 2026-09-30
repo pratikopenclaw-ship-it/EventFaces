@@ -18,7 +18,7 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
 |---|---|---|
 | Zero open Critical/High | **Met.** 2 High found (SEC-001, SEC-025), both fixed | Findings table |
 | Medium/Low fixed or justified | **All 43 findings fixed.** SEC-039 and QA-002 were implemented after the owner's decision (2026-09-30) | Findings table |
-| All tests green from a clean checkout | **Met** | Fresh copy of the tree (tracked + unignored files only, `.env` from `.env.example`), new compose project with empty volumes: build, `alembic` to head (0008), **1,140 backend tests passed, 0 skipped** (1,146 after the SEC-039 tests); frontend lint, tsc, 37 vitest tests and `next build` passed; **18 Playwright tests passed** against that stack (19 with the QA-002 test, re-run against the dev stack) |
+| All tests green from a clean checkout | **Met** (delta pass: 1,202 backend tests, 35 browser tests incl. Firefox) | Fresh copy of the tree (tracked + unignored files only, `.env` from `.env.example`), new compose project with empty volumes: build, `alembic` to head (0008), **1,140 backend tests passed, 0 skipped** (1,146 after the SEC-039 tests); frontend lint, tsc, 37 vitest tests and `next build` passed; **18 Playwright tests passed** against that stack (19 with the QA-002 test, re-run against the dev stack) |
 | Scanners clean or justified | **Met** | `scripts/security-scan.sh`: 18/18 steps pass; ZAP (production image) 0 FAIL, each WARN justified (Scanner results) |
 | Authorization matrix passes every cell | **Met** | `tests/test_authz_matrix.py`: 67 operations × 9 actors (68 with the queued-search status endpoint) plus a completeness check against the live OpenAPI schema |
 | Report complete (re-run guide, hardening checklist) | **Met** | Sections below |
@@ -83,8 +83,12 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
 | SEC-040 | Low | Base image's pip 25.0.1 (6 advisories) shipped in the production image; dev pytest 8.3.5 advisory | Fixed |
 | QA-001 | Low | WCAG AA colour contrast failures (accent, secondary text, badges) and colour-only inline links | Fixed |
 | QA-002 | Low | After a server-side selfie rejection the camera flow auto-retakes and resubmits with no pause; a user who keeps failing the gate exhausts their search budget in under a minute | Fixed |
+| SEC-041 | High | Concurrent logins (no account needed): Argon2 at ~64 MiB each, unbounded and hashed while holding a pooled DB connection → API memory 0.7 → 2.4 GB and pool exhaustion (500s) | Fixed |
+| SEC-042 | Medium | Under a 60-way burst the connection pool ran dry during auth checks and requests failed with 500 instead of degrading; pool undersized | Fixed |
+| QA-004 | Low | A queued search lost in a server restart kept showing "in the queue" for up to 15 min | Fixed |
+| QA-005 | Low | "One queued search per user and event" was check-then-set (not atomic across API processes) | Fixed |
 
-**Totals:** 43 findings: 2 High, 14 Medium, 24 Low, 3 Info, and 0 Critical. **All 43 fixed**, each with a regression test.
+**Totals:** 47 findings: 3 High, 15 Medium, 26 Low, 3 Info, and 0 Critical. **All 47 fixed**, each with a regression test. The delta pass (2026-09-30) added SEC-041/042 and QA-004/005 and the UX findings UX-001…UX-010 (section "Delta pass").
 
 ## Finding details
 
@@ -356,6 +360,70 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
   - A second rejection in a row **pauses**: the camera stays off, auto-capture and the manual shutter are disabled (the detection loop is guarded so it can't capture the frozen last frame), and the screen shows the reason, four practical tips and **Try again**.
   - A success resets the count. After a manual "Try again", any further rejection pauses again, so it never loops.
 - **Regression:** `frontend/e2e/retry-loop.spec.ts`. A blurry front frame (passes the browser's check, fails the server's sharpness gate) produces exactly 2 search submits, then the paused state with the reason and "Try again", and no third submit over 8 s. "Try again" re-arms at the rejected shot. **Mutation-checked:** with the pause disabled (`AUTO_RETRIES_AFTER_REJECTION = 99`) the test fails.
+
+## Delta pass before deployment (2026-09-30)
+
+Scope: everything changed since the audit (queued searches, the SEC-039/QA-002 fixes, Firefox harness), plus a UX pass, queued-search stress tests, a face-engine interface and a deployment guide (`DEPLOYMENT.md`).
+
+### SEC-041 — Password hashing could take the API down (High)
+- **Found by:** the 10× burst load test (`loadtest/queue-burst.js`: 60 users logging in and searching at the same instant against one API process).
+- **Reproduced:** API memory 0.7 → **2.4 GB** and `QueuePool limit … reached` tracebacks. Argon2 (argon2-cffi defaults, deliberately memory-hard at ~64 MiB per hash) ran unbounded in up to 40 threadpool threads, and `login` hashed while its pooled DB connection was still checked out, so unrelated requests 500'd. **No account is needed:** ~40 wrong-password logins from one IP fit within the rate limits, and the production API is capped at 3 GB.
+- **Fix:**
+  - `security.hash_password`/`verify_password` take one of `PASSWORD_HASH_MAX_CONCURRENT` (4) slots per process, waiting up to `PASSWORD_HASH_WAIT_SECONDS` (3), else `HashingBusy` → **503 + Retry-After**. That bounds hashing memory at about 256 MB per process and covers every caller.
+  - Login, sign-up, account deletion and invite registration release the DB connection before hashing.
+  - Reset-password now validates the link read-only (`tokens.find_valid_token`), hashes with no connection or lock held, then consumes the token under its row lock.
+  - Argon2 parameters are unchanged (no weakening).
+- **Regression:** `tests/test_password_hashing.py`: no pooled connection held during hashing for login (valid, wrong and unknown email), sign-up, reset, delete-me and invite registration; with a cap of 2 and 6 parallel logins, peak concurrency ≤ 2 and the excess gets 503 with Retry-After, never 500. Re-run burst: memory peak 1.4 GB (models loaded), 0 tracebacks.
+
+### SEC-042 — Pool exhaustion surfaced as 500 (Medium)
+- **Found by:** the same burst after SEC-041. With the CPU saturated by face analysis, even short auth queries waited past the 10 s pool timeout (default pool 5 + 10).
+- **Fix:** `sqlalchemy.exc.TimeoutError` → **503 + Retry-After** ("the service is very busy"), logged without internals, like every other capacity limit. The pool is sized explicitly (`DB_POOL_SIZE` 10 + `DB_MAX_OVERFLOW` 20 per process), and Postgres runs with `max_connections=200` in the production compose file.
+- **Regression:** `tests/test_pool_exhaustion.py`: a pool timeout gives 503 with no leaked `QueuePool` text; the engine is sized from settings.
+
+### QA-004 / QA-005 — Queued-search robustness (Low)
+- **QA-004 (restart mid-queue):** queued selfies are memory-only by design, so a restart loses them, but the status said "queued" for up to 15 minutes. Each API process now writes a Redis heartbeat (`searchqueue:alive:<boot id>`, 30 s TTL, refreshed by the worker), and a queued job whose owner stopped beating reads "expired" at once; the page tells the user to search again. Regression: `tests/test_search_queue.py::test_restart_is_detected_quickly_not_after_the_ttl` (fails on old code).
+- **QA-005 (duplicates):** the one-queued-search-per-user-and-event rule is now an atomic Redis `SET NX` claim, so it holds across API processes. It's released when the job finishes, and a stale claim from a lost job is taken over. Regression: `::test_duplicate_queueing_is_atomic_across_processes`, `::test_parallel_duplicate_submits_queue_once` (4 simultaneous submits → exactly one 202).
+- **Result links (no finding):** the email links to the plain event page (no token), so it's reusable by its owner, shows another member only *their own* results, gives a non-member 403, and stops working when the recipient's access ends (`::test_result_link_shows_only_the_viewers_own_results`).
+
+### Load at 10× expected concurrency
+One API process (e2e server, `SEARCH_MAX_CONCURRENT=6`, queue 20) with 60 users searching at the same instant. After SEC-041/042:
+
+| Outcome | Count | Timing |
+|---|---|---|
+| Served immediately | 13 | p50 4.9 s, p95 7.1 s |
+| Queued | 21 | **all 21 completed**; time to "done" p50 13.5 s, p95 19.4 s |
+| Busy (503 + Retry-After) | 26 | immediate |
+| Other statuses / 5xx / tracebacks | **0 / 0 / 0** | |
+| API memory | peak 1.4 GB | was 2.4 GB before SEC-041 |
+
+(The harness itself was fixed too: `tests/e2e_server.py` now builds its fixture selfie frames once at start-up instead of 60 users building them concurrently.)
+
+### UX pass (no spec existed; reviewed on real screens at 1280 px and 390 px)
+
+| ID | Issue | Fix | Regression |
+|---|---|---|---|
+| UX-001 | Admin tab bar wider than a phone: the whole page scrolled sideways | Tab strip scrolls horizontally; tabs don't wrap | `e2e/ux.spec.ts` (no sideways scroll; every tab reachable, @xb) |
+| UX-002 | Drive warning's long setting name overflowed its box on phones | Wraps (`break-all`) | Visual check |
+| UX-003 | Scanning the QR code logged out: no context, and **sign-up lost the join link** (users ended at an empty "My events") | Log-in/sign-up say "to join the event"; the join destination travels through sign-up → verification email → verify page → log-in → join page with the code prefilled. The server accepts only `/join/<slug>[?code=…]` (no open redirect via email) | `tests/test_join_redirect.py` (15), `src/lib/join-next.test.ts`, `e2e/ux.spec.ts` full flow |
+| UX-004 | No way to reach Account (consent withdrawal, delete my data) on phones | "Account" link on phones; Log out moved onto the Account page there | `e2e/ux.spec.ts` (@xb) |
+| UX-005 | "(Phase 2)" build jargon in organizer settings | Shows the real service-account email to share the folder with | `e2e/ux.spec.ts` |
+| UX-006 | "No date" printed everywhere for undated events | Date line hidden when absent | `e2e/ux.spec.ts` |
+| UX-007 | Home copy said "take one selfie" / "deleted the moment the search finishes" (three shots; queued case) | Accurate copy | Visual check |
+| UX-008 | MediaPipe info lines ("INFO: Created TensorFlow Lite XNNPACK delegate…") shown as red console errors (reported by the owner) | Known MediaPipe info/glog lines routed to `console.debug`; real errors unchanged | `src/lib/mediapipe-logs.test.ts` |
+| UX-009 | Lowercase status badges ("approved") | Capitalized | Visual check |
+| UX-010 | "My events" cards gave no hint they were clickable | "Find my photos →" call to action; badges grouped | `e2e/ux.spec.ts` |
+
+Accessibility: axe now also covers the join-context log-in/sign-up pages, the queued-search card, the "Search queued" badge and the paused camera. **0 serious or critical violations.**
+
+### Face-engine interface (owner's request)
+`app/services/face_engine.py` defines `FaceEngine` (`detect`, `analyze_selfie`, `model_id`, `embedding_dim`). InsightFace moved to `face_engines/insightface.py` and is selected by `FACE_ENGINE` (`insightface` or `module:Class`); application code only calls `services/faces.py`, unchanged. Faces record their `model` (migration 0009), `search_faces` never compares across models (mutation-checked), and `python -m app.cli reindex-faces [--all]` moves photos to a new engine. Misconfiguration (unknown engine, wrong embedding size) fails fast at start-up. Privacy obligations for remote engines are in the interface docstring and the README. Regression: `tests/test_face_engine.py` (9, including a contract test against the real model and a swap to a fake engine by configuration alone).
+
+### Re-run evidence
+- **Backend:** 1,202 tests passed, 96% line coverage.
+- **Scanners:** `scripts/security-scan.sh` 18/18.
+- **Frontend:** 59 unit tests.
+- **Playwright:** 31 in Chromium, WebKit, Pixel 7 and iPhone 14; Firefox (Linux image) 4/4.
+- **ZAP** on the rebuilt production image: 0 FAIL, the same 6 justified warnings.
 
 ## Follow-up feature: queued searches with notification (2026-09-30)
 

@@ -20,6 +20,24 @@ export function safeNext(next: string | string[] | undefined, fallback = "/event
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+const JOIN_PATH = /^\/join\/[a-z0-9-]{1,80}$/;
+const JOIN_QUERY = /^\?code=[A-Za-z0-9]{1,32}$/;
+
+/**
+ * A same-origin event join destination (/join/<slug>[?code=…]) or null (UX-003).
+ * Mirrors the server's SignupIn.next pattern, so only it survives sign-up and email
+ * verification.
+ */
+export function joinNext(next: string | string[] | undefined): string | null {
+  const value = safeNext(next, "");
+  const q = value.indexOf("?");
+  const path = q === -1 ? value : value.slice(0, q);
+  const query = q === -1 ? "" : value.slice(q); // everything after the first "?"
+  if (!JOIN_PATH.test(path) || value.includes("#")) return null;
+  if (query && !JOIN_QUERY.test(query)) return null;
+  return value;
+}
+
 /** Accepts a full join link (…/join/<slug>?code=…) or a bare slug. */
 export function parseJoinLink(value: string): { slug: string; code: string } | null {
   const trimmed = value.trim();

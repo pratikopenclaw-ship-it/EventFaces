@@ -143,7 +143,12 @@ def register_from_invite(body: InviteRegisterIn, request: Request, response: Res
     invite, event = invites.find_valid_invite(db, body.token)
     if db.scalar(select(User.id).where(User.email == invite.email)) is not None:
         raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email exists — log in to accept")
-    user = User(email=invite.email, password_hash=hash_password(body.password), role=UserRole.attendee)
+    db.rollback()  # hash with no connection or lock held (SEC-041), then re-check
+    password_hash = hash_password(body.password)
+    invite, event = invites.find_valid_invite(db, body.token)
+    if db.scalar(select(User.id).where(User.email == invite.email)) is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "An account with this email exists — log in to accept")
+    user = User(email=invite.email, password_hash=password_hash, role=UserRole.attendee)
     db.add(user)
     db.flush()
     invites.accept(db, invite, event, user)  # also marks the email verified

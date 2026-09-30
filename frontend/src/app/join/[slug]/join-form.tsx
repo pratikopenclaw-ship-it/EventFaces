@@ -39,7 +39,7 @@ export function JoinForm({ slug, initialCode }: { slug: string; initialCode: str
   }
 
   return (
-    <AuthCard title={preview ? `Join ${preview.name}` : "Join event"} subtitle={preview && formatDate(preview.date)}>
+    <AuthCard title={preview ? `Join ${preview.name}` : "Join event"} subtitle={preview?.date ? formatDate(preview.date) : undefined}>
       {preview?.join_mode === "invite" ? (
         <Alert kind="info">This event is invite-only. Use the personal link from your invitation email.</Alert>
       ) : (

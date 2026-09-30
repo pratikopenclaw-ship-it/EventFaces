@@ -1,7 +1,10 @@
 import hashlib
 import hmac
 import secrets
+import threading
 import uuid
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -23,15 +26,54 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+class HashingBusy(Exception):
+    """Too many password hashes in flight in this process (answered with 503)."""
+
+
+# Argon2 costs ~64 MiB and real CPU per call (by design). Unbounded, concurrent logins
+# (no account needed) exhausted memory and, with connections held, the DB pool (SEC-041).
+_hash_lock = threading.Lock()
+_hash_slots: threading.BoundedSemaphore | None = None
+
+
+def _slots() -> threading.BoundedSemaphore:
+    global _hash_slots  # noqa: PLW0603 - one semaphore per process, sized from settings
+    with _hash_lock:
+        if _hash_slots is None:
+            _hash_slots = threading.BoundedSemaphore(get_settings().password_hash_max_concurrent)
+        return _hash_slots
+
+
+def reset_hash_slots() -> None:
+    """Re-read PASSWORD_HASH_MAX_CONCURRENT on next use (tests)."""
+    global _hash_slots  # noqa: PLW0603
+    with _hash_lock:
+        _hash_slots = None
+
+
+@contextmanager
+def _hashing_slot() -> Iterator[None]:
+    slots = _slots()
+    if not slots.acquire(timeout=get_settings().password_hash_wait_seconds):
+        raise HashingBusy
+    try:
+        yield
+    finally:
+        slots.release()
+
+
 def hash_password(password: str) -> str:
-    return _hasher.hash(password)
+    with _hashing_slot():
+        return _hasher.hash(password)
 
 
 def verify_password(password: str, password_hash: str) -> bool:
-    try:
-        return _hasher.verify(password_hash, password)
-    except (VerifyMismatchError, InvalidHashError):
-        return False
+    """Callers must not hold a pooled DB connection (commit/rollback first): see SEC-041."""
+    with _hashing_slot():
+        try:
+            return _hasher.verify(password_hash, password)
+        except (VerifyMismatchError, InvalidHashError):
+            return False
 
 
 # A valid hash to verify against when the user doesn't exist, so login timing

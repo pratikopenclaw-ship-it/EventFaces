@@ -144,8 +144,9 @@ def run_retention(db: Session, now: datetime | None = None) -> RetentionReport:
         ))
     )
     db.commit()
-    if any(asdict(report).values()):
-        log.info("Retention run: %s", asdict(report))
+    # Logged on every run (not only when something was deleted): operators alert on a
+    # missing hourly line, since retention is a GDPR duty (DEPLOYMENT.md, monitoring).
+    log.info("Retention run: %s", asdict(report))
     return report
 
 

@@ -1,4 +1,5 @@
 import uuid
+from urllib.parse import quote
 from datetime import timedelta
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
@@ -30,6 +31,7 @@ from app.schemas.auth import (
 from app.services.tokens import (
     consume_token,
     end_session,
+    find_valid_token,
     issue_refresh_token,
     issue_token,
     revoke_user_tokens,
@@ -45,10 +47,12 @@ def _send(background: BackgroundTasks, to: str, subject: str, body: str) -> None
     background.add_task(get_mailer().send, Mail(to=to, subject=subject, body=body))
 
 
-def _send_verification(db: DB, background: BackgroundTasks, user: User) -> None:
+def _send_verification(db: DB, background: BackgroundTasks, user: User, next_path: str | None = None) -> None:
     s = get_settings()
     raw = issue_token(db, user, TokenKind.verify_email, timedelta(hours=s.verify_token_hours))
     link = f"{s.frontend_url}/verify-email?token={raw}"
+    if next_path:  # validated by SignupIn (join pages only)
+        link += f"&next={quote(next_path, safe='')}"
     _send(background, user.email, "Verify your EventFaces email", f"Confirm your email:\n\n{link}\n")
 
 
@@ -79,10 +83,12 @@ def signup(body: SignupIn, request: Request, db: DB, background: BackgroundTasks
             "If you forgot your password, use 'Forgot password' on the login page.",
         )
     else:
-        user = User(email=body.email, password_hash=hash_password(body.password), role=UserRole.attendee)
+        db.commit()  # no pooled connection held while hashing (SEC-041)
+        password_hash = hash_password(body.password)
+        user = User(email=body.email, password_hash=password_hash, role=UserRole.attendee)
         db.add(user)
         db.flush()
-        _send_verification(db, background, user)
+        _send_verification(db, background, user, body.next)
     db.commit()
     return MessageOut(detail="Check your inbox to verify your email address.")
 
@@ -122,6 +128,7 @@ def login(body: LoginIn, request: Request, response: Response, db: DB) -> User:
     rate_limit.enforce(f"login:{ip}:{body.email.lower()}", limit)
 
     user = db.scalar(select(User).where(User.email == body.email, User.deleted_at.is_(None)))
+    db.commit()  # no pooled connection held while hashing (SEC-041)
     if user is None:
         verify_password(body.password, DUMMY_PASSWORD_HASH)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
@@ -177,13 +184,19 @@ def forgot_password(
 
 @router.post("/reset-password", response_model=MessageOut)
 def reset_password(body: ResetPasswordIn, db: DB) -> MessageOut:
+    # Validate the link before paying for a hash, then hash with no connection or lock
+    # held (SEC-041), then consume the token under its row lock.
+    if find_valid_token(db, body.token, TokenKind.reset_password) is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
+    db.rollback()
+    password_hash = hash_password(body.password)
     token = consume_token(db, body.token, TokenKind.reset_password)
     if token is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     user = db.get(User, token.user_id)
     if user is None or user.deleted_at is not None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
-    user.password_hash = hash_password(body.password)
+    user.password_hash = password_hash
     # Receiving the reset email proves control of the address.
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()

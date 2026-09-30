@@ -54,6 +54,8 @@ What a sync does: lists top-level JPEG/PNG/HEIC files (paginated, retries 429/5x
 
 **Busy servers: "we'll notify you".** Face analysis takes seconds of CPU and runs one search at a time per API process, so each process admits at most `SEARCH_MAX_CONCURRENT` (default 6) searches. A search that can't get a slot within `SEARCH_QUEUE_WAIT_SECONDS` (5 s) is still validated and then **queued in that process's memory** (`app/services/search_queue.py`, at most `SEARCH_OVERFLOW_QUEUE_SIZE` jobs and `SEARCH_QUEUE_MAX_BYTES`). The API answers 202, the page shows "You're in the queue" and polls, "My events" shows a badge, and the user gets an email ("Your photos from … are ready", with a link only) when the background worker finishes. The worker re-checks membership, consent and the account before matching. Selfies never leave memory (no Redis, disk or storage), so a restart loses queued searches; their status turns "expired" after `SEARCH_QUEUE_TTL_SECONDS` (15 min) and the user is asked to search again. With the queue full or disabled (`SEARCH_OVERFLOW_QUEUE_SIZE=0`), busy searches get 503 "try again in a few seconds".
 
+**Face engine.** The model sits behind `app/services/face_engine.FaceEngine`; application code only calls `services/faces.py`. `FACE_ENGINE=insightface` (default) or `FACE_ENGINE=package.module:Class` for any other implementation (GPU build, another open model, or a cloud API). Each face row records the model that produced it and search only compares embeddings from the current model, so after switching run `python -m app.cli reindex-faces` (add `--all` to re-scan photos where the old model found nobody) and recalibrate the thresholds. Engines must return L2-normalised 512-d embeddings (else add a migration) and follow the pose convention in the interface docstring; `tests/test_face_engine.py` checks the contract. An engine that sends images to a third party moves biometric processing outside your infrastructure: that needs a DPA, an EU region, updated consent text (`FACE_CONSENT_VERSION`) and a DPIA update.
+
 **Tuning the threshold.** `FACE_MATCH_THRESHOLD` (cosine similarity, default 0.45) trades missed photos against strangers' photos. The test fixtures score ≥0.93 for the right person and ≤0.2 for others, but they're derived from the same photo. Real selfies against candid event photos usually score around 0.35–0.7 for the same person. Before going live, calibrate on a few real selfie/event pairs. Lower it (for example 0.38) if people report missing photos; raise it if strangers' photos show up.
 
 ## Guided selfie capture, quality gate & match feedback
@@ -136,6 +138,8 @@ Every event-scoped endpoint goes through `get_member_event` / `get_managed_event
 | Delete account | 5 attempts / hour per user |
 
 ## Deploying to production
+
+**Step-by-step EU deployment (Hetzner + Cloudflare R2), email authentication, backups, monitoring, secrets and the go/no-go checklist: see [DEPLOYMENT.md](DEPLOYMENT.md).** The summary below is kept for orientation.
 
 `docker-compose.prod.yml` runs Caddy (TLS), Next.js (standalone build), FastAPI (2 workers), a Celery worker, **one** Celery beat, Postgres + pgvector and Redis. Object storage (R2/S3) and SMTP are external.
 

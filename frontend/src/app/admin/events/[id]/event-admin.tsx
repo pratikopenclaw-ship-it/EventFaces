@@ -40,15 +40,15 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
 
   return (
     <>
-      <PageHeader title={event.name} subtitle={formatDate(event.date)} />
-      <div role="tablist" className="mb-6 flex gap-1 border-b border-line">
+      <PageHeader title={event.name} subtitle={event.date ? formatDate(event.date) : undefined} />
+      <div role="tablist" className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
         {(Object.keys(LABELS) as Tab[]).map((t) => (
           <button
             key={t}
             role="tab"
             aria-selected={tab === t}
             onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
+            className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition ${
               tab === t ? "border-accent text-ink" : "border-transparent text-ink/70 hover:text-ink"
             }`}
           >

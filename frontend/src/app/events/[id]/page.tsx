@@ -23,7 +23,7 @@ export default function EventPage() {
 
   return (
     <>
-      <PageHeader title={event.name} subtitle={formatDate(event.date)} />
+      <PageHeader title={event.name} subtitle={event.date ? formatDate(event.date) : undefined} />
       {event.description && <p className="-mt-4 mb-8 max-w-2xl whitespace-pre-line text-ink/70">{event.description}</p>}
       <div className="space-y-10">
         <FindPhotos event={event} />

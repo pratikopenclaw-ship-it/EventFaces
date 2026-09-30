@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     access_token_minutes: int = 15
     refresh_token_days: int = 14
     db_statement_timeout_ms: int = Field(default=60_000, ge=1000)
+    # Pooled connections per process (SEC-042). Keep processes × (size + overflow) well
+    # under Postgres max_connections (100 by default).
+    db_pool_size: int = Field(default=10, ge=1, le=100)
+    db_max_overflow: int = Field(default=20, ge=0, le=100)
+    # Argon2 hashes in flight per process (~64 MiB each); excess waits this long, then 503.
+    password_hash_max_concurrent: int = Field(default=4, ge=1, le=64)
+    password_hash_wait_seconds: float = Field(default=3.0, ge=0, le=30)
     # A rotated refresh token presented again within this window is a benign cross-tab
     # race; later than that it is treated as theft and the whole session is revoked.
     refresh_reuse_grace_seconds: int = Field(default=20, ge=0, le=120)
@@ -76,6 +83,10 @@ class Settings(BaseSettings):
     face_min_det_score: float = 0.5
     face_det_size: int = 640
     face_model_root: str = "/models"
+    # Which face-recognition engine to use: "insightface" or "package.module:Class"
+    # implementing services/face_engine.FaceEngine. Switching needs a reindex
+    # (`python -m app.cli reindex-faces`) and threshold recalibration.
+    face_engine: str = "insightface"
 
     selfie_max_bytes: int = 10 * 1024 * 1024
     # Pixel limits, checked from the image header before decoding (decoded RGB = 3 B/px).
