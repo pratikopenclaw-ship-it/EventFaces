@@ -85,6 +85,8 @@ cd frontend && npm run lint && npx next typegen && npx tsc --noEmit # frontend c
 
 Backend tests run against a separate `eventfaces_test` database (created on first Postgres start) and Redis DB 15.
 
+End-to-end tests (Playwright) run against `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web`: `cd frontend && npx playwright test`. Firefox runs from Playwright's Linux image (its macOS build doesn't start on macOS 27): `docker run --rm --network eventfaces_default --ipc=host -v "$PWD:/work" -w /work -e E2E_BASE_URL=http://web:3000 -e E2E_API_URL=http://api:8000 mcr.microsoft.com/playwright:v1.63.0-noble npx playwright test --project=firefox` (from `frontend/`).
+
 ## Roles & access model
 
 - **super_admin** — creates/deletes events, assigns organizers, sees everything. Created only via the CLI.

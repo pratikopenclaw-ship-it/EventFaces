@@ -1,6 +1,8 @@
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 
-export const API = "http://127.0.0.1:8000";
+// Overridable so the suite can also run from a container on the compose network
+// (e.g. Firefox in the Linux Playwright image: E2E_API_URL=http://api:8000).
+export const API = process.env.E2E_API_URL ?? "http://127.0.0.1:8000";
 export const PASSWORD = "e2e-password-123";
 export const FOLDER = "1E2EFolderAAAAAAAAAA";
 
