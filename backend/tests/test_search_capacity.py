@@ -21,6 +21,9 @@ from tests.test_search import LEFT_PERSON, World, attendee, world  # noqa: F401 
 def one_slot(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     monkeypatch.setattr(get_settings(), "search_max_concurrent", 1)
     monkeypatch.setattr(get_settings(), "search_queue_wait_seconds", 0.3)
+    # These tests cover the "turned away" path, which since the overflow queue exists
+    # applies when the queue is full or disabled (tests/test_search_queue.py covers queuing).
+    monkeypatch.setattr(get_settings(), "search_overflow_queue_size", 0)
     face_slots.reset()
     yield
     face_slots.reset()

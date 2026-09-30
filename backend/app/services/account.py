@@ -21,6 +21,7 @@ from app.models import (
     User,
     UserRole,
 )
+from app.services import search_queue
 from app.services.feedback import anonymize_feedback
 from app.services.photo_pipeline import retire_photo
 
@@ -61,8 +62,10 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
     )
     db.execute(update(PhotoReport).where(PhotoReport.reporter_id == user.id).values(reporter_id=None))
 
+    user_id = user.id
     db.delete(user)
     db.commit()
+    search_queue.forget_user(user_id)  # queued-search status (a queued job re-checks and drops itself)
     return DeletionSummary(
         memberships=memberships,
         matches=matches,

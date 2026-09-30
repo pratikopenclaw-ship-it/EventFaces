@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 from dataclasses import asdict
-from typing import Literal
+from typing import Any, Literal
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
@@ -11,8 +11,7 @@ from zipstream import ZIP_STORED, ZipStream
 
 from app.api.deps import DB, CurrentUser, ManagedEvent, MemberEvent, SuperAdmin, VerifiedUser
 from app.api.selfie import is_selfie_set, read_selfie, read_selfie_set, selfie_content_type
-from app.core import rate_limit, storage
-from app.core.face_slots import face_slot
+from app.core import face_slots, rate_limit, storage
 from app.core.config import get_settings
 from app.core.security import utcnow
 from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoStatus, SearchGrant, User
@@ -33,7 +32,7 @@ from app.schemas.search import (
     SelfieRejectionOut,
     ShotQualityOut,
 )
-from app.services import capture_tokens, downloads
+from app.services import capture_tokens, downloads, search_queue
 from app.services.feedback import MatchQuality, anonymize_feedback, match_quality, record_missing, record_verdict
 from app.services.membership import can_access
 from app.services.photo_access import viewable_photos
@@ -138,37 +137,46 @@ async def search(
     _require_consent(user)
     # Waiting for a slot must not hold the pooled connection the auth checks opened (SEC-038).
     db.commit()
-    # Take a face-work slot first: a request that can't be served in time is turned away
-    # before its selfies are read into memory or its search budget is spent (SEC-039).
-    async with face_slot():
-        s = get_settings()
+    # Take a face-work slot first (SEC-039). If none frees up in time, the search can still
+    # be queued ("we'll notify you"); only when the queue is full is it turned away, and
+    # then before its selfies are read into memory or its search budget is spent.
+    s = get_settings()
+    got_slot = await face_slots.acquire(s.search_queue_wait_seconds)
+    try:
+        if not got_slot:
+            try:
+                search_queue.check_can_queue(user.id, event.id)
+            except search_queue.QueueFull as e:
+                raise face_slots.BUSY from e
+            except search_queue.AlreadyQueued as e:
+                raise HTTPException(status.HTTP_409_CONFLICT, "Your earlier search is still queued. We'll email you when it's done.") from e
+
         limit = rate_limit.Limit.parse(s.search_rate_limit)
         rate_limit.enforce(f"search:user:{user.id}", limit)
         rate_limit.enforce(f"search:ip:{rate_limit.client_ip(request)}", rate_limit.Limit(limit.count * 3, limit.seconds))
-
-        if source == "camera":
-            # Camera searches must come from the guided capture flow: exactly front, left, right.
-            token = request.headers.get("x-capture-token", "")
-            if not token or not capture_tokens.consume(token, user.id, event.id):
-                raise HTTPException(status.HTTP_403_FORBIDDEN, "capture_token_invalid")
-            if not is_selfie_set(request):
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Camera searches send a set of three selfies")
-            shots = await read_selfie_set(request)
-            if [shot for shot, _ in shots] != list(SHOTS_CAMERA):
-                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Expected front, left and right selfies")
-        else:
-            if not upload_allowed(event):
-                raise HTTPException(status.HTTP_403_FORBIDDEN, "This event requires a live camera selfie")
-            if is_selfie_set(request):
-                shots = [("any", data) for _, data in await read_selfie_set(request)]
-            elif selfie_content_type(request):
-                shots = [("any", await read_selfie(request))]
-            else:
-                raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Send the selfie as a JPEG, PNG or HEIC image")
-
+        shots = await _read_validated_shots(request, event, user, source)
         # Counted only for requests that passed every check, so invalid requests from one
         # member can't burn the event's budget for everyone else.
         rate_limit.enforce(f"search:event:{event.id}", rate_limit.Limit.parse(s.search_event_rate_limit))
+
+        if not got_slot:
+            try:
+                search_queue.enqueue(user.id, event.id, shots)  # selfies stay in this process's memory
+            except search_queue.QueueFull as e:
+                raise face_slots.BUSY from e
+            except search_queue.AlreadyQueued as e:
+                raise HTTPException(status.HTTP_409_CONFLICT, "Your earlier search is still queued.") from e
+            finally:
+                del shots
+            return JSONResponse(  # type: ignore[return-value]  # 202 bypasses response_model by design
+                status_code=status.HTTP_202_ACCEPTED,
+                content={
+                    "queued": True,
+                    "detail": "We're busy right now. We'll email you and show your photos here when they're ready.",
+                    "expires_in": s.search_queue_ttl_seconds,
+                },
+            )
+
         # End the transaction opened by the auth checks so the pooled connection is free while
         # the face model runs (seconds, serialized): run_search does all face analysis before
         # its first query. Holding it let ~15 concurrent searches starve every other endpoint.
@@ -179,6 +187,37 @@ async def search(
             return result  # type: ignore[return-value]  # a JSONResponse (422) bypasses response_model by design
         finally:
             del shots
+    finally:
+        if got_slot:
+            face_slots.release()
+
+
+async def _read_validated_shots(request: Request, event: Event, user: User, source: str) -> list[tuple[str, bytes]]:
+    if source == "camera":
+        # Camera searches must come from the guided capture flow: exactly front, left, right.
+        token = request.headers.get("x-capture-token", "")
+        if not token or not capture_tokens.consume(token, user.id, event.id):
+            raise HTTPException(status.HTTP_403_FORBIDDEN, "capture_token_invalid")
+        if not is_selfie_set(request):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Camera searches send a set of three selfies")
+        shots = await read_selfie_set(request)
+        if [shot for shot, _ in shots] != list(SHOTS_CAMERA):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Expected front, left and right selfies")
+        return shots
+    if not upload_allowed(event):
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "This event requires a live camera selfie")
+    if is_selfie_set(request):
+        return [("any", data) for _, data in await read_selfie_set(request)]
+    if selfie_content_type(request):
+        return [("any", await read_selfie(request))]
+    raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Send the selfie as a JPEG, PNG or HEIC image")
+
+
+@router.get("/events/{event_id}/search-status")
+def search_status(event: MemberEvent, user: VerifiedUser) -> dict[str, Any]:
+    """The caller's queued search for this event: none | queued | done | rejected | cancelled | expired."""
+    record = search_queue.get_status(user.id, event.id)
+    return {k: record.get(k) for k in ("state", "queued_at", "updated_at", "match_count", "message", "shot", "code")}
 
 
 def _search_sync(db: Session, user: User, event: Event, shots: list[tuple[str, bytes]]) -> SearchOut | JSONResponse:

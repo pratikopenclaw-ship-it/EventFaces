@@ -87,6 +87,8 @@ class EventListItem(EventPublicOut):
     my_role: MemberRole | None = None
     can_manage: bool = False
     photo_count: int = 0
+    # The caller's queued ("we'll notify you") search for this event, if any.
+    search_state: str | None = None
 
 
 class JoinPreviewOut(BaseModel):

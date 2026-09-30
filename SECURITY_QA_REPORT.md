@@ -20,7 +20,7 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
 | Medium/Low fixed or justified | **All 43 findings fixed.** SEC-039 and QA-002 were implemented after the owner's decision (2026-09-30) | Findings table |
 | All tests green from a clean checkout | **Met** | Fresh copy of the tree (tracked + unignored files only, `.env` from `.env.example`), new compose project with empty volumes: build, `alembic` to head (0008), **1,140 backend tests passed, 0 skipped** (1,146 after the SEC-039 tests); frontend lint, tsc, 37 vitest tests and `next build` passed; **18 Playwright tests passed** against that stack (19 with the QA-002 test, re-run against the dev stack) |
 | Scanners clean or justified | **Met** | `scripts/security-scan.sh`: 18/18 steps pass; ZAP (production image) 0 FAIL, each WARN justified (Scanner results) |
-| Authorization matrix passes every cell | **Met** | `tests/test_authz_matrix.py`: 67 operations × 9 actors plus a completeness check against the live OpenAPI schema |
+| Authorization matrix passes every cell | **Met** | `tests/test_authz_matrix.py`: 67 operations × 9 actors (68 with the queued-search status endpoint) plus a completeness check against the live OpenAPI schema |
 | Report complete (re-run guide, hardening checklist) | **Met** | Sections below |
 
 ### QA results (Phase C)
@@ -356,6 +356,19 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
   - A second rejection in a row **pauses**: the camera stays off, auto-capture and the manual shutter are disabled (the detection loop is guarded so it can't capture the frozen last frame), and the screen shows the reason, four practical tips and **Try again**.
   - A success resets the count. After a manual "Try again", any further rejection pauses again, so it never loops.
 - **Regression:** `frontend/e2e/retry-loop.spec.ts`. A blurry front frame (passes the browser's check, fails the server's sharpness gate) produces exactly 2 search submits, then the paused state with the reason and "Try again", and no third submit over 8 s. "Try again" re-arms at the rejected shot. **Mutation-checked:** with the pause disabled (`AUTO_RETRIES_AFTER_REJECTION = 99`) the test fails.
+
+## Follow-up feature: queued searches with notification (2026-09-30)
+
+Built at the owner's request after SEC-039, on branch `async-search`. When no face-work slot is free within 5 s, a fully validated search (rate limits, capture token, body) is queued in the API process's memory and answered with **202**. The page shows "You're in the queue" and polls `GET /api/events/{id}/search-status`, "My events" shows "Search queued" / "Photos ready", and a background worker runs the search when a slot frees up, then emails a **link only** (no photos, no counts).
+
+Privacy and security review of the design:
+- **Selfies stay in memory only.** A Celery/Redis queue was rejected because it would write biometric data to Redis (and possibly its disk). Redis holds only the per-user status (state, timestamps, match count, rejection reason), with a 24 h TTL. Tests scan Redis for image data (`tests/test_search_queue.py::test_queued_selfies_never_leave_memory`).
+- **Consent:** the text now states that selfies may wait in memory for up to 15 minutes when the service is busy (the version was bumped to `2026-09-30`, so users re-consent once). The privacy page is updated.
+- **Re-checked at run time:** a revoked member, withdrawn consent, a deleted account or an ended event → the job is dropped, with no grants and no results email (`::test_revoked_before_processing_cancels_the_job`, `::test_consent_withdrawn_before_processing_cancels_the_job`, `::test_account_deletion_forgets_search_state`).
+- **Bounded:** at most 20 jobs and 64 MB of selfies per process; one queued search per user per event (409); a full queue → 503 before the body is read (`::test_full_queue_answers_busy`, `::test_queue_memory_is_bounded_in_bytes`, `::test_one_queued_search_per_user_and_event`). The worker takes a face slot from the same cap as synchronous searches and holds no DB connection during face work (SEC-038).
+- **Restarts lose queued jobs by design:** the status then reads "expired" after 15 minutes and the user is asked to search again (`::test_lost_job_is_reported_as_expired`).
+- **Authorization:** the status endpoint is event-member only and returns only the caller's own job (`::test_status_is_private_to_its_owner`; added to the authorization matrix, now 68 operations).
+- **End to end:** `frontend/e2e/queued-search.spec.ts` (saturated server → queued card → badge → results on the open page → email with link → "Photos ready").
 
 ## Scanner results
 

@@ -111,6 +111,7 @@ router = APIRouter(prefix="/__e2e")
 
 @router.post("/reset")
 def reset_endpoint() -> dict[str, object]:
+    release_face_slots()
     reset()
     return {"password": PASSWORD, "users": list(USERS), "folder": FOLDER}
 
@@ -174,6 +175,32 @@ def expire_event(event_id: uuid.UUID) -> dict[str, str]:
         ev.access_expires_at = utcnow() - timedelta(minutes=1)
         db.commit()
     return {"ok": "expired"}
+
+
+_held_slots = 0
+
+
+@router.post("/face-slots/hold")
+def hold_face_slots() -> dict[str, int]:
+    """Take every face-work slot: the server looks saturated (searches get queued)."""
+    global _held_slots
+    from app.core import face_slots
+
+    while face_slots.try_acquire_now():
+        _held_slots += 1
+    return {"held": _held_slots}
+
+
+@router.post("/face-slots/release")
+def release_face_slots() -> dict[str, int]:
+    global _held_slots
+    from app.core import face_slots
+
+    released = _held_slots
+    for _ in range(_held_slots):
+        face_slots.release()
+    _held_slots = 0
+    return {"released": released}
 
 
 @router.get("/mail")

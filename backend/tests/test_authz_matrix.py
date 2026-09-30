@@ -213,6 +213,7 @@ OPS: list[Op] = [
     Op("POST", f"/api/events/{E}/capture-token", "MEMBER"),
     Op("POST", f"/api/events/{E}/search?source=upload", "MEMBER", content=b"x", headers={"content-type": "image/jpeg"}),
     Op("GET", f"/api/events/{E}/my-photos", "MEMBER"),
+    Op("GET", f"/api/events/{E}/search-status", "MEMBER"),
     Op("GET", f"/api/events/{E}/my-uploads", "MEMBER"),
     Op("POST", f"/api/events/{E}/downloads", "MEMBER", json={"photo_ids": ["{photo_a}"]}),
     Op("POST", f"/api/events/{E}/feedback", "MEMBER", json={"photo_id": "{photo_a}", "verdict": "me"}),

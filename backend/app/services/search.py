@@ -35,7 +35,7 @@ from app.services.faces import detect_faces
 from app.services.selfie_quality import ShotResult
 
 # Bump when the consent text changes materially; users are asked again.
-FACE_CONSENT_VERSION = "2026-09-29"
+FACE_CONSENT_VERSION = "2026-09-30"  # + queued searches may wait in memory (search_queue.py)
 
 Tier = Literal["best", "possible"]
 

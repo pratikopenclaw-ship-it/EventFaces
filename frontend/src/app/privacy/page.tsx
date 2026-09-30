@@ -7,7 +7,7 @@ export const metadata = { title: "Privacy · EventFaces" };
 // (GDPR Art. 9) and likely requires a DPIA (Art. 35).
 
 const RETENTION: [string, string][] = [
-  ["Your selfie and its face template", "Not stored. Processed in memory and deleted as soon as matching finishes."],
+  ["Your selfies and their face template", "Not stored. Processed in memory and deleted as soon as matching finishes (if the service is busy, they wait in memory for at most 15 minutes)."],
   ["Face templates of people in event photos", "Until the event's access period ends, then deleted automatically."],
   ["Which photos you matched", "7 days, or until the event's access ends if that's sooner. Deleted when you withdraw consent."],
   ["Event photos", "As decided by the organizer; optionally deleted when access ends."],

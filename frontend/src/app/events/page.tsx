@@ -53,6 +53,8 @@ export default function MyEventsPage() {
                   <p className="text-sm text-ink/70">{formatDate(event.date)}</p>
                 </div>
                 {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
+                {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}
+                {event.search_state === "done" && <Badge tone="good">Photos ready</Badge>}
               </div>
             </Link>
           ))}

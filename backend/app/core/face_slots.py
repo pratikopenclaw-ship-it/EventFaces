@@ -50,6 +50,15 @@ def release() -> None:
     _semaphore().release()
 
 
+def acquire_blocking(timeout: float) -> bool:
+    """For worker threads (the overflow search queue)."""
+    return _semaphore().acquire(timeout=timeout)
+
+
+async def acquire(wait_seconds: float) -> bool:
+    return await _acquire(wait_seconds)
+
+
 async def _acquire(wait_seconds: float) -> bool:
     # A threading semaphore (not asyncio's) so it works across event loops and with work
     # that runs in the threadpool; polled so waiting never blocks the event loop.

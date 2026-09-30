@@ -93,6 +93,13 @@ class Settings(BaseSettings):
     # this as throughput × acceptable wait, not by CPU count: 6 ≈ 7 s worst admitted wait.
     search_max_concurrent: int = Field(default=6, ge=1, le=64)
     search_queue_wait_seconds: float = Field(default=5.0, ge=0, le=30)
+    # Overflow: searches that can't get a slot are queued in process memory and the user
+    # is notified when done (services/search_queue.py). Bounded by jobs and bytes; 0 jobs
+    # disables it (busy searches then get 503). Queued jobs older than the TTL are
+    # reported as expired (e.g. lost in a restart).
+    search_overflow_queue_size: int = Field(default=20, ge=0, le=500)
+    search_queue_max_bytes: int = Field(default=64 * 1024 * 1024, ge=0)
+    search_queue_ttl_seconds: int = Field(default=900, ge=60, le=3600)
     download_token_seconds: int = 120
     zip_max_photos: int = 500
 

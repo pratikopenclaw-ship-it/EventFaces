@@ -1,19 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { GuidedCapture, type CapturedShot, type SubmitResult } from "@/components/guided-capture";
 import { Alert, Button, Card } from "@/components/ui";
-import { ApiError, RawBody, del, post } from "@/lib/api";
+import { ApiError, RawBody, del, get, post } from "@/lib/api";
 import { oneOf } from "@/lib/safe";
 import type { SelfieRequirements, Shot } from "@/lib/face-guidance";
-import type { ConsentInfo, EventPublic, MatchedPhoto, SearchResult } from "@/lib/types";
+import type { ConsentInfo, EventPublic, MatchedPhoto, QueuedSearch, SearchResult, SearchStatus } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
 import { ConsentPanel } from "./consent-panel";
 import { PhotoGallery } from "./photo-gallery";
 
-type Step = "auto" | "capture" | "results";
+type Step = "auto" | "capture" | "results" | "queued";
+
+const POLL_MS = 10_000;
+
+function isQueued(r: SearchResult | QueuedSearch): r is QueuedSearch {
+  return "queued" in r && r.queued === true;
+}
 
 interface Rejection {
   detail: string;
@@ -48,6 +54,44 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
+  // A search queued while the service was busy: show it on return, and poll while open.
+  useEffect(() => {
+    let active = true;
+    const check = async () => {
+      try {
+        const s = await get<SearchStatus>(`/api/events/${event.id}/search-status`);
+        if (!active) return;
+        if (s.state === "queued") {
+          setStep("queued");
+        } else if (step === "queued") {
+          if (s.state === "done") {
+            setResults(null); // the finished search's grants arrive via my-photos
+            await previous.reload();
+            setStep("results");
+          } else {
+            setError(
+              s.state === "rejected" && s.message
+                ? s.message
+                : s.state === "expired"
+                  ? "We lost your queued search (the service restarted). Please search again."
+                  : "Your queued search was cancelled. Please search again.",
+            );
+            setStep("capture");
+          }
+        }
+      } catch {
+        /* transient: try again on the next tick */
+      }
+    };
+    if (step === "auto" || step === "queued") void check();
+    const timer = step === "queued" ? setInterval(() => void check(), POLL_MS) : undefined;
+    return () => {
+      active = false;
+      if (timer) clearInterval(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- `previous` is a stable loader
+  }, [event.id, step]);
+
   if (consent.loading || previous.loading || requirements.loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (consent.error) return <Alert>{consent.error.message}</Alert>;
   const info = consent.data;
@@ -74,8 +118,14 @@ export function FindPhotos({ event }: { event: EventPublic }) {
       const { token } = await post<{ token: string }>(`/api/events/${event.id}/capture-token`);
       const body = selfieSet(shots);
       body.headers["X-Capture-Token"] = token;
-      showResults(await post<SearchResult>(`/api/events/${event.id}/search?source=camera`, body));
+      const r = await post<SearchResult | QueuedSearch>(`/api/events/${event.id}/search?source=camera`, body);
+      if (isQueued(r)) setStep("queued");
+      else showResults(r);
     } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        setStep("queued"); // an earlier search is still queued
+        return;
+      }
       if (e instanceof ApiError && e.message === "consent_required") {
         await consent.reload();
         return;
@@ -96,7 +146,9 @@ export function FindPhotos({ event }: { event: EventPublic }) {
     setError(null);
     try {
       const type = file.type || (/\.hei[cf]$/i.test(file.name) ? "image/heic" : "image/jpeg");
-      showResults(await post<SearchResult>(`/api/events/${event.id}/search?source=upload`, new RawBody(file, type)));
+      const r = await post<SearchResult | QueuedSearch>(`/api/events/${event.id}/search?source=upload`, new RawBody(file, type));
+      if (isQueued(r)) setStep("queued");
+      else showResults(r);
     } catch (e) {
       setError(e instanceof ApiError && isRejection(e.body) ? e.body.detail : e instanceof Error ? e.message : "Search failed");
     } finally {
@@ -124,7 +176,18 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         </div>
       )}
 
-      {effective === "capture" ? (
+      {effective === "queued" ? (
+        <Card className="mx-auto max-w-xl text-center">
+          <h2 className="font-display text-2xl">You&apos;re in the queue</h2>
+          <p className="mt-2 text-sm text-ink/70">
+            Lots of people are searching right now. We&apos;ll email you and show your photos here as soon as they&apos;re
+            ready, usually within a few minutes. You can close this page.
+          </p>
+          <p role="status" aria-live="polite" className="mt-4 text-xs text-ink/70">
+            Checking for your results…
+          </p>
+        </Card>
+      ) : effective === "capture" ? (
         <>
           <GuidedCapture key={attempt} requirements={req} busy={searching} onSubmit={searchCamera} />
           {uploadAllowed && (
