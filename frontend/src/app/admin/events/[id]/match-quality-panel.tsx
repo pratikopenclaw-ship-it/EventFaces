@@ -7,7 +7,7 @@ import { useApi } from "@/lib/use-api";
 
 export function MatchQualityPanel({ eventId }: { eventId: string }) {
   const { data, error, loading } = useApi<MatchQuality>(`/api/events/${eventId}/match-quality`);
-  if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (error || !data) return <Alert>{error?.message ?? "Could not load match quality"}</Alert>;
   return <MatchQualityView q={data} />;
 }

@@ -31,13 +31,13 @@ export function LoginForm({ next }: { next: string }) {
       subtitle={
         <>
           New here?{" "}
-          <Link className="text-accent underline-offset-2 hover:underline" href="/signup">
+          <Link className="text-accent underline underline-offset-2" href="/signup">
             Create an account
           </Link>
         </>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form method="post" onSubmit={onSubmit} className="space-y-4">
         {error && <Alert>{error}</Alert>}
         <Field label="Email">
           <Input name="email" type="email" autoComplete="email" required />
@@ -48,7 +48,7 @@ export function LoginForm({ next }: { next: string }) {
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Logging in…" : "Log in"}
         </Button>
-        <Link href="/forgot-password" className="block text-center text-sm text-ink/60 hover:text-ink">
+        <Link href="/forgot-password" className="block text-center text-sm text-ink/70 hover:text-ink">
           Forgot password?
         </Link>
       </form>

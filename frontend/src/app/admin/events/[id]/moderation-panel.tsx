@@ -57,9 +57,9 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
       <section>
         <div className="mb-3 flex items-baseline justify-between">
           <h2 className="font-medium">
-            Awaiting approval <span className="text-ink/50">({items.length})</span>
+            Awaiting approval <span className="text-ink/70">({items.length})</span>
           </h2>
-          <span className="text-xs text-ink/50">
+          <span className="text-xs text-ink/70">
             {event.guest_upload_enabled
               ? event.moderation_mode === "manual"
                 ? "Guest uploads need your approval before anyone can find them."
@@ -68,7 +68,7 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
           </span>
         </div>
         {items.length === 0 ? (
-          <Card className="text-center text-sm text-ink/55">Nothing to review.</Card>
+          <Card className="text-center text-sm text-ink/70">Nothing to review.</Card>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
@@ -76,11 +76,11 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
                 {item.index_status === "indexed" ? (
                   <Thumb eventId={event.id} photoId={item.id} />
                 ) : (
-                  <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-mist text-xs text-ink/50">
+                  <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-mist text-xs text-ink/70">
                     Processing…
                   </div>
                 )}
-                <p className="mt-2 truncate text-xs text-ink/60">
+                <p className="mt-2 truncate text-xs text-ink/70">
                   {item.uploader_email} · {item.face_count} {item.face_count === 1 ? "face" : "faces"}
                 </p>
                 <div className="mt-2 flex gap-2">
@@ -109,10 +109,10 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
 
       <section>
         <h2 className="mb-3 font-medium">
-          Reports <span className="text-ink/50">({open.length})</span>
+          Reports <span className="text-ink/70">({open.length})</span>
         </h2>
         {open.length === 0 ? (
-          <Card className="text-center text-sm text-ink/55">No open reports.</Card>
+          <Card className="text-center text-sm text-ink/70">No open reports.</Card>
         ) : (
           <ul className="space-y-3">
             {open.map((r) => (
@@ -121,7 +121,7 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
                 <div className="flex flex-col">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone={r.reason === "its_me_remove" ? "warn" : "bad"}>{REASON_LABEL[r.reason]}</Badge>
-                    <span className="text-xs text-ink/50">
+                    <span className="text-xs text-ink/70">
                       {r.reporter_email} · {new Date(r.created_at).toLocaleString()}
                     </span>
                   </div>

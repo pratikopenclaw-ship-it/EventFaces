@@ -1,0 +1,16 @@
+# Lint + security rules enforced by tests/test_static_analysis.py (runs in the normal suite).
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E", "F", "W", "B", "S", "UP", "SIM", "PL", "RUF", "ASYNC", "PERF"]
+ignore = [
+  "E501",     # long lines: formatting, not correctness
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004",  # complexity heuristics
+  "RUF001", "RUF002", "RUF003",  # typographic characters (×, –) in user-facing text are intentional
+  "B008",     # FastAPI's Depends() in defaults is the framework idiom
+]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106", "S311", "PLC0415", "PLW0603", "E402", "B017", "SIM117", "PERF401", "RUF015"]
+"alembic/**" = ["E731"]

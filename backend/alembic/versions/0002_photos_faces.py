@@ -33,8 +33,8 @@ def upgrade() -> None:
     for enum in ENUMS:
         enum.create(bind, checkfirst=True)
 
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
-    uuid_fk = lambda table, ondelete: sa.ForeignKey(f"{table}.id", ondelete=ondelete)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
+    uuid_fk = lambda table, ondelete: sa.ForeignKey(f"{table}.id", ondelete=ondelete)
 
     op.create_table(
         "photos",

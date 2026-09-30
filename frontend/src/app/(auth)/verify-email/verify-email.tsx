@@ -55,7 +55,7 @@ export function VerifyEmail({ token }: { token: string }) {
         {resent ? (
           <Alert kind="success">If the address needs verifying, a new link is on its way.</Alert>
         ) : (
-          <form onSubmit={resend} className="space-y-3">
+          <form method="post" onSubmit={resend} className="space-y-3">
             <Field label="Send a new link to">
               <Input name="email" type="email" required />
             </Field>

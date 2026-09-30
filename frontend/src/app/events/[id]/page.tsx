@@ -1,8 +1,9 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 
 import { Alert, PageHeader, formatDate } from "@/components/ui";
+import { isUuid } from "@/lib/safe";
 import type { EventPublic } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
@@ -11,9 +12,11 @@ import { GuestUpload } from "./guest-upload";
 
 export default function EventPage() {
   const { id } = useParams<{ id: string }>();
-  const { data: event, error, loading } = useApi<EventPublic>(`/api/events/${id}`);
+  const valid = isUuid(id);
+  const { data: event, error, loading } = useApi<EventPublic>(valid ? `/api/events/${id}` : null);
+  if (!valid) notFound();
 
-  if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (error || !event) {
     return <Alert>{error?.status === 403 ? "You don't have access to this event." : error?.message}</Alert>;
   }

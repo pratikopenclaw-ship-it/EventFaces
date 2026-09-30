@@ -6,7 +6,7 @@
   --color-canvas: #f6f5f1;
   --color-mist: #efeee9;
   --color-line: #e2e0d8;
-  --color-accent: #e0531f;
+  --color-accent: #b53c0a; /* WCAG AA for text on paper, canvas and mist (>= 4.8:1) */
   --color-alarm: #c62f2f;
   --color-leaf: #2f7d4f;
   --font-sans: var(--font-geist-sans);

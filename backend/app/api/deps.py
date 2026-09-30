@@ -9,6 +9,7 @@ from app.core.db import get_db
 from app.core.security import ACCESS_COOKIE, decode_access_token
 from app.models import Event, User, UserRole
 from app.services import membership
+from app.services.tokens import session_is_live
 
 DB = Annotated[Session, Depends(get_db)]
 
@@ -18,9 +19,9 @@ FORBIDDEN = HTTPException(status.HTTP_403_FORBIDDEN, "You don't have access to t
 def get_current_user(request: Request, db: DB) -> User:
     token = request.cookies.get(ACCESS_COOKIE)
     payload = decode_access_token(token) if token else None
-    if payload is None:
+    if payload is None or not session_is_live(db, payload["sub"], payload["sid"]):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
-    user = db.get(User, uuid.UUID(payload["sub"]))
+    user = db.get(User, payload["sub"])
     if user is None or user.deleted_at is not None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
     return user

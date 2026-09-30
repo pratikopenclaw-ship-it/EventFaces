@@ -15,7 +15,9 @@ class Event(Base):
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     slug: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
     name: Mapped[str] = mapped_column(String(200), nullable=False)
-    date: Mapped[date | None] = mapped_column(Date)
+    # nullable spelled out: the attribute name `date` shadows the type in its own
+    # annotation, so SQLAlchemy can't see the Optional and would infer NOT NULL.
+    date: Mapped[date | None] = mapped_column(Date, nullable=True)
     description: Mapped[str] = mapped_column(Text, nullable=False, default="")
     join_mode: Mapped[JoinMode] = mapped_column(
         Enum(JoinMode, name="join_mode"), nullable=False, default=JoinMode.code

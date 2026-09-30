@@ -8,7 +8,7 @@ import io
 import logging
 import uuid
 from collections.abc import Callable
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from PIL import Image
 from sqlalchemy import delete, select, update
@@ -282,13 +282,16 @@ def mark_failed(db: Session, photo_id: uuid.UUID, message: str, permanent: bool 
         db.commit()
 
 
-def cleanup_abandoned_uploads(db: Session) -> int:
-    """Delete guest uploads that were started but never completed.
+def cleanup_abandoned_uploads(db: Session, now: datetime | None = None) -> int:
+    """Delete guest uploads that were started but never completed, and raw upload objects
+    nothing references any more.
 
     Once the presigned URL has expired the file can no longer arrive, so after that
-    (plus a grace period) the placeholder row and any partial object are removed.
+    (plus a grace period) the placeholder row and any partial object are removed. A URL
+    stays valid after its upload was ingested or rejected, so a second PUT can recreate
+    the raw object (with its original metadata, e.g. GPS); those orphans are swept too.
     """
-    cutoff = utcnow() - timedelta(seconds=get_settings().upload_url_seconds) - timedelta(hours=1)
+    cutoff = (now or utcnow()) - timedelta(seconds=get_settings().upload_url_seconds) - timedelta(hours=1)
     stale = db.scalars(
         select(Photo).where(
             Photo.source == PhotoSource.guest,
@@ -301,4 +304,13 @@ def cleanup_abandoned_uploads(db: Session) -> int:
         storage.delete_keys(photo.upload_key)
         db.delete(photo)
     db.commit()
+
+    referenced = set(db.scalars(select(Photo.upload_key).where(Photo.upload_key.is_not(None))))
+    for event_id in db.scalars(select(Event.id)):
+        orphans = [
+            key
+            for key, modified in storage.list_objects(storage.uploads_prefix(event_id))
+            if key not in referenced and modified < cutoff
+        ]
+        storage.delete_keys(*orphans)
     return len(stale)

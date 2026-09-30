@@ -48,7 +48,7 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
       {error && <Alert>{error}</Alert>}
       <Card>
         <h2 className="font-medium">Invite people</h2>
-        <p className="mt-1 text-sm text-ink/60">
+        <p className="mt-1 text-sm text-ink/70">
           Paste a list or upload a CSV. Each person gets a personal magic link that only works for their email address.
         </p>
         <div className="mt-4 space-y-3">
@@ -83,10 +83,10 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
           <div className="mt-4 space-y-1 text-sm">
             <Alert kind="success">Sent {result.sent.length} {result.sent.length === 1 ? "invite" : "invites"}.</Alert>
             {result.already_members.length > 0 && (
-              <p className="text-ink/60">Already members: {result.already_members.join(", ")}</p>
+              <p className="text-ink/70">Already members: {result.already_members.join(", ")}</p>
             )}
             {result.already_accepted.length > 0 && (
-              <p className="text-ink/60">Already accepted: {result.already_accepted.join(", ")}</p>
+              <p className="text-ink/70">Already accepted: {result.already_accepted.join(", ")}</p>
             )}
             {result.invalid.length > 0 && <p className="text-alarm">Not valid emails: {result.invalid.join(", ")}</p>}
           </div>
@@ -96,7 +96,7 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
       <div className="overflow-x-auto rounded-2xl border border-line bg-paper">
         <div className="flex items-center justify-between border-b border-line px-5 py-3 text-sm">
           <span className="font-medium">Invites</span>
-          <span className="text-ink/55">
+          <span className="text-ink/70">
             {accepted} of {invites.length} accepted
           </span>
         </div>
@@ -104,7 +104,7 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
           <tbody>
             {invites.length === 0 && (
               <tr>
-                <td className="px-5 py-6 text-center text-ink/50">No invites yet.</td>
+                <td className="px-5 py-6 text-center text-ink/70">No invites yet.</td>
               </tr>
             )}
             {invites.map((i) => (
@@ -113,7 +113,7 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
                 <td className="px-5 py-3">
                   <Badge tone={TONE[i.status]}>{i.status}</Badge>
                 </td>
-                <td className="px-5 py-3 text-ink/55">
+                <td className="px-5 py-3 text-ink/70">
                   {i.accepted_at
                     ? `Joined ${new Date(i.accepted_at).toLocaleDateString()}`
                     : i.sent_at

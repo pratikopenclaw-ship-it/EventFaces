@@ -5,18 +5,8 @@ import { useState, type FormEvent } from "react";
 import { AuthCard } from "@/components/auth-card";
 import { Alert, Button, Field, Input, Textarea } from "@/components/ui";
 import { post } from "@/lib/api";
+import { slugFrom } from "@/lib/links";
 import { useApi } from "@/lib/use-api";
-
-/** Accepts an event slug or any EventFaces link that contains one (/join/<slug>, ?event=<slug>). */
-function slugFrom(value: string): string {
-  const v = value.trim();
-  try {
-    const url = new URL(v);
-    return url.searchParams.get("event") ?? url.pathname.match(/\/join\/([^/]+)/)?.[1] ?? "";
-  } catch {
-    return v;
-  }
-}
 
 export function RemovalRequestForm({ initialEvent }: { initialEvent: string }) {
   const known = useApi<{ event_name: string }>(initialEvent ? `/api/removal-requests/event/${initialEvent}` : null);
@@ -62,7 +52,7 @@ export function RemovalRequestForm({ initialEvent }: { initialEvent: string }) {
           : "For anyone who appears in an event's photos, whether you attended or not."
       }
     >
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form method="post" onSubmit={onSubmit} className="space-y-4">
         {error && <Alert>{error}</Alert>}
         {!initialEvent && (
           <Field label="Event link" hint="The join link or removal link shared by the organizer.">
@@ -78,7 +68,7 @@ export function RemovalRequestForm({ initialEvent }: { initialEvent: string }) {
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Sending…" : "Continue"}
         </Button>
-        <p className="text-xs text-ink/50">
+        <p className="text-xs text-ink/70">
           Next, you can add a reference photo of yourself so organizers can find the right pictures. It&apos;s
           compared once and deleted immediately.
         </p>

@@ -17,14 +17,25 @@ class Mailer(Protocol):
     def send(self, mail: Mail) -> None: ...
 
 
+def _one_line(value: str) -> str:
+    """Header values can't span lines: organizer-chosen text (event names) goes into
+    subjects, so control characters are flattened instead of failing the send."""
+    return " ".join("".join(c if c.isprintable() else " " for c in value).split())
+
+
+def build_message(mail: Mail) -> EmailMessage:
+    msg = EmailMessage()
+    msg["From"] = get_settings().email_from
+    msg["To"] = _one_line(mail.to)
+    msg["Subject"] = _one_line(mail.subject)
+    msg.set_content(mail.body)
+    return msg
+
+
 class SmtpMailer:
     def send(self, mail: Mail) -> None:
         s = get_settings()
-        msg = EmailMessage()
-        msg["From"] = s.email_from
-        msg["To"] = mail.to
-        msg["Subject"] = mail.subject
-        msg.set_content(mail.body)
+        msg = build_message(mail)
         with smtplib.SMTP(s.smtp_host, s.smtp_port, timeout=10) as smtp:
             if s.smtp_tls:
                 smtp.starttls()
@@ -42,5 +53,5 @@ def get_mailer() -> Mailer:
 
 def set_mailer(mailer: Mailer) -> None:
     """Used by tests to capture outgoing mail."""
-    global _mailer
+    global _mailer  # noqa: PLW0603 - deliberate test-injection hook
     _mailer = mailer

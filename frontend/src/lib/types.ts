@@ -27,6 +27,8 @@ export interface EventListItem extends EventPublic {
   my_role: MemberRole | null;
   can_manage: boolean;
   photo_count: number;
+  /** The caller's queued ("we'll notify you") search for this event, if any. */
+  search_state?: SearchState | null;
 }
 
 export interface EventAdmin extends EventPublic {
@@ -247,4 +249,20 @@ export interface MatchQuality {
 
 export interface GlobalMatchQuality extends MatchQuality {
   events: { event_id: string; event_name: string; searches: number; feedback: number; wrong_rate: number | null; missing_reports: number }[];
+}
+
+/** A search accepted while the service was busy: results arrive later (email + event page). */
+export interface QueuedSearch {
+  queued: true;
+  detail: string;
+  expires_in: number;
+}
+
+export type SearchState = "none" | "queued" | "done" | "rejected" | "cancelled" | "expired";
+
+export interface SearchStatus {
+  state: SearchState;
+  match_count: number | null;
+  message: string | null;
+  shot: string | null;
 }

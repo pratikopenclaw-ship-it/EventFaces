@@ -9,7 +9,7 @@ import { useApi } from "@/lib/use-api";
 
 export default function GlobalMatchQualityPage() {
   const { data, error, loading } = useApi<GlobalMatchQuality>("/api/admin/match-quality");
-  if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (error || !data) return <Alert>{error?.status === 403 ? "Only super admins can see this page." : error?.message}</Alert>;
   return (
     <>
@@ -17,7 +17,7 @@ export default function GlobalMatchQualityPage() {
       <MatchQualityView q={data} />
       <div className="mt-6 overflow-x-auto rounded-2xl border border-line bg-paper">
         <table className="w-full text-left text-sm" style={{ fontVariantNumeric: "tabular-nums" }}>
-          <thead className="border-b border-line text-ink/55">
+          <thead className="border-b border-line text-ink/70">
             <tr>
               <th className="px-5 py-3 font-medium">Event</th>
               <th className="px-5 py-3 font-medium">Searches</th>

@@ -12,8 +12,12 @@ from dataclasses import dataclass
 from PIL import Image, ImageOps
 from pillow_heif import register_heif_opener
 
+from app.core.config import get_settings
+
 register_heif_opener()
-Image.MAX_IMAGE_PIXELS = 120_000_000  # decompression-bomb guard (~120 MP)
+# Last-resort guard for any other Image.open; load_image enforces the real limits from the
+# header *before* decoding (Pillow itself only raises above 2x this and merely warns below).
+Image.MAX_IMAGE_PIXELS = 120_000_000
 
 ORIGINAL_MAX_SIDE = 6000
 PREVIEW_MAX_SIDE = 1600
@@ -47,21 +51,32 @@ class ProcessedImage:
     sha256: str  # of the source bytes, for duplicate detection
 
 
-def load_image(data: bytes) -> Image.Image:
-    """Validate and decode to an upright RGB image (EXIF orientation applied)."""
+def load_image(data: bytes, max_pixels: int | None = None) -> Image.Image:
+    """Validate and decode to an upright RGB image (EXIF orientation applied).
+
+    The pixel count is checked from the header before any pixel data is decoded: a tiny
+    compressed file can declare hundreds of megapixels (gigabytes once decoded).
+    """
     sniff_type(data)
+    limit = max_pixels or get_settings().image_max_pixels
     try:
-        img = Image.open(io.BytesIO(data))
+        img: Image.Image = Image.open(io.BytesIO(data))  # lazy: parses the header only
+        if img.width * img.height > limit:
+            raise UnsupportedImage(f"Image is too large (max {limit // 1_000_000} megapixels)")
         img.load()
-    except (Image.DecompressionBombError, OSError, ValueError) as e:
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError, ValueError, SyntaxError) as e:
         raise UnsupportedImage(f"Could not decode image: {e}") from e
     img = ImageOps.exif_transpose(img)
-    if img.mode != "RGB":
+    if img.mode == "RGB":
+        return img
+    if img.mode in ("RGBA", "LA", "PA") or (img.mode == "P" and "transparency" in img.info):
         background = Image.new("RGB", img.size, (255, 255, 255))
         rgba = img.convert("RGBA")
         background.paste(rgba, mask=rgba.split()[-1])
-        img = background
-    return img
+        return background
+    if img.mode.startswith("I;16"):
+        img = img.point(lambda v: v / 256).convert("L")  # scale 16-bit to 8-bit first
+    return img.convert("RGB")  # no alpha: skip the RGBA copy (saves 1/3 of peak memory)
 
 
 def _encode(img: Image.Image, max_side: int, quality: int) -> bytes:

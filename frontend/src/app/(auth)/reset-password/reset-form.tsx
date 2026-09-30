@@ -36,7 +36,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
           </Link>
         </p>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form method="post" onSubmit={onSubmit} className="space-y-4">
           {error && <Alert>{error}</Alert>}
           <Field label="New password" hint="At least 10 characters.">
             <Input name="password" type="password" autoComplete="new-password" minLength={10} required />

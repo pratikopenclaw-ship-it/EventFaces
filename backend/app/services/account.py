@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import delete, func, select, update
 from sqlalchemy.orm import Session
 
+from app.core.db import affected
 from app.models import (
     AuthToken,
     EventMember,
@@ -20,6 +21,7 @@ from app.models import (
     User,
     UserRole,
 )
+from app.services import search_queue
 from app.services.feedback import anonymize_feedback
 from app.services.photo_pipeline import retire_photo
 
@@ -48,20 +50,22 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
             retire_photo(db, photo, PhotoStatus.removed)
         db.delete(photo)
 
-    matches = db.execute(delete(SearchGrant).where(SearchGrant.user_id == user.id)).rowcount or 0
-    memberships = db.execute(delete(EventMember).where(EventMember.user_id == user.id)).rowcount or 0
-    invites = db.execute(delete(Invite).where(Invite.email == user.email)).rowcount or 0
+    matches = affected(db.execute(delete(SearchGrant).where(SearchGrant.user_id == user.id)))
+    memberships = affected(db.execute(delete(EventMember).where(EventMember.user_id == user.id)))
+    invites = affected(db.execute(delete(Invite).where(Invite.email == user.email)))
     db.execute(delete(RemovalRequest).where(RemovalRequest.email == user.email))
     db.execute(delete(AuthToken).where(AuthToken.user_id == user.id))
     # Keep aggregate counts for security/accountability, without the person.
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
     anonymized = (
-        db.execute(update(SearchAudit).where(SearchAudit.user_id == user.id).values(user_id=None)).rowcount or 0
+        affected(db.execute(update(SearchAudit).where(SearchAudit.user_id == user.id).values(user_id=None)))
     )
     db.execute(update(PhotoReport).where(PhotoReport.reporter_id == user.id).values(reporter_id=None))
 
+    user_id = user.id
     db.delete(user)
     db.commit()
+    search_queue.forget_user(user_id)  # queued-search status (a queued job re-checks and drops itself)
     return DeletionSummary(
         memberships=memberships,
         matches=matches,

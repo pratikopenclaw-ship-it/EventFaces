@@ -18,7 +18,12 @@ docker compose exec api pytest tests/test_auth.py::test_login_rate_limited
 docker compose exec api alembic revision -m "msg"    # new migration (hand-write ops; files are NNNN_slug.py)
 docker compose exec api python -m app.cli create-superadmin --email x@example.com
 cd frontend && npm run lint && npx next typegen && npx tsc --noEmit && npm run build
+scripts/security-scan.sh                             # all scanners; must stay 18/18 PASS (see SECURITY_QA_REPORT.md)
+docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web && (cd frontend && npx playwright test)   # e2e; `docker compose up -d api` to switch back
+scripts/backup_restore_drill.sh                      # pg_dump/pg_restore drill
 ```
+
+E2E runs the real app via `backend/tests/e2e_server.py` (test DB, fake Drive, captured mail, `/__e2e/*` control endpoints; refuses to start unless `ENVIRONMENT=test`). New accounts created through the UI must use `example.com` (email_validator rejects `.test`). Load test: `docker-compose.load.yml` + `loadtest/eventfaces.js` (k6).
 
 Mailpit (dev email) UI: http://localhost:8025 — also has a JSON API at `/api/v1/messages` for grabbing verify/reset links.
 
@@ -51,6 +56,12 @@ Mailpit (dev email) UI: http://localhost:8025 — also has a JSON API at `/api/v
 - Security guards were mutation-tested: when you change one, check that a test fails if the guard is removed.
 - `rate_limit.client_ip` only trusts `X-Forwarded-For` per `TRUSTED_PROXY_HOPS`; don't read that header elsewhere.
 - Opaque tokens (refresh/verify/reset/invite) are stored only as SHA-256 hashes via `services/tokens.py`.
+- Sessions: access JWTs carry `sid` and are valid only while their session has a live refresh token (`tokens.session_is_live`); logout/reset/deletion end sessions immediately; replaying a rotated refresh token outside `REFRESH_REUSE_GRACE_SECONDS` revokes the session.
+- Overflow searches (`services/search_queue.py`) keep selfies in process memory only: never put them (or embeddings) on Celery/Redis/disk. Redis holds only the job status. The worker re-checks user, consent and membership before matching, and shares `core/face_slots` with synchronous searches. `tests/test_search_queue.py` enforces this.
+- Face-model work (seconds, serialized per process) must never run while the request holds a DB connection or row lock: commit/rollback first (search route, removal submit). `tests/test_pool_starvation.py` enforces it; the k6 load test found the pool exhaustion this prevents.
+- Every authorization change must keep `tests/test_authz_matrix.py` green; a new endpoint fails its completeness check until added to `OPS`. Rate-limited endpoints are listed in `tests/test_endpoint_contracts.py::RATE_LIMITED`.
+- Client timestamps are `UtcDatetime` (timezone required, normalized to UTC). Images are checked against `IMAGE_MAX_PIXELS`/`SELFIE_MAX_PIXELS` from the header before decoding. `Settings` refuses insecure production config; keep new secrets in that validator.
+- Indexes created in migrations must also be declared on the models (`tests/test_migrations.py` compares schema and metadata).
 
 ## Conventions
 

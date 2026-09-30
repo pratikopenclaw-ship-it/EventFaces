@@ -18,7 +18,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
 
     op.add_column("users", sa.Column("face_consent_at", ts()))
     op.add_column("users", sa.Column("face_consent_version", sa.String(40)))

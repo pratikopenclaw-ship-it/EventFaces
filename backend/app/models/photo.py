@@ -7,6 +7,7 @@ from sqlalchemy import (
     Enum,
     Float,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -63,6 +64,15 @@ class Face(Base):
     """One detected face. Embeddings are biometric data: deleted at event retention."""
 
     __tablename__ = "faces"
+    # Declared so autogenerate never proposes dropping it (created in migration 0002).
+    __table_args__ = (
+        Index(
+            "ix_faces_embedding_hnsw",
+            "embedding",
+            postgresql_using="hnsw",
+            postgresql_ops={"embedding": "vector_cosine_ops"},
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     photo_id: Mapped[uuid.UUID] = mapped_column(

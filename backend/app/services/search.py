@@ -35,7 +35,7 @@ from app.services.faces import detect_faces
 from app.services.selfie_quality import ShotResult
 
 # Bump when the consent text changes materially; users are asked again.
-FACE_CONSENT_VERSION = "2026-09-29"
+FACE_CONSENT_VERSION = "2026-09-30"  # + queued searches may wait in memory (search_queue.py)
 
 Tier = Literal["best", "possible"]
 
@@ -63,7 +63,7 @@ class Match:
 
 def selfie_embedding(data: bytes) -> np.ndarray:
     """Embedding of the largest face (used for removal-request reference photos)."""
-    img = imaging.load_image(data)
+    img = imaging.load_image(data, max_pixels=get_settings().selfie_max_pixels)
     faces = detect_faces(img)
     del img
     if not faces:
@@ -164,7 +164,7 @@ def run_search(db: Session, user: User, event: Event, shots: list[tuple[str, byt
     results: list[ShotResult] = []
     for shot, data in shots:
         try:
-            img = imaging.load_image(data)
+            img = imaging.load_image(data, max_pixels=get_settings().selfie_max_pixels)
         except imaging.UnsupportedImage as e:
             raise SelfieRejected("unreadable", selfie_quality.MESSAGES["unreadable"], shot) from e
         results.append(selfie_quality.assess(img, shot))  # type: ignore[arg-type]
@@ -180,9 +180,6 @@ def run_search(db: Session, user: User, event: Event, shots: list[tuple[str, byt
             r.embedding = None
         raise SelfieRejected(failed.reason or "rejected", failed.message or "", failed.shot)
 
-    audit = SearchAudit(user_id=user.id, event_id=event.id, match_count=0)
-    db.add(audit)
-    db.flush()
     try:
         per_shot = [
             search_faces(db, event_id=event.id, embedding=r.embedding, threshold=s.face_match_threshold, limit=s.search_max_results)
@@ -203,6 +200,11 @@ def run_search(db: Session, user: User, event: Event, shots: list[tuple[str, byt
         )
     )
     matches = [m for m in merge_best(per_shot) if m.photo_id not in rejected]
+
+    # The audit row is written once, with its final values: search_audit is append-only.
+    audit = SearchAudit(user_id=user.id, event_id=event.id, match_count=len(matches))
+    db.add(audit)
+    db.flush()
 
     if matches:
         now = utcnow()
@@ -231,7 +233,6 @@ def run_search(db: Session, user: User, event: Event, shots: list[tuple[str, byt
                 },
             )
         )
-    audit.match_count = len(matches)
     _record_quality(db, event, results, audit.id)
     db.commit()
     return SearchOutcome(audit.id, matches, results)

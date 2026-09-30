@@ -134,3 +134,22 @@ def test_login_accepts_any_string_email(client: TestClient, mailer: FakeMailer) 
     # Unknown/odd addresses get the normal 401, not a 422 that differs from a wrong password.
     r = client.post("/api/auth/login", json={"email": "admin@eventfaces.local", "password": "x" * 12})
     assert r.status_code == 401
+
+
+def test_security_headers_on_api_responses(client: TestClient) -> None:
+    r = client.get("/api/health")
+    assert r.headers["x-content-type-options"] == "nosniff"
+    assert r.headers["cross-origin-resource-policy"] == "same-origin"
+    assert r.headers["x-frame-options"] == "DENY"
+    assert r.headers["cache-control"] == "no-store"
+    assert "server" not in {k.lower() for k in r.headers} or "uvicorn" not in r.headers.get("server", "")
+
+
+def test_only_the_csrf_cookie_is_script_readable(client: TestClient, mailer: FakeMailer) -> None:
+    _signup(client)
+    r = client.post("/api/auth/login", json={"email": EMAIL, "password": PASSWORD})
+    cookies = {c.split("=", 1)[0].strip(): c.lower() for c in r.headers.get_list("set-cookie")}
+    for name in (ACCESS_COOKIE, REFRESH_COOKIE):
+        assert "httponly" in cookies[name] and "samesite" in cookies[name]
+    csrf = client.get("/api/auth/csrf").headers["set-cookie"].lower()
+    assert "httponly" not in csrf and "samesite=strict" in csrf  # double-submit token, by design

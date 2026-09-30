@@ -3,6 +3,7 @@ import hmac
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import jwt
 from argon2 import PasswordHasher
@@ -51,11 +52,12 @@ def constant_time_equals(a: str, b: str) -> bool:
     return hmac.compare_digest(a.encode(), b.encode())
 
 
-def create_access_token(user_id: uuid.UUID, role: str) -> str:
+def create_access_token(user_id: uuid.UUID, role: str, session_id: uuid.UUID | None = None) -> str:
     settings = get_settings()
     now = utcnow()
     payload = {
         "sub": str(user_id),
+        "sid": str(session_id) if session_id else None,
         "role": role,
         "type": "access",
         "iat": now,
@@ -64,11 +66,16 @@ def create_access_token(user_id: uuid.UUID, role: str) -> str:
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
 
-def decode_access_token(token: str) -> dict | None:
+def decode_access_token(token: str) -> dict[str, Any] | None:
     try:
         payload = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"])
     except jwt.PyJWTError:
         return None
     if payload.get("type") != "access":
         return None
+    try:
+        payload["sub"] = uuid.UUID(str(payload.get("sub")))
+        payload["sid"] = uuid.UUID(str(payload.get("sid")))
+    except ValueError:
+        return None  # includes tokens not bound to a session
     return payload

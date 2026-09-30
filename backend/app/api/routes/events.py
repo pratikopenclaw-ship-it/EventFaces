@@ -12,6 +12,7 @@ from app.schemas.event import (
     EventPublicOut,
     EventUpdate,
 )
+from app.services import search_queue
 from app.services.events import generate_access_code, generate_slug, list_events_for, photo_counts
 from app.services.retention import reopen_event
 from app.workers.tasks import delete_event_objects, index_photo
@@ -38,12 +39,14 @@ def create_event(body: EventCreate, user: SuperAdmin, db: DB) -> Event:
 def list_events(user: VerifiedUser, db: DB) -> list[EventListItem]:
     rows = list_events_for(db, user)
     counts = photo_counts(db, [event.id for event, _, _ in rows])
+    states = search_queue.states_for(user.id, [event.id for event, _, _ in rows])
     return [
         EventListItem.model_validate(event).model_copy(
             update={
                 "my_role": m.role if m else None,
                 "can_manage": manage,
                 "photo_count": counts.get(event.id, 0),
+                "search_state": states.get(event.id),
             }
         )
         for event, m, manage in rows

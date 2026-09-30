@@ -1,0 +1,23 @@
+# gitleaks: default rules + allowlist for GENERATED, git-ignored artifacts only.
+# Justification: these paths are build/tool caches (never committed; the git-history scan
+# covers everything committed). Next.js writes per-build preview-mode keys into
+# .next/*manifest.json; those files are server-side only (verified not publicly served,
+# see SECURITY_QA_REPORT.md, DAST section).
+[extend]
+useDefault = true
+
+[allowlist]
+description = "generated, git-ignored artifacts"
+paths = [
+  '''(^|/)\.next/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)\.mypy_cache/''',
+  '''(^|/)\.ruff_cache/''',
+  '''(^|/)\.pytest_cache/''',
+  '''(^|/)public/mediapipe/''',
+  '''(^|/)\.playwright-mcp/''',
+  '''(^|/)graphify-out/''',
+  '''(^|/)loadtest/results/''',
+  '''(^|/)test-results/''',
+  '''(^|/)playwright-report/''',
+]

@@ -116,7 +116,7 @@ export function SelfieCapture({
   return (
     <Card className="mx-auto max-w-xl">
       <h2 className="font-display text-2xl">Take a selfie</h2>
-      <p className="mt-1 text-sm text-ink/60">
+      <p className="mt-1 text-sm text-ink/70">
         Face the camera in good light, without sunglasses. It&apos;s used once and never saved.
       </p>
 
@@ -171,7 +171,7 @@ export function SelfieCapture({
       </div>
 
       {allowUpload && !shot && (
-        <label className="mt-4 block text-center text-sm text-ink/60">
+        <label className="mt-4 block text-center text-sm text-ink/70">
           or{" "}
           <span className="cursor-pointer font-medium text-accent hover:underline">
             upload a photo of yourself

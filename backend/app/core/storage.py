@@ -4,6 +4,8 @@ Objects are private; the browser never receives storage URLs for reading.
 """
 
 import time
+from collections.abc import Iterator
+from datetime import datetime
 from functools import lru_cache
 
 import boto3
@@ -12,6 +14,16 @@ from botocore.config import Config
 from botocore.exceptions import BotoCoreError, ClientError
 
 from app.core.config import get_settings
+
+
+# Bounded: a hung storage endpoint must not pin API threads (boto's default is 60 s x 5 tries).
+_CONFIG = Config(
+    signature_version="s3v4",
+    s3={"addressing_style": "path"},
+    connect_timeout=5,
+    read_timeout=30,
+    retries={"mode": "standard", "max_attempts": 3},
+)
 
 
 @lru_cache
@@ -23,7 +35,7 @@ def get_s3() -> BaseClient:
         region_name=s.s3_region,
         aws_access_key_id=s.s3_access_key,
         aws_secret_access_key=s.s3_secret_key,
-        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+        config=_CONFIG,
     )
 
 
@@ -38,7 +50,7 @@ def get_public_s3() -> BaseClient:
         region_name=s.s3_region,
         aws_access_key_id=s.s3_access_key,
         aws_secret_access_key=s.s3_secret_key,
-        config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
+        config=_CONFIG,
     )
 
 
@@ -69,8 +81,10 @@ def get_range(key: str, start: int, end: int) -> bytes:
 
 def delete_keys(*keys: str | None) -> None:
     objects = [{"Key": k} for k in keys if k]
-    if objects:
-        get_s3().delete_objects(Bucket=get_settings().s3_bucket, Delete={"Objects": objects, "Quiet": True})
+    for i in range(0, len(objects), 1000):  # S3 DeleteObjects takes at most 1000 keys
+        get_s3().delete_objects(
+            Bucket=get_settings().s3_bucket, Delete={"Objects": objects[i : i + 1000], "Quiet": True}
+        )
 
 
 def configure_cors(origins: list[str]) -> None:
@@ -110,7 +124,7 @@ def ensure_bucket(retries: int = 20, delay: float = 1.5) -> None:
 
 
 def upload_key(event_id: object, photo_id: object) -> str:
-    return f"events/{event_id}/uploads/{photo_id}"
+    return f"{uploads_prefix(event_id)}{photo_id}"
 
 
 def photo_key(event_id: object, photo_id: object, variant: str) -> str:
@@ -131,10 +145,22 @@ def get_bytes(key: str) -> bytes:
     return obj["Body"].read()
 
 
-def open_stream(key: str):  # type: ignore[no-untyped-def]
+def open_stream(key: str):
     """Streaming body for proxying an object to the client (never expose its URL)."""
     obj = get_s3().get_object(Bucket=get_settings().s3_bucket, Key=key)
     return obj["Body"], obj.get("ContentLength")
+
+
+def list_objects(prefix: str) -> Iterator[tuple[str, datetime]]:
+    """(key, last_modified) for every object under a prefix."""
+    paginator = get_s3().get_paginator("list_objects_v2")
+    for page in paginator.paginate(Bucket=get_settings().s3_bucket, Prefix=prefix):
+        for obj in page.get("Contents", []):
+            yield obj["Key"], obj["LastModified"]
+
+
+def uploads_prefix(event_id: object) -> str:
+    return f"events/{event_id}/uploads/"
 
 
 def delete_prefix(prefix: str) -> int:

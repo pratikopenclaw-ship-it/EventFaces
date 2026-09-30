@@ -250,3 +250,83 @@ def test_abandoned_uploads_are_hidden_then_cleaned_up(setup, db: Session) -> Non
     db.expire_all()
     assert db.get(Photo, pid) is None
     assert storage.head_size(storage.upload_key(event.id, pid)) is None
+
+
+# --- SEC-026: presigned URLs outliving their upload -------------------------------------------
+
+
+def test_reused_presigned_url_cannot_leave_an_orphan_object(setup, db: Session) -> None:
+    from datetime import timedelta
+
+    from app.core.security import utcnow
+
+    event, uploader, _, _ = setup()
+    data = jpeg_with_gps(half_photo("left"))
+    start, put, done = upload(uploader, event, data)
+    assert put.status_code == 200 and done.status_code == 200
+    key = storage.upload_key(event.id, start["photo_id"])
+    assert storage.head_size(key) is None  # ingested: raw (GPS-carrying) object deleted
+
+    # The URL is still valid for its lifetime: a second PUT recreates the raw object,
+    # which no row references any more.
+    assert httpx.put(start["upload_url"], content=data, headers={"content-type": "image/jpeg"}).status_code == 200
+    assert storage.head_size(key) == len(data)
+
+    photo_pipeline.cleanup_abandoned_uploads(db)
+    assert storage.head_size(key) == len(data)  # URL may still be in use: kept for now
+    photo_pipeline.cleanup_abandoned_uploads(db, now=utcnow() + timedelta(hours=2))
+    assert storage.head_size(key) is None
+
+
+def test_cleanup_keeps_uploads_in_flight(setup, db: Session) -> None:
+    from datetime import timedelta
+
+    from app.core.security import utcnow
+
+    event, uploader, _, _ = setup(moderation=ModerationMode.manual)
+    data = half_photo("left")
+    r = uploader.post(f"/api/events/{event.id}/uploads", json={"filename": "a.jpg", "content_type": "image/jpeg", "size": len(data)})
+    start = r.json()
+    httpx.put(start["upload_url"], content=data, headers={"content-type": "image/jpeg"})
+    photo = db.get(Photo, uuid.UUID(start["photo_id"]))
+    photo.index_status = photo_pipeline.IndexStatus.importing  # completed, waiting for the worker
+    db.commit()
+    photo_pipeline.cleanup_abandoned_uploads(db, now=utcnow() + timedelta(hours=2))
+    assert storage.head_size(storage.upload_key(event.id, photo.id)) == len(data)
+
+
+# --- SEC-027: upload quotas ----------------------------------------------------------------------
+
+
+def _start(client: TestClient, event: Event):  # type: ignore[no-untyped-def]
+    return client.post(f"/api/events/{event.id}/uploads", json={"filename": "a.jpg", "content_type": "image/jpeg", "size": 1000})
+
+
+def test_per_user_upload_quota(setup, monkeypatch) -> None:
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "guest_upload_max_per_user", 2)
+    event, uploader, searcher, _ = setup()
+    assert [_start(uploader, event).status_code for _ in range(3)] == [201, 201, 409]
+    assert _start(searcher, event).status_code == 201  # per user, not per event
+
+
+def test_per_event_upload_quota(setup, monkeypatch) -> None:
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "guest_upload_max_per_event", 3)
+    event, uploader, searcher, _ = setup()
+    codes = [_start(c, event).status_code for c in (uploader, searcher, uploader, searcher)]
+    assert codes == [201, 201, 201, 409]
+
+
+def test_rejected_and_removed_uploads_free_the_quota(setup, db: Session, monkeypatch) -> None:
+    from app.core.config import get_settings
+
+    monkeypatch.setattr(get_settings(), "guest_upload_max_per_user", 1)
+    event, uploader, _, _ = setup()
+    first = _start(uploader, event).json()
+    photo = db.get(Photo, uuid.UUID(first["photo_id"]))
+    photo.status = PhotoStatus.rejected
+    db.commit()
+    assert _start(uploader, event).status_code == 201

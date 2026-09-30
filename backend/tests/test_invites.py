@@ -9,7 +9,7 @@ from sqlalchemy import select
 
 from app.core.config import get_settings
 from app.core.security import ACCESS_COOKIE, utcnow
-from app.models import EventMember, Invite, JoinMode, MemberRole, MemberStatus, User, UserRole
+from app.models import Invite, JoinMode, MemberRole, MemberStatus, UserRole
 from app.services.invites import parse_emails
 from tests.conftest import PASSWORD, new_client
 

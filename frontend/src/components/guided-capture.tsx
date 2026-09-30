@@ -20,6 +20,16 @@ const SHOTS: Shot[] = ["front", "left", "right"];
 const HOLD_MS = 700; // all checks must pass continuously this long
 const MANUAL_AFTER_MS = 12000; // offer a manual shutter if auto-capture hasn't fired
 const DETECT_INTERVAL_MS = 66; // ~15 fps is plenty for guidance
+// After a server-side rejection the camera re-arms automatically this many times in a row;
+// then it pauses for the user to fix the problem, instead of looping into the search
+// rate limit (QA-002).
+const AUTO_RETRIES_AFTER_REJECTION = 1;
+const RETRY_TIPS = [
+  "Face a window or a lamp; avoid bright light behind you.",
+  "Hold the phone at eye level, about an arm's length away.",
+  "Remove sunglasses, a mask or a hat.",
+  "Make sure you're the only person in the picture.",
+];
 
 export interface CapturedShot {
   shot: Shot;
@@ -78,7 +88,7 @@ function Requirements({ onStart }: { onStart: () => void }) {
   return (
     <Card className="mx-auto max-w-xl">
       <h2 className="font-display text-2xl">Before you take your selfies</h2>
-      <p className="mt-1 text-sm text-ink/60">Three quick photos help us find you reliably. They&apos;re deleted right after matching.</p>
+      <p className="mt-1 text-sm text-ink/70">Three quick photos help us find you reliably. They&apos;re deleted right after matching.</p>
       <ul className="mt-5 space-y-3">
         {items.map(([icon, title, text]) => (
           <li key={title} className="flex gap-3">
@@ -87,7 +97,7 @@ function Requirements({ onStart }: { onStart: () => void }) {
             </span>
             <span>
               <span className="block text-sm font-medium">{title}</span>
-              <span className="text-sm text-ink/60">{text}</span>
+              <span className="text-sm text-ink/70">{text}</span>
             </span>
           </li>
         ))}
@@ -125,6 +135,8 @@ export function GuidedCapture({
   const [holdProgress, setHoldProgress] = useState(0);
   const [serverMessage, setServerMessage] = useState<string | null>(null);
   const [showManual, setShowManual] = useState(false);
+  const rejections = useRef(0); // consecutive server-side rejections
+  const [paused, setPaused] = useState(false);
 
   const shot = SHOTS[Math.min(shotIndex, SHOTS.length - 1)];
 
@@ -217,22 +229,31 @@ export function GuidedCapture({
       stopCamera();
       setShotIndex(SHOTS.length);
       const result = await onSubmit(SHOTS.map((s) => ({ shot: s, blob: shots.current[s] as Blob })));
-      if (result) {
-        // Server rejected a shot: retake just that one (or all), then resubmit.
-        if (result.retake === "all") shots.current = {};
-        else delete shots.current[result.retake];
-        setDone(SHOTS.filter((s) => shots.current[s]));
-        setShotIndex(result.retake === "all" ? 0 : SHOTS.indexOf(result.retake));
-        setServerMessage(result.message);
-        void startCamera();
+      if (!result) {
+        rejections.current = 0;
+        return;
       }
+      // Server rejected a shot: retake just that one (or all), then resubmit.
+      if (result.retake === "all") shots.current = {};
+      else delete shots.current[result.retake];
+      setDone(SHOTS.filter((s) => shots.current[s]));
+      setShotIndex(result.retake === "all" ? 0 : SHOTS.indexOf(result.retake));
+      setServerMessage(result.message);
+      rejections.current += 1;
+      if (rejections.current > AUTO_RETRIES_AFTER_REJECTION) {
+        setPaused(true); // camera stays off until the user taps "Try again"
+        return;
+      }
+      void startCamera();
     },
     [onSubmit, shot, startCamera, stopCamera],
   );
 
   // Detection loop: live hints, hold-to-capture.
   useEffect(() => {
-    if (status !== "live" || shotIndex >= SHOTS.length) return;
+    // Paused after repeated rejections: the camera is off and nothing may auto-capture
+    // (the video element would otherwise still show the last frozen frame).
+    if (status !== "live" || shotIndex >= SHOTS.length || paused) return;
     const landmarker = landmarkerRef.current;
     const video = videoRef.current;
     const nose: { x: number; y: number }[] = [];
@@ -284,7 +305,7 @@ export function GuidedCapture({
     };
     frame = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(frame);
-  }, [status, shotIndex, shot, requirements, capture, finishShot, showManual]);
+  }, [status, shotIndex, shot, requirements, capture, finishShot, showManual, paused]);
 
   if (!started) return <Requirements onStart={() => setStarted(true)} />;
 
@@ -312,7 +333,7 @@ export function GuidedCapture({
 
       <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-ink">
         <video ref={videoRef} playsInline muted className="h-full w-full -scale-x-100 object-cover" />
-        {status === "live" && !submitting && (
+        {status === "live" && !submitting && !paused && (
           <>
             <svg aria-hidden viewBox="0 0 100 75" className="pointer-events-none absolute inset-0 h-full w-full">
               <defs>
@@ -345,6 +366,25 @@ export function GuidedCapture({
         {submitting && (
           <p className="absolute inset-0 flex items-center justify-center bg-ink/60 text-sm text-white">{busy ? "Searching…" : "Checking your photos…"}</p>
         )}
+        {paused && !submitting && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink/85 p-5 text-center text-white">
+            <p className="font-medium">Let&apos;s fix this before trying again</p>
+            <ul className="space-y-1 text-left text-sm text-white/85">
+              {RETRY_TIPS.map((tip) => (
+                <li key={tip}>• {tip}</li>
+              ))}
+            </ul>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                setPaused(false); // the reason stays on screen until the next photo is taken
+                void startCamera();
+              }}
+            >
+              Try again
+            </Button>
+          </div>
+        )}
       </div>
 
       {error && (
@@ -356,9 +396,9 @@ export function GuidedCapture({
         </div>
       )}
       {guidanceUnavailable && status === "live" && (
-        <p className="mt-3 text-xs text-ink/55">Live guidance isn&apos;t available in this browser. Follow the instruction above and take each photo yourself.</p>
+        <p className="mt-3 text-xs text-ink/70">Live guidance isn&apos;t available in this browser. Follow the instruction above and take each photo yourself.</p>
       )}
-      {showManual && status === "live" && !submitting && (
+      {showManual && status === "live" && !submitting && !paused && (
         <Button
           variant={guidanceUnavailable ? "primary" : "ghost"}
           className="mt-3 w-full"

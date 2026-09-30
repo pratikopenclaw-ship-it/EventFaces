@@ -12,6 +12,7 @@ import secrets
 import uuid
 from dataclasses import dataclass
 from datetime import timedelta
+from typing import Any
 
 import jwt
 
@@ -37,7 +38,7 @@ class InvalidDownloadToken(Exception):
 def create_token(user_id: uuid.UUID, event_id: uuid.UUID, photo_ids: list[uuid.UUID]) -> str:
     s = get_settings()
     now = utcnow()
-    payload: dict = {
+    payload: dict[str, Any] = {
         "sub": str(user_id),
         "eid": str(event_id),
         "aud": AUDIENCE,

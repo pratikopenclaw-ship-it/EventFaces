@@ -21,7 +21,7 @@ removal_status = pg.ENUM("unverified", "submitted", "resolved", "declined", name
 
 def upgrade() -> None:
     removal_status.create(op.get_bind(), checkfirst=True)
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
     op.create_table(
         "removal_requests",
         sa.Column("id", pg.UUID(as_uuid=True), primary_key=True),

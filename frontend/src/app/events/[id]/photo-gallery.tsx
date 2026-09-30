@@ -92,7 +92,7 @@ export function PhotoGallery({
     <div className="space-y-4">
       {error && <Alert>{error}</Alert>}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink/60">
+        <p className="text-sm text-ink/70">
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
           {selected.size > 0 && ` · ${selected.size} selected`}
         </p>
@@ -115,8 +115,8 @@ export function PhotoGallery({
           <section key={section.key} className="space-y-3">
             <div className="flex items-baseline gap-2">
               <h3 className="font-medium">{section.title}</h3>
-              <span className="text-sm text-ink/50">{items.length}</span>
-              {section.note && <span className="text-xs text-ink/50">· {section.note}</span>}
+              <span className="text-sm text-ink/70">{items.length}</span>
+              {section.note && <span className="text-xs text-ink/70">· {section.note}</span>}
             </div>
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {items.map((p) => (
@@ -150,7 +150,7 @@ export function PhotoGallery({
                           <button onClick={() => void rate(p.id, "me")} className="rounded-md px-2 py-1 font-medium text-ink/70 hover:bg-leaf/10 hover:text-leaf">
                             This is me
                           </button>
-                          <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-ink/50 hover:bg-alarm/10 hover:text-alarm">
+                          <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-ink/70 hover:bg-alarm/10 hover:text-alarm">
                             Not me
                           </button>
                         </>

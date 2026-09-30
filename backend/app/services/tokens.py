@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from sqlalchemy import select, update
@@ -34,9 +35,71 @@ def consume_token(db: Session, raw: str, kind: TokenKind) -> AuthToken | None:
     return token
 
 
-def revoke_user_tokens(db: Session, user_id, kind: TokenKind) -> None:
+def revoke_user_tokens(db: Session, user_id: uuid.UUID, kind: TokenKind) -> None:
     db.execute(
         update(AuthToken)
         .where(AuthToken.user_id == user_id, AuthToken.kind == kind, AuthToken.used_at.is_(None))
         .values(used_at=utcnow())
     )
+
+
+def issue_refresh_token(db: Session, user: User, ttl: timedelta, session_id: uuid.UUID) -> str:
+    raw = new_opaque_token()
+    db.add(
+        AuthToken(
+            user_id=user.id,
+            kind=TokenKind.refresh,
+            token_hash=hash_token(raw),
+            expires_at=utcnow() + ttl,
+            session_id=session_id,
+        )
+    )
+    return raw
+
+
+def session_is_live(db: Session, user_id: uuid.UUID, session_id: uuid.UUID) -> bool:
+    """A session lives while it has an unused, unexpired refresh token."""
+    return (
+        db.scalar(
+            select(AuthToken.id)
+            .where(
+                AuthToken.session_id == session_id,
+                AuthToken.user_id == user_id,
+                AuthToken.kind == TokenKind.refresh,
+                AuthToken.used_at.is_(None),
+                AuthToken.expires_at > utcnow(),
+            )
+            .limit(1)
+        )
+        is not None
+    )
+
+
+def end_session(db: Session, session_id: uuid.UUID) -> None:
+    db.execute(
+        update(AuthToken)
+        .where(AuthToken.session_id == session_id, AuthToken.kind == TokenKind.refresh, AuthToken.used_at.is_(None))
+        .values(used_at=utcnow())
+    )
+
+
+def rotate_refresh_token(db: Session, raw: str, grace: timedelta) -> AuthToken | None:
+    """Consume a refresh token for rotation. Presenting one that was already rotated
+    away (outside a short grace window for concurrent tabs) means it was copied, so the
+    whole session is revoked: the thief and the victim must both log in again."""
+    token = db.scalar(
+        select(AuthToken)
+        .where(AuthToken.token_hash == hash_token(raw), AuthToken.kind == TokenKind.refresh)
+        .with_for_update()
+    )
+    now = utcnow()
+    if token is None or token.expires_at <= now:
+        return None
+    if token.used_at is not None:
+        if token.session_id is not None and now - token.used_at > grace:
+            end_session(db, token.session_id)
+        return None
+    token.used_at = now
+    if token.session_id is None:  # issued before sessions existed
+        token.session_id = uuid.uuid4()
+    return token

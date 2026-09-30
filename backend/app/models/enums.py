@@ -9,7 +9,7 @@ class UserRole(str, enum.Enum):
 
 class TokenKind(str, enum.Enum):
     verify_email = "verify_email"
-    reset_password = "reset_password"
+    reset_password = "reset_password"  # noqa: S105  # nosec B105 - token type name, not a password
     refresh = "refresh"
     invite = "invite"
 

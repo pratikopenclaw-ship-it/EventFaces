@@ -25,7 +25,7 @@ export function ConsentPanel({ info, onGiven }: { info: ConsentInfo; onGiven: (c
   return (
     <Card className="mx-auto max-w-2xl">
       <h2 className="font-display text-2xl">Before we look for you</h2>
-      <p className="mt-2 text-sm text-ink/65">
+      <p className="mt-2 text-sm text-ink/70">
         Finding your photos uses face recognition. Face data is <strong>biometric data</strong> under the GDPR, so we
         need your explicit consent first.
       </p>
@@ -34,8 +34,8 @@ export function ConsentPanel({ info, onGiven }: { info: ConsentInfo; onGiven: (c
         <div>
           <dt className="font-medium">What we process</dt>
           <dd className="text-ink/70">
-            One selfie you take now. We turn the face in it into a numeric face template and compare it with the faces
-            in <em>this event&apos;s</em> photos only.
+            Three quick selfies you take now. We turn the face in them into a numeric face template and compare it
+            with the faces in <em>this event&apos;s</em> photos only.
           </dd>
         </div>
         <div>
@@ -46,8 +46,13 @@ export function ConsentPanel({ info, onGiven }: { info: ConsentInfo; onGiven: (c
           <dt className="font-medium">What we keep and for how long</dt>
           <dd className="space-y-1 text-ink/70">
             <p>
-              Your selfie and its face template are <strong>deleted immediately after matching</strong>. They are
+              Your selfies and their face template are <strong>deleted immediately after matching</strong>. They are
               processed in memory and never saved.
+            </p>
+            <p>
+              If many people are searching at once, your selfies may wait in our server&apos;s memory for up to 15
+              minutes until it&apos;s your turn; we then email you when your photos are ready. They are still never
+              saved, and are deleted right after matching, or if the wait runs out.
             </p>
             <p>
               We keep the list of photos you matched for {info.grant_days} days (or until the event&apos;s access

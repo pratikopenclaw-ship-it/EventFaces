@@ -16,6 +16,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.db import affected
 from app.core.security import utcnow
 from app.models import Event, FeedbackVerdict, MatchFeedback, SearchAudit, SearchGrant, SelfieQuality, User
 
@@ -81,12 +82,11 @@ def record_missing(db: Session, user: User, event: Event) -> MatchFeedback:
 def anonymize_feedback(db: Session, *where: ColumnElement[bool]) -> int:
     """Drop every link to a person, face, photo or search; keep verdict/similarity/event."""
     return (
-        db.execute(
+        affected(db.execute(
             update(MatchFeedback)
             .where(*where)
             .values(user_id=None, face_id=None, photo_id=None, search_id=None)
-        ).rowcount
-        or 0
+        ))
     )
 
 

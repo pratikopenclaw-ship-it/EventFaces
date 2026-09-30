@@ -24,9 +24,8 @@ def is_active_member(event: Event, membership: EventMember | None) -> bool:
     now = utcnow()
     if not _not_expired(membership.expires_at, now):
         return False
-    if membership.role == MemberRole.attendee and not _not_expired(event.access_expires_at, now):
-        return False
-    return True
+    # The event-wide access window only binds attendees.
+    return membership.role != MemberRole.attendee or _not_expired(event.access_expires_at, now)
 
 
 def can_manage(db: Session, event: Event, user: User) -> bool:

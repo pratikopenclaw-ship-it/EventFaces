@@ -61,7 +61,7 @@ export function EventForm({
   }
 
   return (
-    <form onSubmit={submit} className="space-y-8">
+    <form method="post" onSubmit={submit} className="space-y-8">
       {error && <Alert>{error}</Alert>}
       {saved && <Alert kind="success">Saved.</Alert>}
 
