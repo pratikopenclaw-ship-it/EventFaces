@@ -51,7 +51,7 @@ export function InviteLanding({ token }: { token: string }) {
     return (
       <AuthCard title="Invite unavailable">
         <Alert>{preview.error?.message ?? "This invite link is invalid or has expired."}</Alert>
-        <p className="mt-4 text-sm text-ink/60">Ask the organizer to send you a new invite.</p>
+        <p className="mt-4 text-sm text-ink/70">Ask the organizer to send you a new invite.</p>
       </AuthCard>
     );
   }
@@ -110,7 +110,7 @@ export function InviteLanding({ token }: { token: string }) {
   // New here: set a password; the link already proves the email address.
   return (
     <AuthCard title={title} subtitle={subtitle}>
-      <form onSubmit={register} className="space-y-4">
+      <form method="post" onSubmit={register} className="space-y-4">
         {error && <Alert>{error}</Alert>}
         <p className="text-sm text-ink/70">
           Create your account for <strong>{inv.email}</strong>. No separate email confirmation needed.

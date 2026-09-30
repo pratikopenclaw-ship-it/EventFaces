@@ -11,6 +11,8 @@
 import uuid
 from datetime import timedelta
 
+import numpy as np
+
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -53,10 +55,15 @@ def find_open_request(db: Session, raw: str) -> RemovalRequest:
     return req
 
 
-def submit(db: Session, req: RemovalRequest, selfie: bytes | None) -> int:
+def reference_embedding(selfie: bytes) -> np.ndarray:
+    """Embedding of the requester's reference selfie. Call it with no transaction open:
+    it runs the face model (seconds), and must not hold a pooled connection or lock."""
+    return selfie_embedding(selfie)
+
+
+def submit(db: Session, req: RemovalRequest, embedding: np.ndarray | None) -> int:
     matched: list[uuid.UUID] = []
-    if selfie is not None:
-        embedding = selfie_embedding(selfie)
+    if embedding is not None:
         try:
             # Threshold a bit lower than search: here false positives only cost an
             # organizer a glance, while misses leave someone's photo online.

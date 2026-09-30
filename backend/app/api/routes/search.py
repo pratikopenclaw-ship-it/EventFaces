@@ -12,6 +12,7 @@ from zipstream import ZIP_STORED, ZipStream
 from app.api.deps import DB, CurrentUser, ManagedEvent, MemberEvent, SuperAdmin, VerifiedUser
 from app.api.selfie import is_selfie_set, read_selfie, read_selfie_set, selfie_content_type
 from app.core import rate_limit, storage
+from app.core.face_slots import face_slot
 from app.core.config import get_settings
 from app.core.security import utcnow
 from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoStatus, SearchGrant, User
@@ -134,37 +135,50 @@ async def search(
     db: DB,
     source: Literal["camera", "upload"] = "camera",
 ) -> SearchOut:
-    s = get_settings()
-    limit = rate_limit.Limit.parse(s.search_rate_limit)
-    rate_limit.enforce(f"search:user:{user.id}", limit)
-    rate_limit.enforce(f"search:ip:{rate_limit.client_ip(request)}", rate_limit.Limit(limit.count * 3, limit.seconds))
     _require_consent(user)
+    # Waiting for a slot must not hold the pooled connection the auth checks opened (SEC-038).
+    db.commit()
+    # Take a face-work slot first: a request that can't be served in time is turned away
+    # before its selfies are read into memory or its search budget is spent (SEC-039).
+    async with face_slot():
+        s = get_settings()
+        limit = rate_limit.Limit.parse(s.search_rate_limit)
+        rate_limit.enforce(f"search:user:{user.id}", limit)
+        rate_limit.enforce(f"search:ip:{rate_limit.client_ip(request)}", rate_limit.Limit(limit.count * 3, limit.seconds))
 
-    if source == "camera":
-        # Camera searches must come from the guided capture flow: exactly front, left, right.
-        token = request.headers.get("x-capture-token", "")
-        if not token or not capture_tokens.consume(token, user.id, event.id):
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "capture_token_invalid")
-        if not is_selfie_set(request):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Camera searches send a set of three selfies")
-        shots = await read_selfie_set(request)
-        if [shot for shot, _ in shots] != list(SHOTS_CAMERA):
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Expected front, left and right selfies")
-    else:
-        if not upload_allowed(event):
-            raise HTTPException(status.HTTP_403_FORBIDDEN, "This event requires a live camera selfie")
-        if is_selfie_set(request):
-            shots = [("any", data) for _, data in await read_selfie_set(request)]
-        elif selfie_content_type(request):
-            shots = [("any", await read_selfie(request))]
+        if source == "camera":
+            # Camera searches must come from the guided capture flow: exactly front, left, right.
+            token = request.headers.get("x-capture-token", "")
+            if not token or not capture_tokens.consume(token, user.id, event.id):
+                raise HTTPException(status.HTTP_403_FORBIDDEN, "capture_token_invalid")
+            if not is_selfie_set(request):
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Camera searches send a set of three selfies")
+            shots = await read_selfie_set(request)
+            if [shot for shot, _ in shots] != list(SHOTS_CAMERA):
+                raise HTTPException(status.HTTP_400_BAD_REQUEST, "Expected front, left and right selfies")
         else:
-            raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Send the selfie as a JPEG, PNG or HEIC image")
+            if not upload_allowed(event):
+                raise HTTPException(status.HTTP_403_FORBIDDEN, "This event requires a live camera selfie")
+            if is_selfie_set(request):
+                shots = [("any", data) for _, data in await read_selfie_set(request)]
+            elif selfie_content_type(request):
+                shots = [("any", await read_selfie(request))]
+            else:
+                raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Send the selfie as a JPEG, PNG or HEIC image")
 
-    try:
-        # Face analysis and DB work block; keep them off the event loop.
-        return await run_in_threadpool(_search_sync, db, user, event, shots)
-    finally:
-        del shots
+        # Counted only for requests that passed every check, so invalid requests from one
+        # member can't burn the event's budget for everyone else.
+        rate_limit.enforce(f"search:event:{event.id}", rate_limit.Limit.parse(s.search_event_rate_limit))
+        # End the transaction opened by the auth checks so the pooled connection is free while
+        # the face model runs (seconds, serialized): run_search does all face analysis before
+        # its first query. Holding it let ~15 concurrent searches starve every other endpoint.
+        db.commit()
+        try:
+            # Face analysis and DB work block; keep them off the event loop.
+            result: SearchOut | JSONResponse = await run_in_threadpool(_search_sync, db, user, event, shots)
+            return result  # type: ignore[return-value]  # a JSONResponse (422) bypasses response_model by design
+        finally:
+            del shots
 
 
 def _search_sync(db: Session, user: User, event: Event, shots: list[tuple[str, bytes]]) -> SearchOut | JSONResponse:
@@ -307,6 +321,9 @@ def _iter_object(key: str) -> Iterator[bytes]:
 
 @router.get("/downloads/{token}")
 def redeem_download(token: str, user: CurrentUser, db: DB) -> StreamingResponse:
+    # Links are reusable for their short life (retries, resumed downloads) but not endlessly:
+    # each redemption can stream a ZIP of up to ZIP_MAX_PHOTOS originals.
+    rate_limit.enforce(f"download-redeem:{user.id}", rate_limit.Limit(120, 600))
     try:
         claim = downloads.read_token(token)
     except downloads.InvalidDownloadToken as e:

@@ -24,7 +24,7 @@ def sync_drive(run_id: str) -> None:
 
 
 @celery_app.task(name="drive.import_photo", bind=True, max_retries=MAX_RETRIES, acks_late=True)
-def import_drive_photo(self, photo_id: str) -> None:  # type: ignore[no-untyped-def]
+def import_drive_photo(self, photo_id: str) -> None:
     pid = uuid.UUID(photo_id)
     with SessionLocal() as db:
         try:
@@ -41,7 +41,7 @@ def import_drive_photo(self, photo_id: str) -> None:  # type: ignore[no-untyped-
 
 
 @celery_app.task(name="photos.ingest_upload", bind=True, max_retries=MAX_RETRIES, acks_late=True)
-def ingest_upload(self, photo_id: str) -> None:  # type: ignore[no-untyped-def]
+def ingest_upload(self, photo_id: str) -> None:
     pid = uuid.UUID(photo_id)
     with SessionLocal() as db:
         try:
@@ -58,7 +58,7 @@ def ingest_upload(self, photo_id: str) -> None:  # type: ignore[no-untyped-def]
 
 
 @celery_app.task(name="photos.index", bind=True, max_retries=2, acks_late=True)
-def index_photo(self, photo_id: str) -> None:  # type: ignore[no-untyped-def]
+def index_photo(self, photo_id: str) -> None:
     pid = uuid.UUID(photo_id)
     with SessionLocal() as db:
         try:

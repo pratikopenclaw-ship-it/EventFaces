@@ -29,5 +29,8 @@ def consume(raw: str, user_id: uuid.UUID, event_id: uuid.UUID) -> bool:
     value = get_redis().getdel(f"captok:{hash_token(raw)}")
     if value is None:
         return False
-    data = json.loads(value)
-    return data == {"user": str(user_id), "event": str(event_id)}
+    try:
+        data = json.loads(value)
+    except ValueError:
+        return False
+    return isinstance(data, dict) and data.get("user") == str(user_id) and data.get("event") == str(event_id)

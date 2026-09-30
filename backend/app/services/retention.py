@@ -23,6 +23,7 @@ from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.db import affected
 from app.core.security import utcnow
 from app.models import (
     AuthToken,
@@ -63,16 +64,15 @@ class RetentionReport:
 
 def expire_event(db: Session, event: Event, report: RetentionReport) -> None:
     """Delete biometric data (and optionally photos) of one event whose access has ended."""
-    report.faces_deleted += db.execute(delete(Face).where(Face.event_id == event.id)).rowcount or 0
+    report.faces_deleted += affected(db.execute(delete(Face).where(Face.event_id == event.id)))
     report.feedback_anonymized += anonymize_feedback(db, MatchFeedback.event_id == event.id)
-    report.grants_deleted += db.execute(delete(SearchGrant).where(SearchGrant.event_id == event.id)).rowcount or 0
+    report.grants_deleted += affected(db.execute(delete(SearchGrant).where(SearchGrant.event_id == event.id)))
     report.invites_revoked += (
-        db.execute(
+        affected(db.execute(
             update(Invite)
             .where(Invite.event_id == event.id, Invite.status == InviteStatus.pending)
             .values(status=InviteStatus.revoked)
-        ).rowcount
-        or 0
+        ))
     )
     if event.delete_photos_on_expiry:
         photos = db.scalars(
@@ -102,21 +102,19 @@ def run_retention(db: Session, now: datetime | None = None) -> RetentionReport:
     for event in due:
         expire_event(db, event, report)
 
-    report.grants_deleted += db.execute(delete(SearchGrant).where(SearchGrant.expires_at <= now)).rowcount or 0
+    report.grants_deleted += affected(db.execute(delete(SearchGrant).where(SearchGrant.expires_at <= now)))
     report.audit_rows_deleted = (
-        db.execute(
+        affected(db.execute(
             delete(SearchAudit).where(SearchAudit.created_at < now - timedelta(days=s.audit_retention_days))
-        ).rowcount
-        or 0
+        ))
     )
     report.quality_rows_deleted = (
-        db.execute(
+        affected(db.execute(
             delete(SelfieQuality).where(SelfieQuality.created_at < now - timedelta(days=s.audit_retention_days))
-        ).rowcount
-        or 0
+        ))
     )
     report.removal_requests_deleted = (
-        db.execute(
+        affected(db.execute(
             delete(RemovalRequest).where(
                 (
                     (RemovalRequest.status == RemovalStatus.unverified)
@@ -127,26 +125,23 @@ def run_retention(db: Session, now: datetime | None = None) -> RetentionReport:
                     & (RemovalRequest.resolved_at < now - timedelta(days=s.removal_request_retention_days))
                 )
             )
-        ).rowcount
-        or 0
+        ))
     )
     report.unverified_users_deleted = (
-        db.execute(
+        affected(db.execute(
             delete(User).where(
                 User.email_verified_at.is_(None),
                 User.created_at < now - timedelta(days=s.unverified_user_days),
             )
-        ).rowcount
-        or 0
+        ))
     )
     report.tokens_deleted = (
-        db.execute(
+        affected(db.execute(
             delete(AuthToken).where(
                 (AuthToken.expires_at < now - timedelta(days=30))
                 | (AuthToken.used_at < now - timedelta(days=30))
             )
-        ).rowcount
-        or 0
+        ))
     )
     db.commit()
     if any(asdict(report).values()):

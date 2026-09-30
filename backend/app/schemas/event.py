@@ -2,7 +2,7 @@ import datetime as dt
 import uuid
 from typing import Annotated
 
-from pydantic import AfterValidator, BaseModel, ConfigDict, EmailStr, Field
+from pydantic import AfterValidator, AwareDatetime, BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.enums import JoinMode, MemberRole, MemberStatus, ModerationMode
 from app.services.drive_ids import parse_drive_folder_id
@@ -22,13 +22,17 @@ def _drive_folder(v: str | None) -> str | None:
 # Accepts a Drive folder URL or bare ID; normalized to the ID.
 DriveFolder = Annotated[str | None, AfterValidator(_drive_folder)]
 
+# Client timestamps must carry a timezone (a bare "10:00" is ambiguous and can't be
+# compared with the server's aware clock); stored and returned in UTC.
+UtcDatetime = Annotated[AwareDatetime, AfterValidator(lambda v: v.astimezone(dt.UTC))]
+
 
 class EventBase(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     date: dt.date | None = None
     description: str = Field(default="", max_length=5000)
     join_mode: JoinMode = JoinMode.code
-    access_expires_at: dt.datetime | None = None
+    access_expires_at: UtcDatetime | None = None
     guest_upload_enabled: bool = False
     moderation_mode: ModerationMode = ModerationMode.manual
     allow_selfie_file_upload: bool = False
@@ -47,7 +51,7 @@ class EventUpdate(BaseModel):
     date: dt.date | None = None
     description: str | None = Field(default=None, max_length=5000)
     join_mode: JoinMode | None = None
-    access_expires_at: dt.datetime | None = None
+    access_expires_at: UtcDatetime | None = None
     guest_upload_enabled: bool | None = None
     moderation_mode: ModerationMode | None = None
     allow_selfie_file_upload: bool | None = None
@@ -108,7 +112,7 @@ class MemberOut(BaseModel):
 
 class MemberUpdate(BaseModel):
     status: MemberStatus | None = None
-    expires_at: dt.datetime | None = None
+    expires_at: UtcDatetime | None = None
 
 
 class OrganizerAssign(BaseModel):

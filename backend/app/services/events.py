@@ -60,4 +60,4 @@ def photo_counts(db: Session, event_ids: list[uuid.UUID]) -> dict[uuid.UUID, int
         .where(Photo.event_id.in_(event_ids), Photo.status == PhotoStatus.published)
         .group_by(Photo.event_id)
     ).all()
-    return dict(rows)
+    return {event_id: count for event_id, count in rows}

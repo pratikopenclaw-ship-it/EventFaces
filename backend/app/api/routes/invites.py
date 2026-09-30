@@ -1,3 +1,4 @@
+import csv
 import io
 import uuid
 from typing import Literal
@@ -43,7 +44,10 @@ def upload_invites(
     body: InviteCsvIn, event: ManagedEvent, user: VerifiedUser, db: DB, background: BackgroundTasks
 ) -> InviteUploadOut:
     rate_limit.enforce(f"invites:{event.id}", rate_limit.Limit(20, 3600))
-    parsed = invites.parse_emails(body.csv)
+    try:
+        parsed = invites.parse_emails(body.csv)
+    except csv.Error as e:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, "Couldn't read that CSV. Use one email per line or cell.") from e
     if not parsed.valid and not parsed.invalid:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "No email addresses found")
     outcome = invites.create_invites(db, event, user, parsed.valid)

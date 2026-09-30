@@ -33,7 +33,7 @@ export function AccessPanel({ event, onChange }: { event: EventAdmin; onChange: 
   const removalCard = (
     <Card className="md:col-span-2">
       <p className="font-medium">Removal-request link</p>
-      <p className="mt-1 text-sm text-ink/60">
+      <p className="mt-1 text-sm text-ink/70">
         Put this in your photo notice or privacy statement. Anyone who appears in the photos, including non-attendees,
         can ask for removal. Requests show up in the Moderation tab.
       </p>
@@ -59,7 +59,7 @@ export function AccessPanel({ event, onChange }: { event: EventAdmin; onChange: 
     <div className="grid gap-4 md:grid-cols-2">
       {error && <Alert>{error}</Alert>}
       <Card>
-        <p className="text-sm text-ink/60">Access code</p>
+        <p className="text-sm text-ink/70">Access code</p>
         <p className="my-3 font-mono text-4xl tracking-[0.2em]">{event.access_code}</p>
         <div className="flex gap-2">
           <Button variant="secondary" onClick={() => void copy("code", event.access_code)}>
@@ -71,7 +71,7 @@ export function AccessPanel({ event, onChange }: { event: EventAdmin; onChange: 
         </div>
       </Card>
       <Card>
-        <p className="text-sm text-ink/60">Join link (includes the code)</p>
+        <p className="text-sm text-ink/70">Join link (includes the code)</p>
         <p className="my-3 break-all rounded-lg bg-mist px-3 py-2 font-mono text-sm">{link}</p>
         <Button variant="secondary" onClick={() => void copy("link", link)}>
           {copied === "link" ? "Copied" : "Copy link"}
@@ -87,7 +87,7 @@ export function AccessPanel({ event, onChange }: { event: EventAdmin; onChange: 
         />
         <div className="text-center md:text-left">
           <p className="font-medium">QR code</p>
-          <p className="mt-1 max-w-sm text-sm text-ink/60">
+          <p className="mt-1 max-w-sm text-sm text-ink/70">
             Print it on signs or slides. Scanning it opens the join page with the code filled in. Rotating the code
             invalidates printed QR codes.
           </p>

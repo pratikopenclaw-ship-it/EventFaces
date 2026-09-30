@@ -1,0 +1,11 @@
+# Playwright end-to-end environment: swaps the dev API for tests/e2e_server.py (real app,
+# test database/Redis DB/bucket, fake Drive, captured mail, /__e2e control endpoints).
+#   docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web
+#   cd frontend && npx playwright test
+# Switch back with `docker compose up -d api`.
+services:
+  api:
+    command: python -m tests.e2e_server
+    environment:
+      FRONTEND_URL: http://localhost:3000
+      S3_PUBLIC_ENDPOINT_URL: http://localhost:8333

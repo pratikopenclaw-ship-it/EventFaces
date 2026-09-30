@@ -5,6 +5,7 @@ import { useState } from "react";
 import { GuidedCapture, type CapturedShot, type SubmitResult } from "@/components/guided-capture";
 import { Alert, Button, Card } from "@/components/ui";
 import { ApiError, RawBody, del, post } from "@/lib/api";
+import { oneOf } from "@/lib/safe";
 import type { SelfieRequirements, Shot } from "@/lib/face-guidance";
 import type { ConsentInfo, EventPublic, MatchedPhoto, SearchResult } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -20,8 +21,13 @@ interface Rejection {
   shot: Shot | "any";
 }
 
-function isRejection(body: unknown): body is Rejection {
-  return !!body && typeof body === "object" && "code" in body && "shot" in body;
+const SHOT_VALUES = ["front", "left", "right", "any"] as const;
+
+/** Validates the 422 body before it drives UI state (the shot becomes an object key). */
+export function isRejection(body: unknown): body is Rejection {
+  if (!body || typeof body !== "object") return false;
+  const b = body as Record<string, unknown>;
+  return typeof b.code === "string" && typeof b.detail === "string" && oneOf(SHOT_VALUES, b.shot);
 }
 
 /** Concatenate the shots into one body; lengths go in a header (see app/api/selfie.py). */
@@ -42,7 +48,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
 
-  if (consent.loading || previous.loading || requirements.loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (consent.loading || previous.loading || requirements.loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (consent.error) return <Alert>{consent.error.message}</Alert>;
   const info = consent.data;
   const req = requirements.data;
@@ -122,7 +128,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         <>
           <GuidedCapture key={attempt} requirements={req} busy={searching} onSubmit={searchCamera} />
           {uploadAllowed && (
-            <label className="block text-center text-sm text-ink/60">
+            <label className="block text-center text-sm text-ink/70">
               No camera?{" "}
               <span className="cursor-pointer font-medium text-accent hover:underline">
                 Upload a photo of yourself
@@ -140,7 +146,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
       ) : shown.length === 0 ? (
         <Card className="mx-auto max-w-xl text-center">
           <h2 className="font-display text-2xl">No photos found yet</h2>
-          <p className="mt-2 text-sm text-ink/60">
+          <p className="mt-2 text-sm text-ink/70">
             We couldn&apos;t find you in this event&apos;s photos. More photos may be added later.
           </p>
           <div className="mt-5 flex justify-center gap-2">
@@ -172,7 +178,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         </>
       )}
 
-      <p className="pt-6 text-center text-xs text-ink/45">
+      <p className="pt-6 text-center text-xs text-ink/70">
         Face-search consent given {info.given_at ? new Date(info.given_at).toLocaleDateString() : ""}.{" "}
         <button onClick={() => void withdraw()} className="underline hover:text-ink">
           Withdraw consent

@@ -30,9 +30,9 @@ export default function AdminEventsPage() {
           )
         }
       />
-      {loading && <p className="text-sm text-ink/50">Loading…</p>}
+      {loading && <p className="text-sm text-ink/70">Loading…</p>}
       {error && <Alert>{error.message}</Alert>}
-      {!loading && managed.length === 0 && <Card className="text-center text-sm text-ink/60">No events yet.</Card>}
+      {!loading && managed.length === 0 && <Card className="text-center text-sm text-ink/70">No events yet.</Card>}
       <div className="overflow-hidden rounded-2xl border border-line bg-paper">
         {managed.map((event) => {
           const expired = event.access_expires_at && new Date(event.access_expires_at) < new Date();
@@ -44,7 +44,7 @@ export default function AdminEventsPage() {
             >
               <div>
                 <p className="font-medium">{event.name}</p>
-                <p className="text-sm text-ink/55">
+                <p className="text-sm text-ink/70">
                   {formatDate(event.date)} · {event.photo_count.toLocaleString()}{" "}
                   {event.photo_count === 1 ? "photo" : "photos"}
                 </p>

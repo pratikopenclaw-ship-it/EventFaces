@@ -1,0 +1,21 @@
+# Load test (k6) against the e2e API (test DB, fake Drive, inline Celery):
+#   docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.load.yml up -d api
+#   docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.load.yml run --rm k6 run --out json=/scripts/results/raw.json /scripts/eventfaces.js
+# Configurable per-user/IP/event rate limits are raised so the run measures capacity,
+# not the limiter (loadtest/eventfaces.js has a separate check that the limiter still works).
+services:
+  api:
+    environment:
+      S3_PUBLIC_ENDPOINT_URL: http://s3:8333   # k6 runs inside the compose network
+      SEARCH_RATE_LIMIT: "1000/600"
+      SEARCH_EVENT_RATE_LIMIT: "100000/600"
+      LOGIN_RATE_LIMIT: "10000/60"
+      GUEST_UPLOAD_RATE_LIMIT: "10000/3600"
+      TRUSTED_PROXY_HOPS: "1"                  # k6 sends one X-Forwarded-For per simulated user
+  k6:
+    image: grafana/k6@sha256:e66db15b860113878fa74670e31f5e274830b7b6e42c8bff28b2f2d86a257603
+    profiles: ["load"]
+    volumes:
+      - ./loadtest:/scripts
+    depends_on:
+      api: { condition: service_healthy }

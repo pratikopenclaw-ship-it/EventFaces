@@ -34,7 +34,7 @@ def upgrade() -> None:
     for enum in ENUMS:
         enum.create(bind, checkfirst=True)
 
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
 
     op.create_table(
         "users",

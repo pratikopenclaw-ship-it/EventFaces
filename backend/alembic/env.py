@@ -12,8 +12,9 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Tests pass their own URL via config attributes; otherwise use DATABASE_URL.
-url = config.attributes.get("database_url") or get_settings().database_url
-config.set_main_option("sqlalchemy.url", url)
+# Migrations run as the schema owner; the app itself connects with a DML-only role.
+url = config.attributes.get("database_url") or get_settings().migration_database_url or get_settings().database_url
+config.set_main_option("sqlalchemy.url", url.replace("%", "%%"))  # configparser escaping
 target_metadata = Base.metadata
 
 

@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
       {sent ? (
         <Alert kind="success">If an account exists for that address, we sent a reset link. It expires in 1 hour.</Alert>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form method="post" onSubmit={onSubmit} className="space-y-4">
           {error && <Alert>{error}</Alert>}
           <Field label="Email">
             <Input name="email" type="email" autoComplete="email" required />

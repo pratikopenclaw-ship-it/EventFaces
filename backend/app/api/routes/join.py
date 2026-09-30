@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Request, status
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from app.api.deps import DB, VerifiedUser
 from app.core import rate_limit
@@ -57,19 +58,21 @@ def join_by_code(body: JoinIn, request: Request, user: VerifiedUser, db: DB) -> 
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Access to this event has ended")
 
     rate_limit.clear_failures(lock_keys[0])
-    membership = db.get(EventMember, (event.id, user.id))
-    if membership is None:
-        db.add(
-            EventMember(
-                event_id=event.id,
-                user_id=user.id,
-                role=MemberRole.attendee,
-                status=MemberStatus.approved,
-            )
-        )
-    elif membership.status == MemberStatus.revoked:
+    # Insert-if-absent atomically (a double-clicked join must not hit the primary key),
+    # then lock whatever row exists and apply the rules to it.
+    db.execute(
+        pg_insert(EventMember)
+        .values(event_id=event.id, user_id=user.id, role=MemberRole.attendee, status=MemberStatus.approved)
+        .on_conflict_do_nothing(index_elements=["event_id", "user_id"])
+    )
+    membership = db.get(EventMember, (event.id, user.id), with_for_update=True, populate_existing=True)
+    if membership is None:  # deleted by an organizer between the two statements
+        db.rollback()
+        raise HTTPException(status.HTTP_409_CONFLICT, "Please try again")
+    if membership.status == MemberStatus.revoked:
+        db.rollback()
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Your access to this event was revoked")
-    elif membership.status == MemberStatus.pending:
+    if membership.status == MemberStatus.pending:
         membership.status = MemberStatus.approved
     db.commit()
     return event

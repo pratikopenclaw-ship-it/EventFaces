@@ -9,6 +9,7 @@
 import uuid
 
 from fastapi import HTTPException, status
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core import storage
@@ -24,6 +25,25 @@ def _require_enabled(event: Event) -> None:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Guest uploads are disabled for this event")
 
 
+def _enforce_quotas(db: Session, event: Event, user: User) -> None:
+    # Serialize upload starts per event (row lock) so concurrent requests can't overshoot.
+    db.execute(select(Event.id).where(Event.id == event.id).with_for_update())
+    live = (
+        select(func.count())
+        .select_from(Photo)
+        .where(
+            Photo.event_id == event.id,
+            Photo.source == PhotoSource.guest,
+            Photo.status.not_in([PhotoStatus.rejected, PhotoStatus.removed]),
+        )
+    )
+    s = get_settings()
+    if (db.scalar(live.where(Photo.uploaded_by == user.id)) or 0) >= s.guest_upload_max_per_user:
+        raise HTTPException(status.HTTP_409_CONFLICT, "You've reached the upload limit for this event")
+    if (db.scalar(live) or 0) >= s.guest_upload_max_per_event:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This event has reached its guest upload limit")
+
+
 def start_upload(
     db: Session, event: Event, user: User, filename: str, content_type: str, size: int
 ) -> tuple[Photo, str]:
@@ -36,6 +56,7 @@ def start_upload(
             status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             f"Photos must be under {s.guest_upload_max_bytes // (1024 * 1024)} MB",
         )
+    _enforce_quotas(db, event, user)
     photo = Photo(
         id=uuid.uuid4(),
         event_id=event.id,

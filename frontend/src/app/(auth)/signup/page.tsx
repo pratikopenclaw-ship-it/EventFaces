@@ -51,13 +51,13 @@ export default function SignupPage() {
       subtitle={
         <>
           Already registered?{" "}
-          <Link className="text-accent underline-offset-2 hover:underline" href="/login">
+          <Link className="text-accent underline underline-offset-2" href="/login">
             Log in
           </Link>
         </>
       }
     >
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form method="post" onSubmit={onSubmit} className="space-y-4">
         {error && <Alert>{error}</Alert>}
         <Field label="Email">
           <Input name="email" type="email" autoComplete="email" required />

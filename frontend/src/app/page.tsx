@@ -16,7 +16,7 @@ export default function Home() {
           <br />
           Find every photo of you.
         </h1>
-        <p className="mt-6 max-w-md text-lg text-ink/65">
+        <p className="mt-6 max-w-md text-lg text-ink/70">
           Join your event, take one selfie, and see the photos you appear in. Your selfie is deleted the moment the
           search finishes.
         </p>
@@ -47,7 +47,7 @@ export default function Home() {
             <span className="font-display text-3xl text-accent">{i + 1}</span>
             <span>
               <span className="block font-medium">{title}</span>
-              <span className="text-sm text-ink/60">{text}</span>
+              <span className="text-sm text-ink/70">{text}</span>
             </span>
           </li>
         ))}

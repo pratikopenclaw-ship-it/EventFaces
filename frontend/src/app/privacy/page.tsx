@@ -30,7 +30,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-4xl tracking-tight">Privacy notice</h1>
-        <p className="mt-2 text-sm text-ink/55">How EventFaces handles your data.</p>
+        <p className="mt-2 text-sm text-ink/70">How EventFaces handles your data.</p>
       </header>
 
       <Section title="Who is responsible">
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
           <strong>Face search.</strong> When you search, we turn the face in your selfie into a numeric template and
           compare it with faces in that event&apos;s photos only. Faces are biometric data, so we do this only with your
           explicit consent (Art. 9(2)(a) GDPR), which you can withdraw at any time on your{" "}
-          <Link href="/account" className="text-accent hover:underline">
+          <Link href="/account" className="text-accent underline underline-offset-2">
             account page
           </Link>
           .
@@ -89,11 +89,11 @@ export default function PrivacyPage() {
         <p>
           You can access, correct, delete or export your data, restrict or object to processing, and withdraw consent at
           any time. Delete your account and its data yourself on the{" "}
-          <Link href="/account" className="text-accent hover:underline">
+          <Link href="/account" className="text-accent underline underline-offset-2">
             account page
           </Link>
           . If you appear in an event&apos;s photos, attendee or not, you can{" "}
-          <Link href="/removal-request" className="text-accent hover:underline">
+          <Link href="/removal-request" className="text-accent underline underline-offset-2">
             request removal
           </Link>
           . You can also complain to a supervisory authority, for example the Berlin Commissioner for Data Protection

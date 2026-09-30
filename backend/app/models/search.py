@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import BigInteger, Boolean, DateTime, Enum, Float, ForeignKey, Integer, String, func
+from sqlalchemy import BigInteger, Boolean, DateTime, Enum, Float, ForeignKey, Index, Integer, String, func, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -36,7 +36,7 @@ class SearchGrant(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
 
 
 class SearchAudit(Base):
@@ -53,7 +53,7 @@ class SearchAudit(Base):
     )
     match_count: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True), nullable=False, index=True, server_default=func.now()
     )
 
 
@@ -66,6 +66,17 @@ class MatchFeedback(Base):
     """
 
     __tablename__ = "match_feedback"
+    # One verdict per user per photo (migration 0006); partial, because anonymized rows
+    # have user_id/photo_id nulled.
+    __table_args__ = (
+        Index(
+            "uq_match_feedback_user_photo",
+            "user_id",
+            "photo_id",
+            unique=True,
+            postgresql_where=text("user_id IS NOT NULL AND photo_id IS NOT NULL"),
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     search_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("search_audit.id", ondelete="SET NULL"))
@@ -107,5 +118,5 @@ class SelfieQuality(Base):
     blur: Mapped[float | None] = mapped_column(Float)
     brightness: Mapped[float | None] = mapped_column(Float)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
+        DateTime(timezone=True), nullable=False, index=True, server_default=func.now()
     )

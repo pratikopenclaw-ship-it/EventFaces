@@ -99,7 +99,7 @@ export function GuestUpload({ event }: { event: EventPublic }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl">Add your photos</h2>
-          <p className="mt-1 max-w-lg text-sm text-ink/60">
+          <p className="mt-1 max-w-lg text-sm text-ink/70">
             Share photos you took at the event. Location and camera data are removed. Other attendees see a photo only if
             they appear in it, and organizers may review uploads first.
           </p>
@@ -125,7 +125,7 @@ export function GuestUpload({ event }: { event: EventPublic }) {
             <li key={p.key} className="text-sm">
               <div className="flex justify-between gap-4">
                 <span className="truncate">{p.name}</span>
-                <span className={p.error ? "text-alarm" : "text-ink/50"}>{p.error ?? `${p.progress}%`}</span>
+                <span className={p.error ? "text-alarm" : "text-ink/70"}>{p.error ?? `${p.progress}%`}</span>
               </div>
               {!p.error && (
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-mist">
@@ -145,7 +145,7 @@ export function GuestUpload({ event }: { event: EventPublic }) {
 
       {uploads.length > 0 && (
         <div className="mt-6 border-t border-line pt-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/50">Your uploads</p>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/70">Your uploads</p>
           <ul className="divide-y divide-line text-sm">
             {uploads.map((u) => {
               const label = STATUS_LABEL[u.status] ?? { text: u.status, tone: "neutral" as const };

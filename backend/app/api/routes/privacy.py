@@ -2,9 +2,9 @@
 
 import datetime as dt
 import uuid
-from typing import Literal
+from typing import Annotated, Literal
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request, Response, status
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy import select
@@ -14,6 +14,7 @@ from app.api.cookies import clear_auth_cookies
 from app.api.deps import DB, CurrentUser, ManagedEvent, VerifiedUser
 from app.api.selfie import read_selfie, selfie_content_type
 from app.core import rate_limit
+from app.core.face_slots import face_slot
 from app.core.email import Mail, get_mailer
 from app.core.security import verify_password
 from app.models import Event, RemovalRequest, RemovalStatus, SearchAudit, User
@@ -113,21 +114,32 @@ def removal_request_info(token: str, db: DB) -> dict:
 async def submit_removal_request(token: str, request: Request, db: DB, background: BackgroundTasks) -> dict:
     """Body: an image (reference selfie, optional) or empty to submit without one."""
     rate_limit.enforce(f"removal-submit:{rate_limit.client_ip(request)}", rate_limit.Limit(10, 3600))
-    selfie = await read_selfie(request) if selfie_content_type(request) else None
-    try:
-        return await run_in_threadpool(_submit_sync, db, token, selfie, background)
-    finally:
-        del selfie
+    if not selfie_content_type(request):
+        return await run_in_threadpool(_submit_sync, db, token, None, background)
+    async with face_slot():  # shares the per-process face-work cap with searches (SEC-039)
+        selfie = await read_selfie(request)
+        try:
+            return await run_in_threadpool(_submit_sync, db, token, selfie, background)
+        finally:
+            del selfie
 
 
 def _submit_sync(db: Session, token: str, selfie: bytes | None, background: BackgroundTasks) -> dict:
-    req = removal.find_open_request(db, token)
+    removal.find_open_request(db, token)  # validate the link before spending any CPU on it
+    db.rollback()  # release the row lock and connection while the face model runs
+    embedding = None
+    if selfie:
+        try:
+            embedding = removal.reference_embedding(selfie)
+        except imaging.UnsupportedImage as e:
+            raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, str(e)) from e
+        except NoFaceFound as e:
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
     try:
-        count = removal.submit(db, req, selfie or None)
-    except imaging.UnsupportedImage as e:
-        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, str(e)) from e
-    except NoFaceFound as e:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_ENTITY, str(e)) from e
+        req = removal.find_open_request(db, token)  # re-lock: a parallel submit may have won
+        removal.submit(db, req, embedding)
+    finally:
+        del embedding
     event = db.get(Event, req.event_id)
     for email in removal.organizer_emails(db, req.event_id):
         background.add_task(
@@ -189,7 +201,7 @@ class SearchLogRow(BaseModel):
 
 
 @router.get("/events/{event_id}/search-log", response_model=list[SearchLogRow])
-def search_log(event: ManagedEvent, db: DB, limit: int = 200) -> list[SearchLogRow]:
+def search_log(event: ManagedEvent, db: DB, limit: Annotated[int, Query(ge=1, le=1000)] = 200) -> list[SearchLogRow]:
     rows = db.execute(
         select(SearchAudit, User.email)
         .outerjoin(User, User.id == SearchAudit.user_id)

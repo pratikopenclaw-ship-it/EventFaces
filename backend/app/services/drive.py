@@ -83,6 +83,15 @@ def _raise_access_error(e: HttpError, folder_id: str) -> None:
         ) from e
 
 
+def google_http() -> Any:
+    """HTTP transport for Google APIs with a bounded timeout (library default: 60 s)."""
+    from googleapiclient.http import build_http
+
+    http = build_http()
+    http.timeout = 30
+    return http
+
+
 class GoogleDriveClient:
     def __init__(self, service: Any) -> None:
         self._files = service.files()
@@ -95,7 +104,9 @@ class GoogleDriveClient:
         if not info:
             raise DriveNotConfigured("Google Drive service account is not configured")
         creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-        return cls(build("drive", "v3", credentials=creds, cache_discovery=False))
+        from google_auth_httplib2 import AuthorizedHttp
+
+        return cls(build("drive", "v3", http=AuthorizedHttp(creds, http=google_http()), cache_discovery=False))
 
     def list_images(self, folder_id: str) -> Iterator[list[DriveFile]]:
         """Yield one list of image files per API page."""
@@ -153,5 +164,5 @@ def get_drive_client() -> DriveClient:
 
 def set_drive_client(client: DriveClient | None) -> None:
     """Used by tests to inject a fake Drive."""
-    global _override
+    global _override  # noqa: PLW0603 - deliberate test-injection hook
     _override = client

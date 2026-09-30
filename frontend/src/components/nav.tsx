@@ -26,7 +26,7 @@ export function Nav() {
                   Manage
                 </Link>
               )}
-              <Link href="/account" className="hidden rounded-lg px-3 py-2 text-ink/50 hover:bg-mist hover:text-ink sm:inline">
+              <Link href="/account" className="hidden rounded-lg px-3 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:inline">
                 {user.email}
               </Link>
               <Button variant="ghost" onClick={() => void logout()}>

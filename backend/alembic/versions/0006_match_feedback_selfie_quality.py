@@ -21,8 +21,8 @@ verdict = pg.ENUM("me", "not_me", "missing", name="feedback_verdict", create_typ
 
 def upgrade() -> None:
     verdict.create(op.get_bind(), checkfirst=True)
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
-    uid = lambda: pg.UUID(as_uuid=True)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
+    uid = lambda: pg.UUID(as_uuid=True)
 
     op.add_column("search_grants", sa.Column("face_id", uid(), sa.ForeignKey("faces.id", ondelete="SET NULL")))
     op.add_column("search_grants", sa.Column("search_id", sa.BigInteger(), sa.ForeignKey("search_audit.id", ondelete="SET NULL")))

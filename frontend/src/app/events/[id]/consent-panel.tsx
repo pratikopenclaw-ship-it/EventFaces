@@ -25,7 +25,7 @@ export function ConsentPanel({ info, onGiven }: { info: ConsentInfo; onGiven: (c
   return (
     <Card className="mx-auto max-w-2xl">
       <h2 className="font-display text-2xl">Before we look for you</h2>
-      <p className="mt-2 text-sm text-ink/65">
+      <p className="mt-2 text-sm text-ink/70">
         Finding your photos uses face recognition. Face data is <strong>biometric data</strong> under the GDPR, so we
         need your explicit consent first.
       </p>

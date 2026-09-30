@@ -49,7 +49,7 @@ export function Field({ label, hint, children }: { label: string; hint?: ReactNo
     <label className="block space-y-1.5">
       <span className="text-sm font-medium text-ink">{label}</span>
       {children}
-      {hint && <span className="block text-xs text-ink/55">{hint}</span>}
+      {hint && <span className="block text-xs text-ink/70">{hint}</span>}
     </label>
   );
 }
@@ -75,7 +75,7 @@ export function Toggle({
       />
       <span>
         <span className="block text-sm font-medium text-ink">{label}</span>
-        {hint && <span className="block text-xs text-ink/55">{hint}</span>}
+        {hint && <span className="block text-xs text-ink/70">{hint}</span>}
       </span>
     </label>
   );
@@ -101,9 +101,10 @@ export function Alert({ kind = "error", children }: { kind?: "error" | "success"
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
   const styles = {
     neutral: "bg-mist text-ink/70",
-    good: "bg-leaf/10 text-leaf",
+    // Badge text is darker than the tone colour: small text on a tint needs >= 4.5:1.
+    good: "bg-leaf/10 text-[#23603c]",
     warn: "bg-amber-100 text-amber-800",
-    bad: "bg-alarm/10 text-alarm",
+    bad: "bg-alarm/10 text-[#a12525]",
   }[tone];
   return <span className={cx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", styles)}>{children}</span>;
 }
@@ -113,7 +114,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="font-display text-3xl tracking-tight text-ink">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-ink/60">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-sm text-ink/70">{subtitle}</p>}
       </div>
       {actions && <div className="flex gap-2">{actions}</div>}
     </div>

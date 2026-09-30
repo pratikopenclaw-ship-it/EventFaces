@@ -21,3 +21,12 @@ next-env.d.ts
 .playwright-mcp/
 
 .env.prod
+
+# Tool caches & coverage
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.semgrep*
+.gl-*.json
+graphify-out/

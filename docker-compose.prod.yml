@@ -1,20 +1,33 @@
 # Production stack: Caddy (TLS) → Next.js → FastAPI; Celery worker + beat; Postgres; Redis.
 # Object storage (R2/S3) and SMTP are external services configured via .env.prod.
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+# Hardening: pinned images, only Caddy publishes ports, non-root app containers with
+# no-new-privileges + all capabilities dropped + read-only root filesystems, memory limits,
+# Redis password, DML-only database role for the app (the owner is used for migrations only).
 name: eventfaces-prod
 
+x-hardened: &hardened
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+
 x-backend: &backend
+  <<: *hardened
   build: ./backend
   env_file: .env.prod
-  restart: unless-stopped
+  read_only: true
+  tmpfs: ["/tmp:size=512m"]
   depends_on:
     db: { condition: service_healthy }
     redis: { condition: service_healthy }
 
 services:
   caddy:
-    image: caddy:2-alpine
+    image: caddy:2.11.4-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
     restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: ["ALL"]
+    cap_add: ["NET_BIND_SERVICE"]  # bind 80/443
     ports: ["80:80", "443:443", "443:443/udp"]
     environment:
       DOMAIN: ${DOMAIN}
@@ -22,23 +35,29 @@ services:
       - ./infra/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
+    mem_limit: 256m
     depends_on: [web]
 
   web:
+    <<: *hardened
     build:
       context: ./frontend
       target: prod
       args:
         API_INTERNAL_URL: http://api:8000
         STORAGE_PUBLIC_ORIGIN: ${S3_PUBLIC_ENDPOINT_URL}
-    restart: unless-stopped
+    read_only: true
+    tmpfs: ["/tmp:size=64m", "/app/.next/cache:size=256m,uid=1000,gid=1000"]
+    mem_limit: 512m
     depends_on:
       api: { condition: service_healthy }
 
   api:
     <<: *backend
-    # No --reload, no bind mount. Each worker lazily loads the face model (~0.5 GB RAM).
-    command: sh -c "alembic upgrade head && python -m app.cli init-storage && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 --no-server-header"
+    # Migrations use MIGRATION_DATABASE_URL (schema owner); the app uses DATABASE_URL
+    # (eventfaces_app, DML only). Each worker lazily loads the face model (~0.5 GB RAM).
+    command: sh -c "alembic upgrade head && python -m app.cli init-storage && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2 --no-server-header --timeout-keep-alive 5 --limit-concurrency 200"
+    mem_limit: 3g
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
       interval: 10s
@@ -46,35 +65,42 @@ services:
 
   worker:
     <<: *backend
-    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 -Q celery,index
+    command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 -Q celery,index --max-tasks-per-child=200
+    mem_limit: 3g
 
   beat:
     <<: *backend
     # Exactly ONE beat instance: it schedules retention and cleanup jobs.
     command: celery -A app.workers.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    mem_limit: 256m
 
   db:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
     restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - pgdata:/var/lib/postgresql/data
+    mem_limit: 2g
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       retries: 20
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     restart: unless-stopped
-    command: redis-server --appendonly yes
+    security_opt: ["no-new-privileges:true"]
+    env_file: .env.prod
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --appendonly yes --maxmemory 256mb --maxmemory-policy noeviction"]
     volumes:
       - redisdata:/data
+    mem_limit: 384m
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
       interval: 5s
       retries: 20
 

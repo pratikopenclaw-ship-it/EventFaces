@@ -53,13 +53,15 @@ def sync_status(event: ManagedEvent, db: DB) -> SyncStatusOut:
         .order_by(DriveSyncRun.created_at.desc())
         .limit(1)
     )
-    counts = dict(
-        db.execute(
+    # Explicit comprehension: dict(Result) treats it as a mapping (it has .keys()) and fails.
+    counts: dict[IndexStatus, int] = {
+        index_status: n
+        for index_status, n in db.execute(
             select(Photo.index_status, func.count())
             .where(Photo.event_id == event.id, Photo.status != PhotoStatus.removed)
             .group_by(Photo.index_status)
-        ).all()
-    )
+        ).tuples()
+    }
     pipeline = PipelineCounts(**{s.value: counts.get(s, 0) for s in IndexStatus})
     published = db.scalar(
         select(func.count()).select_from(Photo).where(
@@ -86,7 +88,7 @@ def sync_status(event: ManagedEvent, db: DB) -> SyncStatusOut:
 def list_photos(
     event: ManagedEvent,
     db: DB,
-    offset: Annotated[int, Query(ge=0)] = 0,
+    offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
     limit: Annotated[int, Query(ge=1, le=200)] = 60,
     index_status: IndexStatus | None = None,
     photo_status: Annotated[PhotoStatus | None, Query(alias="status")] = None,

@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
@@ -26,7 +27,14 @@ from app.schemas.auth import (
     TokenIn,
     UserOut,
 )
-from app.services.tokens import consume_token, issue_token, revoke_user_tokens
+from app.services.tokens import (
+    consume_token,
+    end_session,
+    issue_refresh_token,
+    issue_token,
+    revoke_user_tokens,
+    rotate_refresh_token,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -44,10 +52,12 @@ def _send_verification(db: DB, background: BackgroundTasks, user: User) -> None:
     _send(background, user.email, "Verify your EventFaces email", f"Confirm your email:\n\n{link}\n")
 
 
-def start_session(db: DB, response: Response, user: User) -> None:
+def start_session(db: DB, response: Response, user: User, session_id: uuid.UUID | None = None) -> None:
+    """Issue cookies for a new login session, or for the next rotation of an existing one."""
     s = get_settings()
-    refresh = issue_token(db, user, TokenKind.refresh, timedelta(days=s.refresh_token_days))
-    set_auth_cookies(response, create_access_token(user.id, user.role.value), refresh)
+    session_id = session_id or uuid.uuid4()
+    refresh = issue_refresh_token(db, user, timedelta(days=s.refresh_token_days), session_id)
+    set_auth_cookies(response, create_access_token(user.id, user.role.value, session_id), refresh)
 
 
 @router.get("/csrf")
@@ -83,7 +93,9 @@ def verify_email(body: TokenIn, db: DB) -> User:
     if token is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     user = db.get(User, token.user_id)
-    assert user is not None
+    if user is None or user.deleted_at is not None:
+        # Not `assert`: asserts vanish under `python -O` and would turn this into a 500.
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()
     db.commit()
@@ -124,13 +136,14 @@ def login(body: LoginIn, request: Request, response: Response, db: DB) -> User:
 @router.post("/refresh", response_model=UserOut)
 def refresh(request: Request, response: Response, db: DB) -> User:
     raw = request.cookies.get(REFRESH_COOKIE)
-    token = consume_token(db, raw, TokenKind.refresh) if raw else None
+    grace = timedelta(seconds=get_settings().refresh_reuse_grace_seconds)
+    token = rotate_refresh_token(db, raw, grace) if raw else None
     user = db.get(User, token.user_id) if token else None
-    if user is None or user.deleted_at is not None:
-        db.rollback()
+    if token is None or user is None or user.deleted_at is not None:
+        db.commit()  # keeps a replay-triggered session revocation
         clear_auth_cookies(response)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session expired")
-    start_session(db, response, user)  # rotation: old refresh token is now used
+    start_session(db, response, user, token.session_id)  # rotation within the same session
     db.commit()
     return user
 
@@ -138,9 +151,10 @@ def refresh(request: Request, response: Response, db: DB) -> User:
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
 def logout(request: Request, response: Response, db: DB) -> Response:
     raw = request.cookies.get(REFRESH_COOKIE)
-    if raw:
-        consume_token(db, raw, TokenKind.refresh)
-        db.commit()
+    token = consume_token(db, raw, TokenKind.refresh) if raw else None
+    if token is not None and token.session_id is not None:
+        end_session(db, token.session_id)  # the session's access tokens die with it
+    db.commit()
     response.status_code = status.HTTP_204_NO_CONTENT
     clear_auth_cookies(response)
     return response
@@ -167,7 +181,8 @@ def reset_password(body: ResetPasswordIn, db: DB) -> MessageOut:
     if token is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     user = db.get(User, token.user_id)
-    assert user is not None
+    if user is None or user.deleted_at is not None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired link")
     user.password_hash = hash_password(body.password)
     # Receiving the reset email proves control of the address.
     if user.email_verified_at is None:

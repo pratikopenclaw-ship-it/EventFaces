@@ -29,7 +29,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
   const [tab, setTab] = useState<Tab>(initialTab);
   const { data: event, error, loading, setData } = useApi<EventAdmin>(`/api/events/${id}/admin`);
 
-  if (loading) return <p className="text-sm text-ink/50">Loading…</p>;
+  if (loading) return <p className="text-sm text-ink/70">Loading…</p>;
   if (error || !event) {
     return <Alert>{error?.status === 403 ? "You don't manage this event." : error?.message}</Alert>;
   }
@@ -49,7 +49,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
             aria-selected={tab === t}
             onClick={() => setTab(t)}
             className={`-mb-px border-b-2 px-4 py-2 text-sm font-medium transition ${
-              tab === t ? "border-accent text-ink" : "border-transparent text-ink/55 hover:text-ink"
+              tab === t ? "border-accent text-ink" : "border-transparent text-ink/70 hover:text-ink"
             }`}
           >
             {LABELS[t]}

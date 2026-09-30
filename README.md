@@ -39,7 +39,7 @@ The API container runs `alembic upgrade head` and creates the storage bucket on 
 ## Google Drive import
 
 1. In Google Cloud: create a project, enable the **Google Drive API**, create a **service account**, and add a JSON key. (No billing needed for read-only Drive API use within default quotas.)
-2. Put the key in `.env`, either inline as `GOOGLE_SERVICE_ACCOUNT_JSON='{"type": "service_account", ...}'` or mount the file and set `GOOGLE_SERVICE_ACCOUNT_FILE=/run/secrets/drive.json`.
+2. Put the key in `.env`, either inline as `GOOGLE_SERVICE_ACCOUNT_JSON='<the key file contents on one line>'` or mount the file and set `GOOGLE_SERVICE_ACCOUNT_FILE=/run/secrets/drive.json`.
 3. Organizer: share the Drive folder with the service account's `client_email` (Viewer), paste the folder URL in the event's Settings, then press **Sync now** on the Photos tab.
 
 What a sync does: lists top-level JPEG/PNG/HEIC files (paginated, retries 429/5xx/rate-limit 403s with backoff) → inserts only unseen `drive_file_id`s → per photo: download, re-encode (strips EXIF/GPS), store original (≤6000px), preview (1600px) and thumb (400px) → detect every face and store one embedding per face. Re-syncing only imports new files and retries transient failures; unreadable files are marked rejected and skipped. Subfolders are not imported.
@@ -142,10 +142,12 @@ Every event-scoped endpoint goes through `get_member_event` / `get_managed_event
    - `ENVIRONMENT=production`, `COOKIE_SECURE=true`, `FRONTEND_URL=https://<DOMAIN>`, `DOMAIN=<DOMAIN>`
    - `JWT_SECRET` and `DOWNLOAD_TOKEN_SECRET`: two different values from `openssl rand -hex 32`
    - `TRUSTED_PROXY_HOPS=1` (Caddy replaces client-supplied `X-Forwarded-For`; don't set this if anything else sits in front without the same guarantee)
-   - strong `POSTGRES_PASSWORD` and matching `DATABASE_URL`
+   - strong `POSTGRES_PASSWORD` (schema owner, used only via `MIGRATION_DATABASE_URL` for Alembic) and a different strong `APP_DB_PASSWORD`; `DATABASE_URL` must use the least-privilege `eventfaces_app` role with that password
+   - strong `REDIS_PASSWORD`, repeated in `REDIS_URL=redis://:<password>@redis:6379/0`
    - `SMTP_*` and `EMAIL_FROM` for your mail provider (with SPF/DKIM set up)
    - `GOOGLE_SERVICE_ACCOUNT_JSON` for Drive import
    - remove `TEST_*` variables
+   The API refuses to start with `ENVIRONMENT=production` if any of these still has a development/public value (dev secrets, low-entropy secrets, identical JWT/download secrets, `COOKIE_SECURE=false`, non-https `FRONTEND_URL`, owner role or dev password in `DATABASE_URL`, Redis without a private password, dev S3 key, Mailpit as SMTP host); the error lists every problem.
 5. `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`, then `docker compose -f docker-compose.prod.yml exec api python -m app.cli create-superadmin --email you@yourdomain`.
 6. **Backups**: nightly `pg_dump` (embeddings are only 2 KB/face) plus bucket versioning or replication. Backups contain biometric data: encrypt them and expire them in line with the retention table.
 7. **Calibrate `FACE_MATCH_THRESHOLD`** with a few real selfie/event photo pairs before launch (see "Tuning the threshold").

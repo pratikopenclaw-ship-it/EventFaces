@@ -24,8 +24,8 @@ def upgrade() -> None:
     bind = op.get_bind()
     invite_status.create(bind, checkfirst=True)
     report_status.create(bind, checkfirst=True)
-    ts = lambda: sa.DateTime(timezone=True)  # noqa: E731
-    fk = lambda t, d: sa.ForeignKey(f"{t}.id", ondelete=d)  # noqa: E731
+    ts = lambda: sa.DateTime(timezone=True)
+    fk = lambda t, d: sa.ForeignKey(f"{t}.id", ondelete=d)
 
     op.add_column("photos", sa.Column("upload_key", sa.String(300)))
     op.add_column("photos", sa.Column("upload_content_type", sa.String(40)))

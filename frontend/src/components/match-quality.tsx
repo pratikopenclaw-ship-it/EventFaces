@@ -2,6 +2,7 @@
 
 import { Columns, HBars, SERIES, StackedColumns } from "@/components/charts";
 import { Card } from "@/components/ui";
+import { lookup } from "@/lib/safe";
 import type { MatchQuality } from "@/lib/types";
 
 const REASONS: Record<string, string> = {
@@ -24,14 +25,17 @@ const REASONS: Record<string, string> = {
   unreadable: "Unreadable image",
 };
 
+/** Server-provided codes are looked up as own properties only (no prototype members). */
+export const reasonLabel = (code: string): string => lookup(REASONS, code) ?? code;
+
 const pct = (v: number | null) => (v === null ? "–" : `${Math.round(v * 100)}%`);
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="rounded-xl border border-line bg-paper px-4 py-3">
-      <p className="text-xs text-ink/55">{label}</p>
+      <p className="text-xs text-ink/70">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
-      {note && <p className="text-xs text-ink/50">{note}</p>}
+      {note && <p className="text-xs text-ink/70">{note}</p>}
     </div>
   );
 }
@@ -49,17 +53,17 @@ export function MatchQualityView({ q }: { q: MatchQuality }) {
   ];
   const reasons = Object.entries(q.rejection_reasons)
     .sort((a, b) => b[1] - a[1])
-    .map(([code, value]) => ({ label: REASONS[code] ?? code, value }));
+    .map(([code, value]) => ({ label: reasonLabel(code), value }));
 
   return (
     <div className="space-y-6">
       <Card>
-        <p className="text-sm text-ink/60">Suggested match threshold</p>
+        <p className="text-sm text-ink/70">Suggested match threshold</p>
         <p className="mt-1 text-5xl font-semibold tracking-tight text-ink">
           {q.suggested_threshold === null ? "–" : q.suggested_threshold.toFixed(2)}
         </p>
-        <p className="mt-2 max-w-2xl text-sm text-ink/65">{q.suggestion_note}</p>
-        <p className="mt-1 text-xs text-ink/50">
+        <p className="mt-2 max-w-2xl text-sm text-ink/70">{q.suggestion_note}</p>
+        <p className="mt-1 text-xs text-ink/70">
           Current: possible ≥ {q.current_possible.toFixed(2)}, best ≥ {q.current_best.toFixed(2)} (set{" "}
           <code>FACE_MATCH_THRESHOLD</code> / <code>MATCH_BEST_THRESHOLD</code>).
         </p>
@@ -75,7 +79,7 @@ export function MatchQualityView({ q }: { q: MatchQuality }) {
 
       <Card>
         <h3 className="font-medium">Feedback by similarity</h3>
-        <p className="mb-4 text-xs text-ink/55">
+        <p className="mb-4 text-xs text-ink/70">
           How attendees rated their matches, by similarity score. Orange at high similarity means the threshold is too
           low; the suggestion is the lowest score where at least 90% of ratings are &quot;This is me&quot;.
         </p>
@@ -93,9 +97,9 @@ export function MatchQualityView({ q }: { q: MatchQuality }) {
           }))}
         />
         <details className="mt-3 text-sm">
-          <summary className="cursor-pointer text-ink/60">Show as table</summary>
+          <summary className="cursor-pointer text-ink/70">Show as table</summary>
           <table className="mt-2 w-full text-left text-xs" style={{ fontVariantNumeric: "tabular-nums" }}>
-            <thead className="text-ink/55">
+            <thead className="text-ink/70">
               <tr>
                 <th className="py-1 font-medium">Similarity</th>
                 <th className="py-1 font-medium">This is me</th>
@@ -124,7 +128,7 @@ export function MatchQualityView({ q }: { q: MatchQuality }) {
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <h3 className="font-medium">Selfie quality scores</h3>
-          <p className="mb-4 text-xs text-ink/55">Composite 0–100 of sharpness, light, pose, face size and detection confidence, per shot.</p>
+          <p className="mb-4 text-xs text-ink/70">Composite 0–100 of sharpness, light, pose, face size and detection confidence, per shot.</p>
           <Columns
             ariaLabel="Distribution of selfie quality scores"
             valueLabel="shots"
@@ -133,8 +137,8 @@ export function MatchQualityView({ q }: { q: MatchQuality }) {
         </Card>
         <Card>
           <h3 className="font-medium">Why selfies were rejected</h3>
-          <p className="mb-4 text-xs text-ink/55">Shots that failed the quality checks, by reason.</p>
-          {reasons.length ? <HBars data={reasons} /> : <p className="text-sm text-ink/50">No rejected selfies yet.</p>}
+          <p className="mb-4 text-xs text-ink/70">Shots that failed the quality checks, by reason.</p>
+          {reasons.length ? <HBars data={reasons} /> : <p className="text-sm text-ink/70">No rejected selfies yet.</p>}
         </Card>
       </div>
     </div>

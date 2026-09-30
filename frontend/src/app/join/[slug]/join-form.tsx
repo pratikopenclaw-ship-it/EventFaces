@@ -43,7 +43,7 @@ export function JoinForm({ slug, initialCode }: { slug: string; initialCode: str
       {preview?.join_mode === "invite" ? (
         <Alert kind="info">This event is invite-only. Use the personal link from your invitation email.</Alert>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-4">
+        <form method="post" onSubmit={onSubmit} className="space-y-4">
           {error && <Alert>{error}</Alert>}
           <Field label="Access code" hint="8 characters, from the organizer or the QR code.">
             <Input
