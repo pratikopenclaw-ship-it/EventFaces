@@ -23,16 +23,16 @@ export default function AdminEventsPage() {
               <Link href="/admin/match-quality" className="rounded-lg border border-line bg-paper px-4 py-2 text-sm font-medium hover:bg-mist">
                 Match quality
               </Link>
-              <Link href="/admin/events/new" className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink/85">
+              <Link href="/admin/events/new" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover">
                 New event
               </Link>
             </>
           )
         }
       />
-      {loading && <p className="text-sm text-ink/70">Loading…</p>}
+      {loading && <p className="text-sm text-muted">Loading…</p>}
       {error && <Alert>{error.message}</Alert>}
-      {!loading && managed.length === 0 && <Card className="text-center text-sm text-ink/70">No events yet.</Card>}
+      {!loading && managed.length === 0 && <Card className="text-center text-sm text-muted">No events yet.</Card>}
       <div className="overflow-hidden rounded-2xl border border-line bg-paper">
         {managed.map((event) => {
           const expired = event.access_expires_at && new Date(event.access_expires_at) < new Date();
@@ -44,7 +44,7 @@ export default function AdminEventsPage() {
             >
               <div>
                 <p className="font-medium">{event.name}</p>
-                <p className="text-sm text-ink/70">
+                <p className="text-sm text-muted">
                   {event.date && `${formatDate(event.date)} · `}{event.photo_count.toLocaleString()}{" "}
                   {event.photo_count === 1 ? "photo" : "photos"}
                 </p>

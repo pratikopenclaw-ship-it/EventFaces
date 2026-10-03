@@ -5,7 +5,7 @@ from datetime import timedelta
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response, status
 from sqlalchemy import select
 
-from app.api.cookies import clear_auth_cookies, set_auth_cookies, set_csrf_cookie
+from app.api.cookies import clear_auth_cookies, set_auth_cookies, set_csrf_cookie, set_theme_cookie
 from app.api.deps import DB, CurrentUser
 from app.core import rate_limit
 from app.core.config import get_settings
@@ -23,11 +23,13 @@ from app.schemas.auth import (
     EmailIn,
     LoginIn,
     MessageOut,
+    PreferencesIn,
     ResetPasswordIn,
     SignupIn,
     TokenIn,
     UserOut,
 )
+from app.services import mobile_auth
 from app.services.tokens import (
     consume_token,
     end_session,
@@ -62,6 +64,7 @@ def start_session(db: DB, response: Response, user: User, session_id: uuid.UUID 
     session_id = session_id or uuid.uuid4()
     refresh = issue_refresh_token(db, user, timedelta(days=s.refresh_token_days), session_id)
     set_auth_cookies(response, create_access_token(user.id, user.role.value, session_id), refresh)
+    set_theme_cookie(response, user.theme)  # a signed-in device follows the profile's theme
 
 
 @router.get("/csrf")
@@ -129,7 +132,7 @@ def login(body: LoginIn, request: Request, response: Response, db: DB) -> User:
 
     user = db.scalar(select(User).where(User.email == body.email, User.deleted_at.is_(None)))
     db.commit()  # no pooled connection held while hashing (SEC-041)
-    if user is None:
+    if user is None or user.password_hash is None:  # unknown, or a passwordless (app) account
         verify_password(body.password, DUMMY_PASSWORD_HASH)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid email or password")
     if not verify_password(body.password, user.password_hash):
@@ -144,6 +147,10 @@ def login(body: LoginIn, request: Request, response: Response, db: DB) -> User:
 def refresh(request: Request, response: Response, db: DB) -> User:
     raw = request.cookies.get(REFRESH_COOKIE)
     grace = timedelta(seconds=get_settings().refresh_reuse_grace_seconds)
+    # An app session's refresh token only works with its device signature
+    # (/api/mobile/auth/refresh): presented as a cookie, it is refused without rotating.
+    if raw and mobile_auth.device_for_session(db, mobile_auth.session_of(db, raw)) is not None:
+        raw = None
     token = rotate_refresh_token(db, raw, grace) if raw else None
     user = db.get(User, token.user_id) if token else None
     if token is None or user is None or user.deleted_at is not None:
@@ -200,7 +207,8 @@ def reset_password(body: ResetPasswordIn, db: DB) -> MessageOut:
     # Receiving the reset email proves control of the address.
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()
-    revoke_user_tokens(db, user.id, TokenKind.refresh)  # log out all sessions
+    revoke_user_tokens(db, user.id, TokenKind.refresh)  # log out all sessions, app ones too
+    mobile_auth.revoke_user_devices(db, user.id)
     revoke_user_tokens(db, user.id, TokenKind.reset_password)
     db.commit()
     return MessageOut(detail="Password updated. Please log in.")
@@ -211,4 +219,12 @@ me_router = APIRouter(prefix="/api", tags=["me"])
 
 @me_router.get("/me", response_model=UserOut)
 def me(user: CurrentUser) -> User:
+    return user
+
+
+@me_router.patch("/me/preferences", response_model=UserOut)
+def update_preferences(body: PreferencesIn, response: Response, user: CurrentUser, db: DB) -> User:
+    user.theme = body.theme
+    db.commit()
+    set_theme_cookie(response, user.theme)
     return user

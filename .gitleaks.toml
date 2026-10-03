@@ -20,4 +20,11 @@ paths = [
   '''(^|/)loadtest/results/''',
   '''(^|/)test-results/''',
   '''(^|/)playwright-report/''',
+  '''(^|/)ios/build/''',  # Xcode derived data + SwiftPM checkouts (third-party test fixtures)
+]
+# Exact non-secret values the generic-api-key rule matches by name (justified in
+# SECURITY_QA_REPORT.md, "Scanner results"): a Swift type name in a declaration
+# (`let key: P256.Signing.PrivateKey`), not key material.
+regexes = [
+  '''^P256\.Signing\.PrivateKey$''',
 ]

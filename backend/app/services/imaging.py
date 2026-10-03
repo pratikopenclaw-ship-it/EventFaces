@@ -100,3 +100,26 @@ def process(data: bytes) -> ProcessedImage:
         height=height,
         sha256=hashlib.sha256(data).hexdigest(),
     )
+
+
+LOGO_MAX_SIDE = 512
+LOGO_MAX_PIXELS = 25_000_000
+
+
+def process_logo(data: bytes) -> bytes:
+    """An organizer's event logo → metadata-free PNG, at most 512 px, transparency kept
+    (logos sit on light and dark backgrounds). Same checks as photos: magic bytes, and the
+    pixel count from the header before decoding."""
+    sniff_type(data)
+    try:
+        img: Image.Image = Image.open(io.BytesIO(data))
+        if img.width * img.height > LOGO_MAX_PIXELS:
+            raise UnsupportedImage("Logo is too large (max 25 megapixels)")
+        img.load()
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning, OSError, ValueError, SyntaxError) as e:
+        raise UnsupportedImage(f"Could not decode image: {e}") from e
+    img = ImageOps.exif_transpose(img).convert("RGBA")
+    img.thumbnail((LOGO_MAX_SIDE, LOGO_MAX_SIDE))
+    out = io.BytesIO()
+    img.save(out, "PNG", optimize=True)  # a fresh encode: no EXIF/text chunks carried over
+    return out.getvalue()

@@ -1,3 +1,5 @@
+import type { ThemePref } from "@/lib/theme";
+
 export type UserRole = "super_admin" | "organizer" | "attendee";
 export type JoinMode = "code" | "invite";
 export type ModerationMode = "auto" | "manual";
@@ -10,6 +12,7 @@ export interface User {
   role: UserRole;
   email_verified_at: string | null;
   created_at: string;
+  theme: ThemePref;
 }
 
 export interface EventPublic {
@@ -21,6 +24,9 @@ export interface EventPublic {
   access_expires_at: string | null;
   guest_upload_enabled: boolean;
   allow_selfie_file_upload: boolean;
+  /** Organizer's brand colour (#rrggbb), or null for the default accent. */
+  accent_color: string | null;
+  has_logo: boolean;
 }
 
 export interface EventListItem extends EventPublic {
@@ -51,6 +57,7 @@ export interface EventInput {
   allow_selfie_file_upload: boolean;
   delete_photos_on_expiry: boolean;
   drive_folder: string | null;
+  accent_color: string | null;
 }
 
 export interface JoinPreview {
@@ -115,11 +122,27 @@ export interface PhotoPage {
   total: number;
 }
 
+export interface ConsentSection {
+  heading: string;
+  paragraphs: string[];
+}
+
+/** The versioned consent text, from the API in the user's language (shared with the iOS app). */
+export interface ConsentText {
+  locale: string;
+  title: string;
+  intro: string;
+  sections: ConsentSection[];
+  agreement: string;
+  action: string;
+}
+
 export interface ConsentInfo {
   version: string;
   grant_days: number;
   given: boolean;
   given_at: string | null;
+  text: ConsentText;
 }
 
 export type Tier = "best" | "possible";

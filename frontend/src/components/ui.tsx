@@ -5,10 +5,10 @@ const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).jo
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-ink text-paper hover:bg-ink/85",
+  primary: "bg-accent text-on-accent hover:bg-accent-hover",
   secondary: "border border-line bg-paper text-ink hover:bg-mist",
-  danger: "bg-alarm text-white hover:bg-alarm/85",
-  ghost: "text-ink/70 hover:text-ink hover:bg-mist",
+  danger: "bg-alarm text-paper hover:bg-alarm/85",
+  ghost: "text-muted hover:text-ink hover:bg-mist",
 };
 
 export function Button({
@@ -49,7 +49,7 @@ export function Field({ label, hint, children }: { label: string; hint?: ReactNo
     <label className="block space-y-1.5">
       <span className="text-sm font-medium text-ink">{label}</span>
       {children}
-      {hint && <span className="block text-xs text-ink/70">{hint}</span>}
+      {hint && <span className="block text-xs text-muted">{hint}</span>}
     </label>
   );
 }
@@ -75,7 +75,7 @@ export function Toggle({
       />
       <span>
         <span className="block text-sm font-medium text-ink">{label}</span>
-        {hint && <span className="block text-xs text-ink/70">{hint}</span>}
+        {hint && <span className="block text-xs text-muted">{hint}</span>}
       </span>
     </label>
   );
@@ -89,7 +89,7 @@ export function Alert({ kind = "error", children }: { kind?: "error" | "success"
   const styles = {
     error: "border-alarm/30 bg-alarm/5 text-alarm",
     success: "border-leaf/30 bg-leaf/5 text-leaf",
-    info: "border-accent/30 bg-accent/5 text-ink",
+    info: "border-accent/30 bg-accent-soft text-ink",
   }[kind];
   return (
     <div role={kind === "error" ? "alert" : "status"} className={cx("rounded-lg border px-3 py-2 text-sm", styles)}>
@@ -100,11 +100,11 @@ export function Alert({ kind = "error", children }: { kind?: "error" | "success"
 
 export function Badge({ children, tone = "neutral" }: { children: ReactNode; tone?: "neutral" | "good" | "warn" | "bad" }) {
   const styles = {
-    neutral: "bg-mist text-ink/70",
+    neutral: "bg-mist text-muted",
     // Badge text is darker than the tone colour: small text on a tint needs >= 4.5:1.
-    good: "bg-leaf/10 text-[#23603c]",
-    warn: "bg-amber-100 text-amber-800",
-    bad: "bg-alarm/10 text-[#a12525]",
+    good: "bg-leaf/10 text-good",
+    warn: "bg-warn-tint text-warn",
+    bad: "bg-alarm/10 text-bad",
   }[tone];
   return <span className={cx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", styles)}>{children}</span>;
 }
@@ -114,7 +114,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div>
         <h1 className="font-display text-3xl tracking-tight text-ink">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-ink/70">{subtitle}</p>}
+        {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
       </div>
       {actions && <div className="flex gap-2">{actions}</div>}
     </div>

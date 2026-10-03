@@ -30,3 +30,10 @@ htmlcov/
 .semgrep*
 .gl-*.json
 graphify-out/
+
+# iOS (the project is generated from ios/project.yml by ios/scripts/bootstrap.sh)
+ios/EventFaces.xcodeproj/
+ios/build/
+ios/.build/
+*.xcuserstate
+xcuserdata/

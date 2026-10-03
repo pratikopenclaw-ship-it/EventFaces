@@ -1,8 +1,12 @@
 import uuid
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, HTTPException, Request, Response, status
+from fastapi.concurrency import run_in_threadpool
+from fastapi.responses import StreamingResponse
 
 from app.api.deps import DB, ManagedEvent, MemberEvent, SuperAdmin, VerifiedUser
+from app.api.selfie import read_capped_body
+from app.core import storage
 from app.core.security import utcnow
 from app.models import Event
 from app.schemas.event import (
@@ -12,7 +16,7 @@ from app.schemas.event import (
     EventPublicOut,
     EventUpdate,
 )
-from app.services import search_queue
+from app.services import imaging, search_queue
 from app.services.events import generate_access_code, generate_slug, list_events_for, photo_counts
 from app.services.retention import reopen_event
 from app.workers.tasks import delete_event_objects, index_photo
@@ -98,3 +102,48 @@ def delete_event(user: SuperAdmin, event: ManagedEvent, db: DB) -> None:
     db.delete(event)  # cascades to members, photos, faces, sync runs
     db.commit()
     delete_event_objects.delay(event_id)
+
+
+LOGO_MAX_BYTES = 1024 * 1024
+_LOGO_BODY = {
+    "requestBody": {
+        "required": True,
+        "content": {t: {"schema": {"type": "string", "format": "binary"}} for t in ("image/png", "image/jpeg", "image/heic")},
+    }
+}
+
+
+@router.put("/{event_id}/logo", response_model=EventAdminOut, openapi_extra=_LOGO_BODY)
+async def put_logo(request: Request, event: ManagedEvent, db: DB) -> Event:
+    """Raw image body (≤ 1 MB, JPEG/PNG/HEIC), re-encoded to a metadata-free PNG."""
+    db.commit()  # don't hold the connection while reading and re-encoding
+    data = await read_capped_body(request, LOGO_MAX_BYTES, "Logo is too large (max 1 MB)")
+    try:
+        png = await run_in_threadpool(imaging.process_logo, data)
+    except imaging.UnsupportedImage as e:
+        raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, str(e)) from e
+    key = storage.logo_key(event.id)
+    await run_in_threadpool(storage.put_png, key, png)
+    event.logo_key = key
+    db.commit()
+    return event
+
+
+@router.delete("/{event_id}/logo", response_model=EventAdminOut)
+def delete_logo(event: ManagedEvent, db: DB) -> Event:
+    if event.logo_key:
+        storage.delete_keys(event.logo_key)
+        event.logo_key = None
+        db.commit()
+    return event
+
+
+@router.get("/{event_id}/logo", response_class=StreamingResponse)
+def get_logo(event: MemberEvent) -> Response:
+    if event.logo_key is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "This event has no logo")
+    body, length = storage.open_stream(event.logo_key)
+    headers = {"Cache-Control": "private, max-age=300"}
+    if length:
+        headers["Content-Length"] = str(length)
+    return StreamingResponse(body.iter_chunks(), media_type="image/png", headers=headers)

@@ -36,7 +36,7 @@ export function RemovalRequestForm({ initialEvent }: { initialEvent: string }) {
   if (sent) {
     return (
       <AuthCard title="Check your inbox">
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           If that event exists, we&apos;ve emailed you a link. Open it within 48 hours to finish your request.
         </p>
       </AuthCard>
@@ -68,7 +68,7 @@ export function RemovalRequestForm({ initialEvent }: { initialEvent: string }) {
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Sending…" : "Continue"}
         </Button>
-        <p className="text-xs text-ink/70">
+        <p className="text-xs text-muted">
           Next, you can add a reference photo of yourself so organizers can find the right pictures. It&apos;s
           compared once and deleted immediately.
         </p>

@@ -33,7 +33,7 @@ import uvicorn
 from alembic import command
 from alembic.config import Config
 from fastapi import APIRouter, HTTPException, Response
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, select, text
 
 from app.core import storage
 from app.core.config import get_settings
@@ -117,13 +117,16 @@ def reset_endpoint() -> dict[str, object]:
 
 
 @router.post("/event")
-def seed_event(join_mode: str = "code", guest_uploads: bool = False, moderation: str = "manual", synced: bool = True) -> dict[str, str]:
-    """An event run by org@e2e.test, with alice and bob as members, photos synced."""
+def seed_event(
+    join_mode: str = "code", guest_uploads: bool = False, moderation: str = "manual", synced: bool = True, name: str | None = None
+) -> dict[str, str]:
+    """An event run by org@e2e.test, with alice and bob as members, photos synced. `name`
+    fixes the event name (visual tests); by default it carries a random suffix."""
     from app.models import DriveSyncRun, SyncStatus
     from app.workers.tasks import sync_drive
 
     with SessionLocal() as db:
-        name = f"E2E Party {uuid.uuid4().hex[:4]}"
+        name = name or f"E2E Party {uuid.uuid4().hex[:4]}"
         ev = Event(
             name=name,
             slug=generate_slug(name),
@@ -164,6 +167,22 @@ def seed_users(event_id: uuid.UUID, n: int = 100) -> dict[str, object]:
             db.add(EventMember(event_id=event_id, user_id=u.id, role=MemberRole.attendee, status=MemberStatus.approved))
         db.commit()
     return {"emails": emails, "password": PASSWORD}
+
+
+@router.post("/event/{event_id}/organizer")
+def seed_organizer(event_id: uuid.UUID, email: str) -> dict[str, str]:
+    """An example.com organizer of the event (the app signs in with emailed codes, and
+    email_validator rejects the seeded @e2e.test addresses)."""
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        if user is None:
+            user = User(email=email, password_hash=None, role=UserRole.organizer, email_verified_at=utcnow())
+            db.add(user)
+            db.flush()
+        user.role = UserRole.organizer
+        db.add(EventMember(event_id=event_id, user_id=user.id, role=MemberRole.organizer, status=MemberStatus.approved))
+        db.commit()
+    return {"email": email}
 
 
 @router.post("/event/{event_id}/expire")

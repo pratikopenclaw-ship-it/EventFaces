@@ -137,6 +137,31 @@ class Settings(BaseSettings):
     join_lockout_attempts: int = 5
     join_lockout_seconds: int = 900
 
+    # Mobile app (bearer auth, passwordless sign-in). Access tokens use access_token_minutes;
+    # refresh tokens refresh_token_days and must be signed by the device key (device-bound).
+    mobile_code_ttl_minutes: int = Field(default=10, ge=1, le=60)
+    mobile_code_max_attempts: int = Field(default=5, ge=1, le=10)  # per code, then it dies
+    mobile_code_request_rate_limit: str = "5/900"  # per email (and x5 per IP)
+    mobile_code_verify_rate_limit: str = "20/900"  # per IP
+    mobile_signature_skew_seconds: int = Field(default=60, ge=10, le=300)
+    # Bearer requests below the minimum get 426 (force an update after a security fix).
+    ios_min_supported_version: str = Field(default="1.0.0", pattern=r"^\d+\.\d+\.\d+$")
+    ios_latest_version: str = Field(default="1.0.0", pattern=r"^\d+\.\d+\.\d+$")
+    ios_update_url: str = "https://apps.apple.com/"
+
+    # APNs (token-based auth). Push is disabled until all four are set.
+    apns_key_p8: str = ""  # contents of the .p8 key (PEM)
+    apns_key_id: str = ""
+    apns_team_id: str = ""
+    apns_topic: str = ""  # the app's bundle id
+    apns_env: Literal["sandbox", "production"] = "sandbox"
+    apns_timeout_seconds: float = Field(default=10.0, ge=1, le=60)
+
+    # App Attest. Report-only: results are recorded and logged, never block a request.
+    # Off until APP_ATTEST_APP_ID ("<Team ID>.<bundle id>") is set.
+    app_attest_app_id: str = Field(default="", pattern=r"^([A-Z0-9]{10}\.[A-Za-z0-9.-]+)?$")
+    app_attest_env: Literal["development", "production"] = "development"
+
 
     @model_validator(mode="after")
     def _refuse_insecure_production(self) -> "Settings":
@@ -165,6 +190,12 @@ class Settings(BaseSettings):
             problems.append("S3_SECRET_KEY must be set to a private key")
         if self.smtp_host == "mailpit":
             problems.append("SMTP_HOST must point at a real mail server")
+        if self.apns_key_p8 and "BEGIN PRIVATE KEY" not in self.apns_key_p8:
+            problems.append("APNS_KEY_P8 must be the PEM contents of the .p8 key")
+        if self.apns_key_p8 and self.apns_env != "production":
+            problems.append("APNS_ENV must be production")
+        if self.app_attest_app_id and self.app_attest_env != "production":
+            problems.append("APP_ATTEST_ENV must be production")  # development keys are never accepted in production
         if problems:
             raise ValueError("Refusing to start in production: " + "; ".join(problems))
         return self

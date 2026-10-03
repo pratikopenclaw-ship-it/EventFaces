@@ -19,7 +19,7 @@ export async function reset(request: APIRequestContext): Promise<void> {
 
 export async function seedEvent(
   request: APIRequestContext,
-  opts: { join_mode?: "code" | "invite"; guest_uploads?: boolean; moderation?: "manual" | "auto"; synced?: boolean } = {},
+  opts: { join_mode?: "code" | "invite"; guest_uploads?: boolean; moderation?: "manual" | "auto"; synced?: boolean; name?: string } = {},
 ): Promise<SeededEvent> {
   const params = new URLSearchParams(Object.entries(opts).map(([k, v]) => [k, String(v)]));
   const r = await request.post(`${API}/__e2e/event?${params}`, { timeout: 120_000 });

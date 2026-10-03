@@ -20,7 +20,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <section className="space-y-2">
       <h2 className="font-display text-xl">{title}</h2>
-      <div className="space-y-2 text-sm leading-relaxed text-ink/75">{children}</div>
+      <div className="space-y-2 text-sm leading-relaxed text-muted">{children}</div>
     </section>
   );
 }
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
     <article className="mx-auto max-w-3xl space-y-8">
       <header>
         <h1 className="font-display text-4xl tracking-tight">Privacy notice</h1>
-        <p className="mt-2 text-sm text-ink/70">How EventFaces handles your data.</p>
+        <p className="mt-2 text-sm text-muted">How EventFaces handles your data.</p>
       </header>
 
       <Section title="Who is responsible">

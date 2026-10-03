@@ -3,7 +3,9 @@
 import { useState } from "react";
 
 import { EventForm, initialInput } from "@/components/event-form";
+import { LogoField } from "@/components/logo-field";
 import { Alert, Card, PageHeader, formatDate } from "@/components/ui";
+import { accentStyle } from "@/lib/accent";
 import { patch } from "@/lib/api";
 import type { EventAdmin, EventInput } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -29,7 +31,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
   const [tab, setTab] = useState<Tab>(initialTab);
   const { data: event, error, loading, setData } = useApi<EventAdmin>(`/api/events/${id}/admin`);
 
-  if (loading) return <p className="text-sm text-ink/70">Loading…</p>;
+  if (loading) return <p className="text-sm text-muted">Loading…</p>;
   if (error || !event) {
     return <Alert>{error?.status === 403 ? "You don't manage this event." : error?.message}</Alert>;
   }
@@ -39,7 +41,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
   }
 
   return (
-    <>
+    <div className={event.accent_color ? "event-accent" : undefined} style={accentStyle(event.accent_color)}>
       <PageHeader title={event.name} subtitle={event.date ? formatDate(event.date) : undefined} />
       <div role="tablist" className="-mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-line px-4 sm:mx-0 sm:px-0">
         {(Object.keys(LABELS) as Tab[]).map((t) => (
@@ -49,7 +51,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
             aria-selected={tab === t}
             onClick={() => setTab(t)}
             className={`-mb-px shrink-0 whitespace-nowrap border-b-2 px-4 py-2 text-sm font-medium transition ${
-              tab === t ? "border-accent text-ink" : "border-transparent text-ink/70 hover:text-ink"
+              tab === t ? "border-accent text-ink" : "border-transparent text-muted hover:text-ink"
             }`}
           >
             {LABELS[t]}
@@ -57,15 +59,20 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
         ))}
       </div>
       {tab === "settings" && (
-        <Card>
-          <EventForm key={event.id} initial={initialInput(event)} submitLabel="Save changes" onSubmit={save} />
-        </Card>
+        <div className="space-y-6">
+          <Card>
+            <EventForm key={event.id} initial={initialInput(event)} submitLabel="Save changes" onSubmit={save} />
+          </Card>
+          <Card>
+            <LogoField event={event} onChange={setData} />
+          </Card>
+        </div>
       )}
       {tab === "access" && <AccessPanel event={event} onChange={setData} />}
       {tab === "members" && <MembersPanel eventId={event.id} />}
       {tab === "photos" && <PhotosPanel event={event} onEditSettings={() => setTab("settings")} />}
       {tab === "moderation" && <ModerationPanel event={event} />}
       {tab === "quality" && <MatchQualityPanel eventId={event.id} />}
-    </>
+    </div>
   );
 }

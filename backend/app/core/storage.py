@@ -140,6 +140,14 @@ def put_jpeg(key: str, data: bytes) -> None:
     get_s3().put_object(Bucket=get_settings().s3_bucket, Key=key, Body=data, ContentType="image/jpeg")
 
 
+def put_png(key: str, data: bytes) -> None:
+    get_s3().put_object(Bucket=get_settings().s3_bucket, Key=key, Body=data, ContentType="image/png")
+
+
+def logo_key(event_id: object) -> str:
+    return f"{event_prefix(event_id)}logo.png"  # under the event prefix: deleted with the event
+
+
 def get_bytes(key: str) -> bytes:
     obj = get_s3().get_object(Bucket=get_settings().s3_bucket, Key=key)
     return obj["Body"].read()

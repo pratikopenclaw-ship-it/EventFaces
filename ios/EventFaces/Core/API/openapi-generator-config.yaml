@@ -1,0 +1,7 @@
+# swift-openapi-generator: types + client from openapi.json (copied from backend/openapi.json
+# by scripts/bootstrap.sh; scripts/test.sh fails if the copy is stale).
+generate:
+  - types
+  - client
+accessModifier: internal
+namingStrategy: idiomatic

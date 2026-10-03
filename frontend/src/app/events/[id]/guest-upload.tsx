@@ -99,12 +99,12 @@ export function GuestUpload({ event }: { event: EventPublic }) {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="font-display text-2xl">Add your photos</h2>
-          <p className="mt-1 max-w-lg text-sm text-ink/70">
+          <p className="mt-1 max-w-lg text-sm text-muted">
             Share photos you took at the event. Location and camera data are removed. Other attendees see a photo only if
             they appear in it, and organizers may review uploads first.
           </p>
         </div>
-        <label className="cursor-pointer rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink/85">
+        <label className="cursor-pointer rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover">
           Choose photos
           <input
             type="file"
@@ -125,7 +125,7 @@ export function GuestUpload({ event }: { event: EventPublic }) {
             <li key={p.key} className="text-sm">
               <div className="flex justify-between gap-4">
                 <span className="truncate">{p.name}</span>
-                <span className={p.error ? "text-alarm" : "text-ink/70"}>{p.error ?? `${p.progress}%`}</span>
+                <span className={p.error ? "text-alarm" : "text-muted"}>{p.error ?? `${p.progress}%`}</span>
               </div>
               {!p.error && (
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-mist">
@@ -145,13 +145,13 @@ export function GuestUpload({ event }: { event: EventPublic }) {
 
       {uploads.length > 0 && (
         <div className="mt-6 border-t border-line pt-4">
-          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-ink/70">Your uploads</p>
+          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted">Your uploads</p>
           <ul className="divide-y divide-line text-sm">
             {uploads.map((u) => {
               const label = STATUS_LABEL[u.status] ?? { text: u.status, tone: "neutral" as const };
               return (
                 <li key={u.id} className="flex items-center justify-between gap-4 py-2">
-                  <span className="truncate text-ink/70" title={u.error ?? undefined}>
+                  <span className="truncate text-muted" title={u.error ?? undefined}>
                     {u.original_filename}
                   </span>
                   <Badge tone={label.tone}>{label.text}</Badge>

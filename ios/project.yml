@@ -1,0 +1,102 @@
+# Generate the Xcode project: ios/scripts/bootstrap.sh (runs `xcodegen generate`).
+# EventFaces.xcodeproj is generated and git-ignored; this file is the source of truth.
+name: EventFaces
+options:
+  bundleIdPrefix: app.eventfaces
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "27.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    DEAD_CODE_STRIPPING: YES
+packages:
+  swift-openapi-generator:
+    url: https://github.com/apple/swift-openapi-generator
+    from: "1.10.0"
+  swift-openapi-runtime:
+    url: https://github.com/apple/swift-openapi-runtime
+    from: "1.8.0"
+  swift-openapi-urlsession:
+    url: https://github.com/apple/swift-openapi-urlsession
+    from: "1.1.0"
+targets:
+  EventFaces:
+    type: application
+    platform: iOS
+    sources:
+      - path: EventFaces
+        excludes: ["Resources/Info*.plist"]
+    dependencies:
+      - package: swift-openapi-runtime
+        product: OpenAPIRuntime
+      - package: swift-openapi-urlsession
+        product: OpenAPIURLSession
+    buildToolPlugins:
+      - plugin: OpenAPIGenerator
+        package: swift-openapi-generator
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.eventfaces.ios
+        PRODUCT_NAME: EventFaces
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: Accent
+        CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: EventFaces/Resources/EventFaces.entitlements
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+      configs:
+        Debug:
+          INFOPLIST_FILE: EventFaces/Resources/Info-Debug.plist
+          API_BASE_URL: "http://localhost:8000"
+          APP_LINK_HOST: "localhost"
+        Release:
+          INFOPLIST_FILE: EventFaces/Resources/Info.plist
+          # Set per deployment (xcodebuild API_BASE_URL=... or a .xcconfig); https only (ATS).
+          API_BASE_URL: "https://eventfaces.example"
+          APP_LINK_HOST: "eventfaces.example"
+          SWIFT_OPTIMIZATION_LEVEL: "-O"
+  EventFacesTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [EventFacesTests]
+    dependencies:
+      - target: EventFaces
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.eventfaces.ios.tests
+  EventFacesUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [EventFacesUITests]
+    dependencies:
+      - target: EventFaces
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: app.eventfaces.ios.uitests
+        TEST_TARGET_NAME: EventFaces
+schemes:
+  EventFaces:
+    build:
+      targets:
+        EventFaces: all
+        EventFacesTests: [test]
+        EventFacesUITests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: true
+      coverageTargets: [EventFaces]
+      targets:
+        - EventFacesTests
+        - EventFacesUITests

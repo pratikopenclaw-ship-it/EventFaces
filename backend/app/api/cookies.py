@@ -3,7 +3,8 @@ import secrets
 from fastapi import Response
 
 from app.core.config import get_settings
-from app.core.security import ACCESS_COOKIE, CSRF_COOKIE, REFRESH_COOKIE
+from app.core.security import ACCESS_COOKIE, CSRF_COOKIE, REFRESH_COOKIE, THEME_COOKIE
+from app.models.enums import ThemePreference
 
 
 def set_auth_cookies(response: Response, access_token: str, refresh_token: str) -> None:
@@ -45,3 +46,16 @@ def set_csrf_cookie(response: Response) -> str:
         path="/",
     )
     return token
+
+
+def set_theme_cookie(response: Response, theme: ThemePreference) -> None:
+    """Mirror the profile's theme so the next page renders in it with no flash (and on other devices after login)."""
+    response.set_cookie(
+        THEME_COOKIE,
+        theme.value,
+        max_age=365 * 86400,
+        httponly=False,  # the theme switcher updates it in the browser too
+        secure=get_settings().cookie_secure,
+        samesite="lax",
+        path="/",
+    )

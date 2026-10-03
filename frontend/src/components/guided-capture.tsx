@@ -107,7 +107,7 @@ function Requirements({ onStart }: { onStart: () => void }) {
   return (
     <Card className="mx-auto max-w-xl">
       <h2 className="font-display text-2xl">Before you take your selfies</h2>
-      <p className="mt-1 text-sm text-ink/70">Three quick photos help us find you reliably. They&apos;re deleted right after matching.</p>
+      <p className="mt-1 text-sm text-muted">Three quick photos help us find you reliably. They&apos;re deleted right after matching.</p>
       <ul className="mt-5 space-y-3">
         {items.map(([icon, title, text]) => (
           <li key={title} className="flex gap-3">
@@ -116,7 +116,7 @@ function Requirements({ onStart }: { onStart: () => void }) {
             </span>
             <span>
               <span className="block text-sm font-medium">{title}</span>
-              <span className="text-sm text-ink/70">{text}</span>
+              <span className="text-sm text-muted">{text}</span>
             </span>
           </li>
         ))}
@@ -350,7 +350,7 @@ export function GuidedCapture({
         </div>
       )}
 
-      <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-ink">
+      <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-xl bg-black">
         <video ref={videoRef} playsInline muted className="h-full w-full -scale-x-100 object-cover" />
         {status === "live" && !submitting && !paused && (
           <>
@@ -376,17 +376,17 @@ export function GuidedCapture({
                 transform="rotate(-90 50 37.5)"
               />
             </svg>
-            <p role="status" aria-live="polite" className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-ink/75 px-4 py-1.5 text-sm text-white">
+            <p role="status" aria-live="polite" className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-black/75 px-4 py-1.5 text-sm text-white">
               {guidanceUnavailable ? SHOT_INSTRUCTION[shot] : hint}
             </p>
           </>
         )}
         {status === "loading" && <p className="absolute inset-0 flex items-center justify-center text-sm text-white/70">Starting camera…</p>}
         {submitting && (
-          <p className="absolute inset-0 flex items-center justify-center bg-ink/60 text-sm text-white">{busy ? "Searching…" : "Checking your photos…"}</p>
+          <p className="absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-white">{busy ? "Searching…" : "Checking your photos…"}</p>
         )}
         {paused && !submitting && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-ink/85 p-5 text-center text-white">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/85 p-5 text-center text-white">
             <p className="font-medium">Let&apos;s fix this before trying again</p>
             <ul className="space-y-1 text-left text-sm text-white/85">
               {RETRY_TIPS.map((tip) => (
@@ -415,7 +415,7 @@ export function GuidedCapture({
         </div>
       )}
       {guidanceUnavailable && status === "live" && (
-        <p className="mt-3 text-xs text-ink/70">Live guidance isn&apos;t available in this browser. Follow the instruction above and take each photo yourself.</p>
+        <p className="mt-3 text-xs text-muted">Live guidance isn&apos;t available in this browser. Follow the instruction above and take each photo yourself.</p>
       )}
       {showManual && status === "live" && !submitting && !paused && (
         <Button

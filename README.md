@@ -68,6 +68,10 @@ What a sync does: lists top-level JPEG/PNG/HEIC files (paginated, retries 429/5x
 - **Match quality dashboard** (event tab "Match quality"; super admins: `/admin/match-quality`): feedback by similarity band with the current thresholds marked, wrong-match rate, missing reports, selfie quality distribution and rejection reasons. It also shows a **suggested threshold**: the lowest band edge where ≥ 90% of rated matches at or above it were confirmed, shown once there are ≥ 30 ratings.
 - **MediaPipe is self-hosted** (`scripts/fetch-mediapipe.mjs` copies the WASM and downloads the model at build time, SHA-256 pinned), so visitors never contact Google. Note that tasks-vision **sends usage telemetry to Google (`odml.pa.googleapis.com`) with no opt-out**. The CSP blocks it, and a fetch guard in `guided-capture.tsx` stops it before it reaches the network (verified in the browser: zero third-party requests).
 
+## Themes and event accents
+
+Light, dark or System (default, follows the OS live): the sun/moon/monitor button in the header, or Account → Appearance. Guests keep the choice in a cookie; signed-in users also save it to their profile, so other devices follow after login. Pages render in the saved theme from the first byte (server-side `data-theme`, no inline script, CSP unchanged). Photos (results gallery and viewer) always show on a dark background. Organizers can set an accent colour per event (event settings); it is adjusted automatically to stay readable in both themes.
+
 ## Guest uploads, moderation and invites
 
 - **Uploads** go straight from the browser to storage using a presigned PUT, which is limited to that one key, the declared size and the content type, and expires after 10 minutes. The storage server rejects anything else. On "complete", the API checks size and magic bytes. A worker then re-encodes the photo (stripping EXIF/GPS), deletes the raw object, and indexes it with the same `index_photo` step as Drive photos.

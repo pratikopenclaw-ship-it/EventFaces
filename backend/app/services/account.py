@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.db import affected
 from app.models import (
     AuthToken,
+    Device,
     EventMember,
     Invite,
     MatchFeedback,
@@ -55,6 +56,7 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
     invites = affected(db.execute(delete(Invite).where(Invite.email == user.email)))
     db.execute(delete(RemovalRequest).where(RemovalRequest.email == user.email))
     db.execute(delete(AuthToken).where(AuthToken.user_id == user.id))
+    db.execute(delete(Device).where(Device.user_id == user.id))  # incl. push tokens
     # Keep aggregate counts for security/accountability, without the person.
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
     anonymized = (

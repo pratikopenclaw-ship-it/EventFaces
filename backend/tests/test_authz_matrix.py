@@ -1,4 +1,4 @@
-"""Authorization matrix: every API operation × every role.
+"""Authorization matrix: every API operation × every role × both transports.
 
 Roles: anonymous, unverified, attendee-not-member, attendee-member, revoked, expired,
 organizer-of-other-event, organizer-of-this-event, super_admin.
@@ -7,19 +7,27 @@ Each operation has an access class (the intended policy). Allowed roles must not
 401/403 (a business outcome such as 404/409/410/422 is fine); denied roles must get
 exactly 401 (anonymous) or 403. No cell may produce a 5xx. The operation list is checked
 against the live OpenAPI schema, so a new endpoint without a matrix entry fails the suite.
+
+Transports: "cookie" (the web app) and "bearer" (the iOS app: Authorization header from a
+device session, X-App-Version, no CSRF cookie). Every cell must come out the same over
+both, which is what "the app is never a weaker path into the system" means here.
 """
 
+import base64
 import uuid
 from dataclasses import dataclass, field
 from datetime import timedelta
 from typing import Any
 
 import pytest
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.core import storage
 from app.core.config import get_settings
+from app.core.db import SessionLocal
 from app.core.security import hash_password, hash_token, utcnow
 from app.main import app
 from app.models import (
@@ -40,6 +48,7 @@ from app.models import (
     User,
     UserRole,
 )
+from app.services import mobile_auth
 from app.services.events import generate_access_code
 from app.services.search import FACE_CONSENT_VERSION
 from tests.conftest import PASSWORD, new_client
@@ -68,7 +77,14 @@ ALLOWED: dict[str, set[str]] = {
     "SUPER": {"super_admin"},
     # Needs a session (refresh cookie) but not a valid access token.
     "SESSION": set(ROLES) - {"anonymous"},
+    # Credentials travel in the body (device-signed refresh): a session doesn't help, every
+    # caller with bad credentials gets exactly 401.
+    "CREDENTIAL": set(),
 }
+TRANSPORTS = ["cookie", "bearer"]
+DEVICE_KEY = base64.b64encode(
+    ec.generate_private_key(ec.SECP256R1()).public_key().public_bytes(Encoding.X962, PublicFormat.UncompressedPoint)
+).decode()
 
 _PW_HASH = hash_password(PASSWORD)  # computed once: keeps 600+ cases fast
 
@@ -173,6 +189,7 @@ class Op:
     json: Any = None
     content: bytes | None = None
     headers: dict[str, str] | None = None
+    transports: tuple[str, ...] = ("cookie", "bearer")
 
 
 E = "{event_a}"
@@ -183,7 +200,7 @@ OPS: list[Op] = [
     Op("POST", "/api/auth/signup", "PUBLIC", json={"email": "new-person@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/login", "PUBLIC", json={"email": "member@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/logout", "PUBLIC"),
-    Op("POST", "/api/auth/refresh", "SESSION"),
+    Op("POST", "/api/auth/refresh", "SESSION", transports=("cookie",)),
     Op("POST", "/api/auth/verify-email", "PUBLIC", json={"token": "not-a-real-token-123"}),
     Op("POST", "/api/auth/resend-verification", "PUBLIC", json={"email": "someone@example.com"}),
     Op("POST", "/api/auth/forgot-password", "PUBLIC", json={"email": "someone@example.com"}),
@@ -194,11 +211,26 @@ OPS: list[Op] = [
     Op("GET", "/api/removal-requests/event/{slug_a}", "PUBLIC"),
     Op("GET", "/api/removal-requests/not-a-real-token-123", "PUBLIC"),
     Op("POST", "/api/removal-requests/not-a-real-token-123/submit", "PUBLIC"),
+    Op("GET", "/api/app/config", "PUBLIC"),
+    # --- the app's pre-login endpoints (bearer transport only: they're app requests) ---
+    Op("POST", "/api/mobile/auth/code/request", "PUBLIC", json={"email": "phone@example.com"}, transports=("bearer",)),
+    Op("POST", "/api/mobile/auth/code/verify", "PUBLIC", json={"email": "phone@example.com", "code": "000000", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
+    Op("POST", "/api/mobile/auth/magic", "PUBLIC", json={"token": "not-a-real-token-1234567", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
+    Op("POST", "/api/mobile/auth/refresh", "CREDENTIAL", json={"refresh_token": "not-a-real-token-1234567", "device_id": "{random_id}", "ts": 1, "signature": "AAAAAAAAAAAA"}, transports=("bearer",)),
     # --- any logged-in user ---
     Op("GET", "/api/me", "AUTH"),
     Op("DELETE", "/api/me", "AUTH", json={"password": PASSWORD}),
     Op("GET", "/api/me/face-consent", "AUTH"),
     Op("DELETE", "/api/me/face-consent", "AUTH"),
+    Op("PATCH", "/api/me/preferences", "AUTH", json={"theme": "dark"}),
+    Op("POST", "/api/me/reauth-code", "AUTH"),
+    Op("GET", "/api/me/devices", "AUTH"),
+    Op("DELETE", "/api/me/devices/{random_id}", "AUTH"),
+    Op("PUT", "/api/me/devices/current/push", "AUTH", json={"token": "ab" * 32, "env": "sandbox"}),
+    Op("DELETE", "/api/me/devices/current/push", "AUTH"),
+    Op("POST", "/api/me/devices/current/attest/challenge", "AUTH"),
+    Op("POST", "/api/me/devices/current/attest", "AUTH", json={"key_id": "A" * 43 + "=", "attestation": "AAAAAAAA"}),
+    Op("POST", "/api/mobile/auth/logout", "AUTH", transports=("bearer",)),
     Op("GET", "/api/selfie-requirements", "AUTH"),
     Op("POST", "/api/invites/accept", "AUTH", json={"token": "not-a-real-token-123"}),
     Op("GET", "/api/downloads/not-a-real-token", "AUTH"),
@@ -207,9 +239,11 @@ OPS: list[Op] = [
     Op("GET", "/api/events", "VERIFIED"),
     Op("GET", "/api/join/{slug_a}", "VERIFIED"),
     Op("POST", "/api/join", "VERIFIED", json={"slug": "{slug_a}", "code": "WRONGCODE"}),
+    Op("POST", "/api/join/by-code", "VERIFIED", json={"code": "WRONGCODE"}),
     Op("GET", "/api/drive/service-account", "ORGANIZER"),
     # --- members of event A ---
     Op("GET", f"/api/events/{E}", "MEMBER"),
+    Op("GET", f"/api/events/{E}/logo", "MEMBER"),
     Op("POST", f"/api/events/{E}/capture-token", "MEMBER"),
     Op("POST", f"/api/events/{E}/search?source=upload", "MEMBER", content=b"x", headers={"content-type": "image/jpeg"}),
     Op("GET", f"/api/events/{E}/my-photos", "MEMBER"),
@@ -225,6 +259,8 @@ OPS: list[Op] = [
     # --- organizers of event A (and super admin) ---
     Op("GET", f"/api/events/{E}/admin", "MANAGER"),
     Op("PATCH", f"/api/events/{E}", "MANAGER", json={"description": "x"}),
+    Op("PUT", f"/api/events/{E}/logo", "MANAGER", content=b"not an image", headers={"content-type": "image/png"}),
+    Op("DELETE", f"/api/events/{E}/logo", "MANAGER"),
     Op("POST", f"/api/events/{E}/access-code/rotate", "MANAGER"),
     Op("GET", f"/api/events/{E}/members", "MANAGER"),
     Op("PATCH", f"/api/events/{E}/members/{{member_a}}", "MANAGER", json={"expires_at": None}),
@@ -264,6 +300,7 @@ def _fill(template: Any, w: World) -> Any:
         "removal_a": str(w.removal_a.id),
         "member_a": str(w.users["attendee_member"].id),
         "random_id": str(uuid.uuid4()),
+        "device_key": DEVICE_KEY,
     }
     if isinstance(template, str):
         for k, v in values.items():
@@ -276,7 +313,19 @@ def _fill(template: Any, w: World) -> Any:
     return template
 
 
-def _client(role: str, w: World) -> TestClient:
+def _client(role: str, w: World, transport: str = "cookie") -> TestClient:
+    if transport == "bearer":
+        # What the app sends: a device session's bearer token and its version, no cookies.
+        c = TestClient(app)
+        c.headers["X-App-Version"] = "1.0.0"
+        if role != "anonymous":
+            with SessionLocal() as db:
+                session = mobile_auth.start_device_session(
+                    db, db.get(User, w.users[role].id), name="Matrix", platform="ios", app_version="1.0.0", public_key=DEVICE_KEY
+                )
+                db.commit()
+            c.headers["Authorization"] = f"Bearer {session.access_token}"
+        return c
     c = new_client()
     if role != "anonymous":
         r = c.post("/api/auth/login", json={"email": w.users[role].email, "password": PASSWORD})
@@ -294,6 +343,7 @@ def _normalise(path: str) -> str:
 
     path = path.split("?")[0]
     replacements = [
+        (r"/api/me/devices/\{random_id\}", "/api/me/devices/{device_id}"),
         (r"/api/events/\{event_a\}", "/api/events/{event_id}"),
         (r"\{photo_a\}", "{photo_id}"),
         (r"\{random_id\}", "{photo_id}"),
@@ -319,12 +369,19 @@ def test_matrix_covers_every_api_operation() -> None:
     assert not missing, f"operations without an authorization-matrix entry: {sorted(missing)}"
 
 
+@pytest.mark.parametrize("transport", TRANSPORTS)
 @pytest.mark.parametrize("role", ROLES)
 @pytest.mark.parametrize("op", OPS, ids=lambda o: f"{o.method} {o.path}")
-def test_authorization_matrix(op: Op, role: str, world: World, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_authorization_matrix(op: Op, role: str, transport: str, world: World, monkeypatch: pytest.MonkeyPatch) -> None:
+    if transport not in op.transports:
+        pytest.skip(f"{op.path} is not used over {transport}")
+    if transport == "bearer" and role == "anonymous" and op.transports != ("bearer",):
+        pytest.skip("an app without a session is an anonymous client: the cookie column covers it")
     # File selfies are allowed globally and for event A, so search cells test membership, not the camera rule.
     monkeypatch.setattr(get_settings(), "allow_selfie_file_upload", True)
-    c = _client(role, world)
+    # App Attest on, so its cells exercise the endpoints rather than the "off" 404.
+    monkeypatch.setattr(get_settings(), "app_attest_app_id", "ABCDE12345.app.eventfaces.ios")
+    c = _client(role, world, transport)
     headers = dict(op.headers or {})
     r = c.request(
         op.method,
@@ -334,7 +391,9 @@ def test_authorization_matrix(op: Op, role: str, world: World, monkeypatch: pyte
         headers=headers or None,
     )
     assert r.status_code < 500, f"{role}: {r.status_code} {r.text[:200]}"
-    if role in ALLOWED[op.access]:
+    if op.access == "CREDENTIAL":
+        assert r.status_code == 401, f"{role}: {r.status_code} {r.text[:200]}"
+    elif role in ALLOWED[op.access]:
         assert r.status_code not in (401, 403), f"{role} should be allowed: {r.status_code} {r.text[:200]}"
     else:
         expected = 401 if role == "anonymous" else 403

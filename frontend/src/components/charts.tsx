@@ -22,7 +22,14 @@ function useWidth<T extends HTMLElement>(fallback: number): [React.RefObject<T |
 }
 
 export const SERIES = { blue: "#2a78d6", orange: "#eb6834" } as const;
-const INK = { primary: "#1a1d24", secondary: "#52514e", muted: "#898781", grid: "#e1e0d9", axis: "#c3c2b7" };
+// Theme tokens, so charts follow light/dark (applied via style: var() isn't valid in SVG attributes).
+const INK = {
+  primary: "var(--color-ink)",
+  secondary: "var(--color-muted)",
+  muted: "var(--color-muted)",
+  grid: "var(--color-line)",
+  axis: "color-mix(in oklab, var(--color-ink) 30%, transparent)",
+};
 
 interface Tip {
   x: number;
@@ -123,8 +130,8 @@ export function StackedColumns({
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" role="img" aria-label={ariaLabel}>
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} stroke={t === 0 ? INK.axis : INK.grid} strokeWidth={1} />
-            <text x={pad.left - 6} y={y(t) + 4} textAnchor="end" fontSize={11} fill={INK.muted} style={{ fontVariantNumeric: "tabular-nums" }}>
+            <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} style={{ stroke: t === 0 ? INK.axis : INK.grid }} strokeWidth={1} />
+            <text x={pad.left - 6} y={y(t) + 4} textAnchor="end" fontSize={11} style={{ fill: INK.muted, fontVariantNumeric: "tabular-nums" }}>
               {t}
             </text>
           </g>
@@ -133,8 +140,8 @@ export function StackedColumns({
           const x = pad.left + m.at * slot;
           return (
             <g key={m.label}>
-              <line x1={x} x2={x} y1={pad.top - 14} y2={pad.top + plotH} stroke={INK.primary} strokeWidth={1} strokeOpacity={0.55} />
-              <text x={x + 3} y={pad.top - 16} fontSize={11} fill={INK.secondary}>
+              <line x1={x} x2={x} y1={pad.top - 14} y2={pad.top + plotH} style={{ stroke: INK.primary }} strokeWidth={1} strokeOpacity={0.55} />
+              <text x={x + 3} y={pad.top - 16} fontSize={11} style={{ fill: INK.secondary }}>
                 {m.label}
               </text>
             </g>
@@ -193,8 +200,8 @@ export function StackedColumns({
                 );
               })}
               {/* Labels mark each band's lower edge (a tick), so threshold markers line up with them. */}
-              <line x1={pad.left + i * slot} x2={pad.left + i * slot} y1={pad.top + plotH} y2={pad.top + plotH + 4} stroke={INK.axis} />
-              <text x={pad.left + i * slot} y={height - pad.bottom + 16} textAnchor="middle" fontSize={11} fill={INK.muted}>
+              <line x1={pad.left + i * slot} x2={pad.left + i * slot} y1={pad.top + plotH} y2={pad.top + plotH + 4} style={{ stroke: INK.axis }} />
+              <text x={pad.left + i * slot} y={height - pad.bottom + 16} textAnchor="middle" fontSize={11} style={{ fill: INK.muted }}>
                 {d.label}
               </text>
             </g>

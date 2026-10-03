@@ -34,10 +34,10 @@ export default function MyEventsPage() {
       <PageHeader title="My events" subtitle="Events you've joined." />
       <div className="grid gap-8 md:grid-cols-[1fr_320px]">
         <div className="space-y-3">
-          {loading && <p className="text-sm text-ink/70">Loading…</p>}
+          {loading && <p className="text-sm text-muted">Loading…</p>}
           {error && error.status !== 403 && <Alert>{error.message}</Alert>}
           {!loading && attending.length === 0 && (
-            <Card className="text-center text-sm text-ink/70">
+            <Card className="text-center text-sm text-muted">
               You haven&apos;t joined any events yet. Use the link or QR code from the organizer.
             </Card>
           )}
@@ -50,7 +50,7 @@ export default function MyEventsPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <h2 className="font-medium">{event.name}</h2>
-                  {event.date && <p className="text-sm text-ink/70">{formatDate(event.date)}</p>}
+                  {event.date && <p className="text-sm text-muted">{formatDate(event.date)}</p>}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}

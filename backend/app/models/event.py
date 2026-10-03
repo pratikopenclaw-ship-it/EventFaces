@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Enum, ForeignKey, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -11,6 +11,7 @@ from app.models.enums import JoinMode, MemberRole, MemberStatus, ModerationMode
 
 class Event(Base):
     __tablename__ = "events"
+    __table_args__ = (CheckConstraint("accent_color ~ '^#[0-9a-f]{6}$'", name="ck_events_accent_color"),)
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     slug: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
@@ -31,6 +32,11 @@ class Event(Base):
     allow_selfie_file_upload: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     delete_photos_on_expiry: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     drive_folder_id: Mapped[str | None] = mapped_column(String(200))
+    # Organizer-chosen brand colour (#rrggbb, lowercase); the frontend derives readable
+    # per-theme variants from it. NULL = the app's default accent.
+    accent_color: Mapped[str | None] = mapped_column(String(7))
+    # Storage key of the organizer's logo (re-encoded PNG), or NULL.
+    logo_key: Mapped[str | None] = mapped_column(String(200))
     created_by: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
     )
@@ -38,6 +44,17 @@ class Event(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     retention_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    @property
+    def has_logo(self) -> bool:
+        return self.logo_key is not None
+
+    @property
+    def upload_max_bytes(self) -> int:
+        """Guest upload size limit (shown before choosing photos; enforced on upload)."""
+        from app.core.config import get_settings
+
+        return get_settings().guest_upload_max_bytes
 
 
 class EventMember(Base):

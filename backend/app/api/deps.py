@@ -16,14 +16,34 @@ DB = Annotated[Session, Depends(get_db)]
 FORBIDDEN = HTTPException(status.HTTP_403_FORBIDDEN, "You don't have access to this event")
 
 
+def bearer_token(request: Request) -> str | None:
+    """The token from `Authorization: Bearer …`; "" if the header is present but malformed."""
+    header = request.headers.get("authorization")
+    if header is None:
+        return None
+    scheme, _, token = header.partition(" ")
+    return token.strip() if scheme.lower() == "bearer" else ""
+
+
 def get_current_user(request: Request, db: DB) -> User:
-    token = request.cookies.get(ACCESS_COOKIE)
-    payload = decode_access_token(token) if token else None
+    # The app authenticates with a bearer header, the browser with the httpOnly cookie.
+    # A request with the header is judged on the header alone (cookies are ignored), and
+    # each transport accepts only its own token audience (no token confusion).
+    bearer = bearer_token(request)
+    if bearer is not None:
+        payload = decode_access_token(bearer, audience="mobile") if bearer else None
+        transport = "mobile"
+    else:
+        token = request.cookies.get(ACCESS_COOKIE)
+        payload = decode_access_token(token, audience="web") if token else None
+        transport = "web"
     if payload is None or not session_is_live(db, payload["sub"], payload["sid"]):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
     user = db.get(User, payload["sub"])
     if user is None or user.deleted_at is not None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
+    request.state.transport = transport
+    request.state.session_id = payload["sid"]
     return user
 
 

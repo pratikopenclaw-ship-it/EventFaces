@@ -37,15 +37,15 @@ export function RemovalRequests({ eventId }: { eventId: string }) {
   return (
     <section>
       <h2 className="mb-1 font-medium">
-        Removal requests <span className="text-ink/70">({items.length})</span>
+        Removal requests <span className="text-muted">({items.length})</span>
       </h2>
-      <p className="mb-3 text-xs text-ink/70">
+      <p className="mb-3 text-xs text-muted">
         From people who appear in photos (they may not be attendees). Photos were matched with a reference selfie
         that was deleted right after matching. Check that each photo really shows them before removing it.
       </p>
       {error && <Alert>{error}</Alert>}
       {items.length === 0 ? (
-        <Card className="text-center text-sm text-ink/70">No open removal requests.</Card>
+        <Card className="text-center text-sm text-muted">No open removal requests.</Card>
       ) : (
         <ul className="space-y-3">
           {items.map((req) => {
@@ -54,11 +54,11 @@ export function RemovalRequests({ eventId }: { eventId: string }) {
               <li key={req.id} className="rounded-xl border border-line bg-paper p-4">
                 <div className="flex flex-wrap items-baseline justify-between gap-2 text-sm">
                   <span className="font-medium">{req.email}</span>
-                  <span className="text-xs text-ink/70">{new Date(req.created_at).toLocaleString()}</span>
+                  <span className="text-xs text-muted">{new Date(req.created_at).toLocaleString()}</span>
                 </div>
-                {req.message && <p className="mt-1 text-sm text-ink/75">“{req.message}”</p>}
+                {req.message && <p className="mt-1 text-sm text-muted">“{req.message}”</p>}
                 {req.matched_photo_ids.length === 0 ? (
-                  <p className="mt-3 text-sm text-ink/70">No reference photo, or no matches. Find the photos manually in the Photos tab.</p>
+                  <p className="mt-3 text-sm text-muted">No reference photo, or no matches. Find the photos manually in the Photos tab.</p>
                 ) : (
                   <ul className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
                     {req.matched_photo_ids.map((pid) => (

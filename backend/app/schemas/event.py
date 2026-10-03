@@ -19,6 +19,18 @@ def _drive_folder(v: str | None) -> str | None:
     return folder_id
 
 
+def _accent(v: str | None) -> str | None:
+    if v is None or not v.strip():
+        return None
+    v = v.strip().lower()
+    if len(v) != 7 or v[0] != "#" or any(c not in "0123456789abcdef" for c in v[1:]):
+        raise ValueError("Accent colour must look like #1a7f74")
+    return v
+
+
+# "#rrggbb" (any case, normalized to lowercase); blank clears it.
+AccentColor = Annotated[str | None, AfterValidator(_accent)]
+
 # Accepts a Drive folder URL or bare ID; normalized to the ID.
 DriveFolder = Annotated[str | None, AfterValidator(_drive_folder)]
 
@@ -38,6 +50,7 @@ class EventBase(BaseModel):
     allow_selfie_file_upload: bool = False
     delete_photos_on_expiry: bool = False
     drive_folder: DriveFolder = None
+    accent_color: AccentColor = None
 
 
 class EventCreate(EventBase):
@@ -57,6 +70,7 @@ class EventUpdate(BaseModel):
     allow_selfie_file_upload: bool | None = None
     delete_photos_on_expiry: bool | None = None
     drive_folder: DriveFolder = None
+    accent_color: AccentColor = None
 
 
 class EventPublicOut(BaseModel):
@@ -72,6 +86,9 @@ class EventPublicOut(BaseModel):
     access_expires_at: dt.datetime | None
     guest_upload_enabled: bool
     allow_selfie_file_upload: bool
+    accent_color: str | None = None
+    has_logo: bool = False
+    upload_max_bytes: int | None = None
 
 
 class EventAdminOut(EventPublicOut):
@@ -101,6 +118,10 @@ class JoinPreviewOut(BaseModel):
 class JoinIn(BaseModel):
     slug: str = Field(min_length=1, max_length=80)
     code: str = Field(min_length=1, max_length=32)
+
+
+class CodeOnlyJoinIn(BaseModel):
+    code: str = Field(min_length=4, max_length=32)
 
 
 class MemberOut(BaseModel):

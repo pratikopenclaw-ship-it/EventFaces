@@ -31,6 +31,7 @@ from app.core.email import Mail, get_mailer
 from app.core.redis import get_redis
 from app.core.security import utcnow
 from app.models import Event, User
+from app.services import push
 from app.services.membership import can_access
 from app.services.search import FACE_CONSENT_VERSION, SelfieRejected, run_search
 
@@ -236,6 +237,7 @@ def process(job: Job) -> None:
             _set_status(job.user_id, job.event_id, "rejected", message=e.message, shot=e.shot, code=e.code)
             _notify(email, f"We couldn't use your selfie for {event_name}",
                     f"{e.message}\n\nPlease try again: {link}\n")
+            push.notify_safely([job.user_id], push.Notice("search_rejected", job.event_id))
             return
         finally:
             job.shots = []
@@ -243,6 +245,7 @@ def process(job: Job) -> None:
         # A link only: no photos, no counts (the mailbox may not be private).
         _notify(email, f"Your photos from {event_name} are ready",
                 f"Your photo search for {event_name} is complete.\n\nSee your results: {link}\n")
+        push.notify_safely([job.user_id], push.Notice("search_ready", job.event_id))
 
 
 def _notify(to: str, subject: str, body: str) -> None:

@@ -51,7 +51,7 @@ export function InviteLanding({ token }: { token: string }) {
     return (
       <AuthCard title="Invite unavailable">
         <Alert>{preview.error?.message ?? "This invite link is invalid or has expired."}</Alert>
-        <p className="mt-4 text-sm text-ink/70">Ask the organizer to send you a new invite.</p>
+        <p className="mt-4 text-sm text-muted">Ask the organizer to send you a new invite.</p>
       </AuthCard>
     );
   }
@@ -94,12 +94,12 @@ export function InviteLanding({ token }: { token: string }) {
   if (inv.account_exists) {
     return (
       <AuthCard title={title} subtitle={subtitle}>
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           Log in as <strong>{inv.email}</strong> to accept.
         </p>
         <Link
           href={`/login?next=${encodeURIComponent(`/invite/${token}`)}`}
-          className="mt-4 flex w-full justify-center rounded-lg bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-ink/85"
+          className="mt-4 flex w-full justify-center rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover"
         >
           Log in
         </Link>
@@ -112,7 +112,7 @@ export function InviteLanding({ token }: { token: string }) {
     <AuthCard title={title} subtitle={subtitle}>
       <form method="post" onSubmit={register} className="space-y-4">
         {error && <Alert>{error}</Alert>}
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           Create your account for <strong>{inv.email}</strong>. No separate email confirmation needed.
         </p>
         <Field label="Password" hint="At least 10 characters.">

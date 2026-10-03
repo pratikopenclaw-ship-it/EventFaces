@@ -6,7 +6,7 @@ from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
-from app.models.enums import TokenKind, UserRole
+from app.models.enums import ThemePreference, TokenKind, UserRole
 
 
 class User(Base):
@@ -14,7 +14,9 @@ class User(Base):
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(CITEXT, unique=True, nullable=False)
-    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    # NULL for accounts created by passwordless (emailed code) sign-in in the app; password
+    # login then fails through the dummy-hash path, like an unknown email.
+    password_hash: Mapped[str | None] = mapped_column(String)
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="user_role"), nullable=False, default=UserRole.attendee
     )
@@ -26,6 +28,11 @@ class User(Base):
     # Explicit consent (GDPR Art. 9(2)(a)) to biometric processing for selfie search.
     face_consent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     face_consent_version: Mapped[str | None] = mapped_column(String(40))
+    # Colour theme; mirrored into the ef_theme cookie so pages render in it server-side.
+    theme: Mapped[ThemePreference] = mapped_column(
+        Enum(ThemePreference, name="theme_preference"), nullable=False, default=ThemePreference.system,
+        server_default=ThemePreference.system.value,
+    )
 
     @property
     def is_verified(self) -> bool:

@@ -3,6 +3,7 @@
 import Link from "next/link";
 
 import { useSession } from "@/components/session";
+import { ThemeMenu } from "@/components/theme";
 import { Button } from "@/components/ui";
 
 export function Nav() {
@@ -15,18 +16,18 @@ export function Nav() {
         <Link href="/" className="font-display text-xl tracking-tight text-ink">
           Event<span className="text-accent">Faces</span>
         </Link>
-        <div className="flex items-center gap-1 text-sm">
+        <div className="flex items-center gap-0 text-sm sm:gap-1">
           {user ? (
             <>
-              <Link href="/events" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
+              <Link href="/events" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                 My events
               </Link>
               {isAdmin && (
-                <Link href="/admin/events" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
+                <Link href="/admin/events" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                   Manage
                 </Link>
               )}
-              <Link href="/account" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
+              <Link href="/account" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                 <span className="sm:hidden">Account</span>
                 <span className="hidden sm:inline">{user.email}</span>
               </Link>
@@ -39,14 +40,15 @@ export function Nav() {
             </>
           ) : (
             <>
-              <Link href="/login" className="whitespace-nowrap rounded-lg px-2.5 py-2 text-ink/70 hover:bg-mist hover:text-ink sm:px-3">
+              <Link href="/login" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                 Log in
               </Link>
-              <Link href="/signup" className="rounded-lg bg-ink px-3 py-2 font-medium text-paper hover:bg-ink/85">
+              <Link href="/signup" className="rounded-lg bg-accent px-3 py-2 font-medium text-on-accent hover:bg-accent-hover">
                 Sign up
               </Link>
             </>
           )}
+          <ThemeMenu />
         </div>
       </nav>
     </header>
