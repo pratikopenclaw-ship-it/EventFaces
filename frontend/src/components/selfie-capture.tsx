@@ -116,11 +116,11 @@ export function SelfieCapture({
   return (
     <Card className="mx-auto max-w-xl">
       <h2 className="font-display text-2xl">Take a selfie</h2>
-      <p className="mt-1 text-sm text-ink/70">
+      <p className="mt-1 text-sm text-muted">
         Face the camera in good light, without sunglasses. It&apos;s used once and never saved.
       </p>
 
-      <div className="relative mt-5 aspect-[4/3] overflow-hidden rounded-xl bg-ink">
+      <div className="relative mt-5 aspect-[4/3] overflow-hidden rounded-xl bg-black">
         {shot ? (
           // eslint-disable-next-line @next/next/no-img-element -- local object URL preview
           <img src={shot.url} alt="Your selfie" className="h-full w-full -scale-x-100 object-cover" />
@@ -171,7 +171,7 @@ export function SelfieCapture({
       </div>
 
       {allowUpload && !shot && (
-        <label className="mt-4 block text-center text-sm text-ink/70">
+        <label className="mt-4 block text-center text-sm text-muted">
           or{" "}
           <span className="cursor-pointer font-medium text-accent hover:underline">
             upload a photo of yourself

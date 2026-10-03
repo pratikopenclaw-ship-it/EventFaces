@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models.enums import UserRole
+from app.models.enums import ThemePreference, UserRole
 
 Password = Field(min_length=10, max_length=128)
 
@@ -47,6 +47,11 @@ class UserOut(BaseModel):
     role: UserRole
     email_verified_at: datetime | None
     created_at: datetime
+    theme: ThemePreference
+
+
+class PreferencesIn(BaseModel):
+    theme: ThemePreference
 
 
 class MessageOut(BaseModel):

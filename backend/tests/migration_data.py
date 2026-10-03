@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_token, utcnow
 from app.models import (
+    Device,
     AuthToken,
     DriveSyncRun,
     Event,
@@ -66,6 +67,11 @@ def populate(session: Session) -> None:
     session.add(PhotoReport(photo_id=photo.id, event_id=ev.id, reporter_id=guest.id, reason="other"))
     session.add(RemovalRequest(event_id=ev.id, email="stranger@drill.example.com", token_hash=hash_token("drill-removal"), status=RemovalStatus.submitted, matched_photo_ids=[photo.id]))
     session.add(AuthToken(user_id=guest.id, kind=TokenKind.refresh, token_hash=hash_token("drill-refresh"), expires_at=now + timedelta(days=1), session_id=uuid.uuid4()))
+    # An app user: passwordless account with a device-bound session.
+    app_user = User(email="app@drill.example.com", password_hash=None, email_verified_at=now)
+    session.add(app_user)
+    session.flush()
+    session.add(Device(user_id=app_user.id, session_id=uuid.uuid4(), name="Drill iPhone", platform="ios", app_version="1.0.0", public_key="B" + "A" * 87))
     session.commit()
 
 

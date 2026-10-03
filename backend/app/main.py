@@ -7,8 +7,9 @@ from sqlalchemy.exc import TimeoutError as PoolTimeout
 from starlette.requests import Request
 from starlette.responses import Response
 
+from app.api.app_version import AppVersionMiddleware
 from app.api.csrf import CSRFMiddleware
-from app.api.routes import auth, events, invites, join, members, moderation, photos, privacy, search, uploads
+from app.api.routes import auth, events, invites, join, members, mobile, moderation, photos, privacy, search, uploads
 from app.core.config import get_settings
 from app.core.logging import install as redact_access_logs
 from app.core.security import HashingBusy
@@ -21,12 +22,15 @@ def create_app() -> FastAPI:
     redact_access_logs()
     app = FastAPI(
         title="EventFaces API",
+        # Readable, stable operation ids for the generated iOS client (Swift method names).
+        generate_unique_id_function=lambda route: f"{route.tags[0]}_{route.name}" if route.tags else route.name,
         docs_url="/api/docs" if settings.environment != "production" else None,
         openapi_url="/api/openapi.json" if settings.environment != "production" else None,
         redoc_url=None,
         swagger_ui_oauth2_redirect_url=None,
     )
     app.add_middleware(CSRFMiddleware)
+    app.add_middleware(AppVersionMiddleware)  # outermost of the two: outdated apps stop here
 
     @app.middleware("http")
     async def security_headers(request: Request, call_next) -> Response:
@@ -75,6 +79,8 @@ def create_app() -> FastAPI:
         moderation.router,
         invites.router,
         privacy.router,
+        mobile.router,
+        mobile.me_router,
     ):
         app.include_router(router)
 

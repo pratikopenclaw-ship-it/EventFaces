@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 from dataclasses import asdict
-from typing import Any, Literal
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
@@ -10,13 +10,17 @@ from sqlalchemy.orm import Session
 from zipstream import ZIP_STORED, ZipStream
 
 from app.api.deps import DB, CurrentUser, ManagedEvent, MemberEvent, SuperAdmin, VerifiedUser
-from app.api.selfie import is_selfie_set, read_selfie, read_selfie_set, selfie_content_type
+from app.api.selfie import SEARCH_OPENAPI, is_selfie_set, read_selfie, read_selfie_set, selfie_content_type
 from app.core import face_slots, rate_limit, storage
 from app.core.config import get_settings
 from app.core.security import utcnow
 from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoStatus, SearchGrant, User
 from app.schemas.search import (
     BandOut,
+    ConsentSectionOut,
+    ConsentTextOut,
+    SearchStatusOut,
+    SelfieRequirementsOut,
     CaptureTokenOut,
     ConsentIn,
     ConsentInfo,
@@ -35,6 +39,7 @@ from app.schemas.search import (
 from app.services import capture_tokens, downloads, search_queue
 from app.services.feedback import MatchQuality, anonymize_feedback, match_quality, record_missing, record_verdict
 from app.services.membership import can_access
+from app.services import consent_text
 from app.services.photo_access import viewable_photos
 from app.services.search import FACE_CONSENT_VERSION, SelfieRejected, run_search
 from app.services.selfie_quality import SHOTS_CAMERA
@@ -44,32 +49,43 @@ router = APIRouter(prefix="/api", tags=["search"])
 # --- Consent -------------------------------------------------------------------
 
 
-def _consent_info(user: User) -> ConsentInfo:
+def _consent_info(user: User, request: Request) -> ConsentInfo:
+    grant_days = get_settings().search_grant_days
+    locale = consent_text.locale_from(request.headers.get("accept-language"))
+    text = consent_text.consent_text(locale, grant_days)
     return ConsentInfo(
         version=FACE_CONSENT_VERSION,
-        grant_days=get_settings().search_grant_days,
+        grant_days=grant_days,
         given=user.face_consent_version == FACE_CONSENT_VERSION,
         given_at=user.face_consent_at if user.face_consent_version == FACE_CONSENT_VERSION else None,
+        text=ConsentTextOut(
+            locale=locale,
+            title=text.title,
+            intro=text.intro,
+            sections=[ConsentSectionOut(heading=s.heading, paragraphs=list(s.paragraphs)) for s in text.sections],
+            agreement=text.agreement,
+            action=text.action,
+        ),
     )
 
 
 @router.get("/me/face-consent", response_model=ConsentInfo)
-def get_consent(user: CurrentUser) -> ConsentInfo:
-    return _consent_info(user)
+def get_consent(request: Request, user: CurrentUser) -> ConsentInfo:
+    return _consent_info(user, request)
 
 
 @router.post("/me/face-consent", response_model=ConsentInfo)
-def give_consent(body: ConsentIn, user: VerifiedUser, db: DB) -> ConsentInfo:
+def give_consent(body: ConsentIn, request: Request, user: VerifiedUser, db: DB) -> ConsentInfo:
     if body.version != FACE_CONSENT_VERSION:
         raise HTTPException(status.HTTP_409_CONFLICT, "The consent text has changed; please review it again")
     user.face_consent_at = utcnow()
     user.face_consent_version = FACE_CONSENT_VERSION
     db.commit()
-    return _consent_info(user)
+    return _consent_info(user, request)
 
 
 @router.delete("/me/face-consent", response_model=ConsentInfo)
-def withdraw_consent(user: CurrentUser, db: DB) -> ConsentInfo:
+def withdraw_consent(request: Request, user: CurrentUser, db: DB) -> ConsentInfo:
     """Withdrawal stops future searches, forgets past results (grants) and unlinks
     the user's match feedback from them."""
     user.face_consent_at = None
@@ -77,7 +93,7 @@ def withdraw_consent(user: CurrentUser, db: DB) -> ConsentInfo:
     db.execute(delete(SearchGrant).where(SearchGrant.user_id == user.id))
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
     db.commit()
-    return _consent_info(user)
+    return _consent_info(user, request)
 
 
 # --- Search --------------------------------------------------------------------
@@ -93,25 +109,25 @@ def upload_allowed(event: Event) -> bool:
     return get_settings().allow_selfie_file_upload and event.allow_selfie_file_upload
 
 
-@router.get("/selfie-requirements")
-def selfie_requirements(user: CurrentUser) -> dict[str, float | int | bool]:
+@router.get("/selfie-requirements", response_model=SelfieRequirementsOut)
+def selfie_requirements(user: CurrentUser) -> SelfieRequirementsOut:
     """The server's quality thresholds, so the browser's live guidance matches them."""
     s = get_settings()
-    return {
-        "min_width": s.selfie_min_width,
-        "min_height": s.selfie_min_height,
-        "face_height_min": s.selfie_face_height_min,
-        "face_height_max": s.selfie_face_height_max,
-        "max_yaw": s.selfie_max_yaw,
-        "max_pitch": s.selfie_max_pitch,
-        "max_roll": s.selfie_max_roll,
-        "front_max_yaw": s.selfie_front_max_yaw,
-        "side_min_yaw": s.selfie_side_min_yaw,
-        "min_brightness": s.selfie_min_brightness,
-        "max_brightness": s.selfie_max_brightness,
-        "capture_token_seconds": s.capture_token_seconds,
-        "global_file_upload": s.allow_selfie_file_upload,
-    }
+    return SelfieRequirementsOut(
+        min_width=s.selfie_min_width,
+        min_height=s.selfie_min_height,
+        face_height_min=s.selfie_face_height_min,
+        face_height_max=s.selfie_face_height_max,
+        max_yaw=s.selfie_max_yaw,
+        max_pitch=s.selfie_max_pitch,
+        max_roll=s.selfie_max_roll,
+        front_max_yaw=s.selfie_front_max_yaw,
+        side_min_yaw=s.selfie_side_min_yaw,
+        min_brightness=s.selfie_min_brightness,
+        max_brightness=s.selfie_max_brightness,
+        capture_token_seconds=s.capture_token_seconds,
+        global_file_upload=s.allow_selfie_file_upload,
+    )
 
 
 @router.post("/events/{event_id}/capture-token", response_model=CaptureTokenOut)
@@ -126,6 +142,7 @@ def capture_token(request: Request, event: MemberEvent, user: VerifiedUser) -> C
     "/events/{event_id}/search",
     response_model=SearchOut,
     responses={422: {"model": SelfieRejectionOut, "description": "A selfie failed the quality gate"}},
+    openapi_extra=SEARCH_OPENAPI,
 )
 async def search(
     request: Request,
@@ -213,11 +230,11 @@ async def _read_validated_shots(request: Request, event: Event, user: User, sour
     raise HTTPException(status.HTTP_415_UNSUPPORTED_MEDIA_TYPE, "Send the selfie as a JPEG, PNG or HEIC image")
 
 
-@router.get("/events/{event_id}/search-status")
-def search_status(event: MemberEvent, user: VerifiedUser) -> dict[str, Any]:
+@router.get("/events/{event_id}/search-status", response_model=SearchStatusOut)
+def search_status(event: MemberEvent, user: VerifiedUser) -> SearchStatusOut:
     """The caller's queued search for this event: none | queued | done | rejected | cancelled | expired."""
     record = search_queue.get_status(user.id, event.id)
-    return {k: record.get(k) for k in ("state", "queued_at", "updated_at", "match_count", "message", "shot", "code")}
+    return SearchStatusOut(**{k: record.get(k) for k in SearchStatusOut.model_fields if k in record})
 
 
 def _search_sync(db: Session, user: User, event: Event, shots: list[tuple[str, bytes]]) -> SearchOut | JSONResponse:

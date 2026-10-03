@@ -6,7 +6,7 @@ import uuid
 from collections.abc import Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, Literal
 
 import jwt
 from argon2 import PasswordHasher
@@ -19,6 +19,7 @@ _hasher = PasswordHasher()
 ACCESS_COOKIE = "ef_access"
 REFRESH_COOKIE = "ef_refresh"
 CSRF_COOKIE = "ef_csrf"
+THEME_COOKIE = "ef_theme"  # not a secret: system|light|dark, read by the Next.js server
 CSRF_HEADER = "x-csrf-token"
 
 
@@ -94,7 +95,15 @@ def constant_time_equals(a: str, b: str) -> bool:
     return hmac.compare_digest(a.encode(), b.encode())
 
 
-def create_access_token(user_id: uuid.UUID, role: str, session_id: uuid.UUID | None = None) -> str:
+# Access tokens name their transport: "web" tokens are only accepted from the httpOnly
+# cookie, "mobile" tokens only from the Authorization header. Neither can be replayed
+# through the other path (token confusion).
+Audience = Literal["web", "mobile"]
+
+
+def create_access_token(
+    user_id: uuid.UUID, role: str, session_id: uuid.UUID | None = None, audience: Audience = "web"
+) -> str:
     settings = get_settings()
     now = utcnow()
     payload = {
@@ -102,15 +111,18 @@ def create_access_token(user_id: uuid.UUID, role: str, session_id: uuid.UUID | N
         "sid": str(session_id) if session_id else None,
         "role": role,
         "type": "access",
+        "aud": audience,
         "iat": now,
         "exp": now + timedelta(minutes=settings.access_token_minutes),
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm="HS256")
 
 
-def decode_access_token(token: str) -> dict[str, Any] | None:
+def decode_access_token(token: str, audience: Audience = "web") -> dict[str, Any] | None:
     try:
-        payload = jwt.decode(token, get_settings().jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(
+            token, get_settings().jwt_secret, algorithms=["HS256"], audience=audience, options={"require": ["aud", "exp"]}
+        )
     except jwt.PyJWTError:
         return None
     if payload.get("type") != "access":

@@ -201,7 +201,9 @@ def test_consent_required_and_withdrawable(world: World, make_user, login_as, ad
     add_member(world.event, user)
     c = login_as(user)
     info = c.get("/api/me/face-consent").json()
+    text = info.pop("text")  # the versioned consent text (tests/test_consent_text.py)
     assert info == {"version": FACE_CONSENT_VERSION, "grant_days": 7, "given": False, "given_at": None}
+    assert text["locale"] == "en" and text["title"] == "Before we look for you"
 
     r = search_as(c, world.event, LEFT_PERSON)  # the capture token is refused without consent
     assert r.status_code == 403 and r.json()["detail"] == "consent_required"

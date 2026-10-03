@@ -12,13 +12,13 @@ from sqlalchemy.orm import Session
 
 from app.api.cookies import clear_auth_cookies
 from app.api.deps import DB, CurrentUser, ManagedEvent, VerifiedUser
-from app.api.selfie import read_selfie, selfie_content_type
+from app.api.selfie import REMOVAL_SUBMIT_OPENAPI, read_selfie, selfie_content_type
 from app.core import rate_limit
 from app.core.face_slots import face_slot
 from app.core.email import Mail, get_mailer
 from app.core.security import verify_password
 from app.models import Event, RemovalRequest, RemovalStatus, SearchAudit, User
-from app.services import imaging, removal
+from app.services import imaging, mobile_auth, removal
 from app.services.account import delete_account
 from app.services.search import NoFaceFound
 
@@ -29,15 +29,41 @@ router = APIRouter(prefix="/api", tags=["privacy"])
 
 
 class DeleteMeIn(BaseModel):
-    password: str = Field(max_length=128)
+    """Re-authenticate with the password, or (accounts without one: app sign-in) with the
+    code from POST /api/me/reauth-code."""
+
+    password: str | None = Field(default=None, max_length=128)
+    code: str | None = Field(default=None, pattern=r"^\d{6}$")
+
+
+@router.post("/me/reauth-code", status_code=status.HTTP_202_ACCEPTED)
+def send_reauth_code(user: CurrentUser, background: BackgroundTasks) -> dict[str, str]:
+    rate_limit.enforce(f"reauth-code:{user.id}", rate_limit.Limit(5, 3600))
+    issued = mobile_auth.issue_code("reauth", str(user.id), with_magic_link=False)
+    background.add_task(
+        get_mailer().send,
+        Mail(
+            to=user.email,
+            subject="Your EventFaces confirmation code",
+            body=f"Your code to confirm deleting your account: {issued.code}\n\n"
+            "It expires in a few minutes. If you didn't ask for it, you can ignore this email.\n",
+        ),
+    )
+    return {"detail": "We've emailed you a code."}
 
 
 @router.delete("/me")
 def delete_me(body: DeleteMeIn, response: Response, user: CurrentUser, db: DB, background: BackgroundTasks) -> dict:
     rate_limit.enforce(f"delete-me:{user.id}", rate_limit.Limit(5, 3600))
     db.commit()  # no pooled connection held while hashing (SEC-041)
-    if not verify_password(body.password, user.password_hash):
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "Password is incorrect")
+    if body.code is not None:
+        confirmed = mobile_auth.check_code("reauth", str(user.id), body.code)
+    elif body.password is not None and user.password_hash is not None:
+        confirmed = verify_password(body.password, user.password_hash)
+    else:
+        confirmed = False
+    if not confirmed:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Password or code is incorrect")
     email = user.email
     summary = delete_account(db, user)
     clear_auth_cookies(response)
@@ -111,7 +137,7 @@ def removal_request_info(token: str, db: DB) -> dict:
     return {"event_name": event.name if event else "", "email": req.email}
 
 
-@router.post("/removal-requests/{token}/submit")
+@router.post("/removal-requests/{token}/submit", openapi_extra=REMOVAL_SUBMIT_OPENAPI)
 async def submit_removal_request(token: str, request: Request, db: DB, background: BackgroundTasks) -> dict:
     """Body: an image (reference selfie, optional) or empty to submit without one."""
     rate_limit.enforce(f"removal-submit:{rate_limit.client_ip(request)}", rate_limit.Limit(10, 3600))

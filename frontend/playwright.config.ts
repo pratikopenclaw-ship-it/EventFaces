@@ -20,7 +20,7 @@ export default defineConfig({
     { name: "chromium", use: { ...devices["Desktop Chrome"] } },
     { name: "firefox", use: { ...devices["Desktop Firefox"] }, grep: /@xb/ },
     { name: "webkit", use: { ...devices["Desktop Safari"] }, grep: /@xb/ },
-    { name: "mobile-chrome", use: { ...devices["Pixel 7"] }, grep: /@xb/ },
+    { name: "mobile-chrome", use: { ...devices["Pixel 7"] }, grep: /@xb|@visual/ },
     { name: "mobile-safari", use: { ...devices["iPhone 14"] }, grep: /@xb/ },
   ],
 });

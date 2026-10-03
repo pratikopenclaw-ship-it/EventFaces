@@ -6,11 +6,28 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
+class ConsentSectionOut(BaseModel):
+    heading: str
+    paragraphs: list[str]
+
+
+class ConsentTextOut(BaseModel):
+    """The text of this consent version, in the request's language (en or de)."""
+
+    locale: str
+    title: str
+    intro: str
+    sections: list[ConsentSectionOut]
+    agreement: str
+    action: str
+
+
 class ConsentInfo(BaseModel):
     version: str
     grant_days: int
     given: bool
     given_at: dt.datetime | None
+    text: ConsentTextOut
 
 
 class ConsentIn(BaseModel):
@@ -110,3 +127,31 @@ class DownloadOut(BaseModel):
     url: str
     expires_in: int
     count: int
+
+
+class SelfieRequirementsOut(BaseModel):
+    """The server's selfie quality thresholds, so live guidance (web and app) matches them."""
+
+    min_width: int
+    min_height: int
+    face_height_min: float
+    face_height_max: float
+    max_yaw: float
+    max_pitch: float
+    max_roll: float
+    front_max_yaw: float
+    side_min_yaw: float
+    min_brightness: float
+    max_brightness: float
+    capture_token_seconds: int
+    global_file_upload: bool
+
+
+class SearchStatusOut(BaseModel):
+    state: Literal["none", "queued", "done", "rejected", "cancelled", "expired"]
+    queued_at: str | None = None
+    updated_at: str | None = None
+    match_count: int | None = None
+    message: str | None = None
+    shot: str | None = None
+    code: str | None = None

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { useSession } from "@/components/session";
+import { ThemeOptions } from "@/components/theme";
 import { Alert, Button, Card, Field, Input, PageHeader } from "@/components/ui";
 import { del } from "@/lib/api";
 import type { ConsentInfo } from "@/lib/types";
@@ -38,7 +39,7 @@ export default function AccountPage() {
     }
   }
 
-  if (!user) return <p className="text-sm text-ink/70">Loading…</p>;
+  if (!user) return <p className="text-sm text-muted">Loading…</p>;
 
   return (
     <>
@@ -53,10 +54,16 @@ export default function AccountPage() {
       />
       <div className="grid max-w-2xl gap-6">
         <Card>
+          <h2 className="font-medium">Appearance</h2>
+          <p className="mt-1 mb-4 text-sm text-muted">Saved to your account, so your other devices follow it too.</p>
+          <ThemeOptions />
+        </Card>
+
+        <Card>
           <h2 className="font-medium">Face-search consent</h2>
           {consent.data?.given ? (
             <>
-              <p className="mt-1 text-sm text-ink/70">
+              <p className="mt-1 text-sm text-muted">
                 Given on {new Date(consent.data.given_at ?? "").toLocaleDateString()}. Your selfies are never stored;
                 we keep the list of photos you matched for up to {consent.data.grant_days} days.
               </p>
@@ -65,16 +72,16 @@ export default function AccountPage() {
               </Button>
             </>
           ) : (
-            <p className="mt-1 text-sm text-ink/70">Not given. You&apos;ll be asked before your first selfie search.</p>
+            <p className="mt-1 text-sm text-muted">Not given. You&apos;ll be asked before your first selfie search.</p>
           )}
         </Card>
 
         <Card className="border-alarm/30">
           <h2 className="font-medium text-alarm">Delete my data</h2>
-          <p className="mt-1 text-sm text-ink/70">
+          <p className="mt-1 text-sm text-muted">
             Permanently deletes your account, event memberships, the photos you matched, the photos you uploaded (and
             their face data) and pending invites. Search logs are kept only without your identity. This can&apos;t be
-            undone. See the <Link href="/privacy" className="text-accent hover:underline">privacy notice</Link>.
+            undone. See the <Link href="/privacy" className="text-accent underline">privacy notice</Link>.
           </p>
           <form method="post" onSubmit={deleteAccount} className="mt-4 space-y-3">
             {error && <Alert>{error}</Alert>}

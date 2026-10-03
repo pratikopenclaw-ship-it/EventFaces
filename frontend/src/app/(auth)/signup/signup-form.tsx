@@ -34,7 +34,7 @@ export function SignupForm({ joining }: { joining: string | null }) {
   if (done) {
     return (
       <AuthCard title="Check your inbox">
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           We sent a verification link to your email. Open it to activate your account
           {joining ? ", and it will bring you back to the event." : ", then "}
           {!joining && (

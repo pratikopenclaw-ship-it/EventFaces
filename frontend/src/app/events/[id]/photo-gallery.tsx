@@ -89,10 +89,11 @@ export function PhotoGallery({
   const current = open === null ? null : photos[open];
 
   return (
-    <div className="space-y-4">
+    // Photos always sit on a dark background, whatever the theme (the switcher says so).
+    <div className="theme-dark space-y-4 rounded-2xl bg-canvas p-4 sm:p-5">
       {error && <Alert>{error}</Alert>}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           {photos.length} {photos.length === 1 ? "photo" : "photos"}
           {selected.size > 0 && ` · ${selected.size} selected`}
         </p>
@@ -115,8 +116,8 @@ export function PhotoGallery({
           <section key={section.key} className="space-y-3">
             <div className="flex items-baseline gap-2">
               <h3 className="font-medium">{section.title}</h3>
-              <span className="text-sm text-ink/70">{items.length}</span>
-              {section.note && <span className="text-xs text-ink/70">· {section.note}</span>}
+              <span className="text-sm text-muted">{items.length}</span>
+              {section.note && <span className="text-xs text-muted">· {section.note}</span>}
             </div>
             <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
               {items.map((p) => (
@@ -147,10 +148,10 @@ export function PhotoGallery({
                         <span className="font-medium text-leaf">✓ This is me</span>
                       ) : (
                         <>
-                          <button onClick={() => void rate(p.id, "me")} className="rounded-md px-2 py-1 font-medium text-ink/70 hover:bg-leaf/10 hover:text-leaf">
+                          <button onClick={() => void rate(p.id, "me")} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-leaf/10 hover:text-leaf">
                             This is me
                           </button>
-                          <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-ink/70 hover:bg-alarm/10 hover:text-alarm">
+                          <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-muted hover:bg-alarm/10 hover:text-alarm">
                             Not me
                           </button>
                         </>
@@ -168,20 +169,21 @@ export function PhotoGallery({
         <div
           role="dialog"
           aria-modal="true"
-          className="fixed inset-0 z-50 flex flex-col bg-ink/95 p-4"
+          className="theme-dark fixed inset-0 z-50 flex flex-col bg-canvas/95 p-4"
           onClick={(e) => e.target === e.currentTarget && setOpen(null)}
         >
-          <div className="flex items-center justify-between text-sm text-white/80">
-            <span>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink/80">
+            <span className="whitespace-nowrap">
               {open + 1} / {photos.length}
             </span>
-            <div className="flex gap-2">
+            {/* Wraps onto a second row on phones instead of squeezing the labels. */}
+            <div className="flex flex-wrap justify-end gap-1 sm:gap-2 [&>button]:whitespace-nowrap">
               {current.tier && current.verdict !== "me" && (
                 <>
                   <Button variant="secondary" onClick={() => void rate(current.id, "me")}>
                     This is me
                   </Button>
-                  <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white" onClick={() => void rate(current.id, "not_me")}>
+                  <Button variant="ghost" className="text-ink hover:bg-mist hover:text-ink" onClick={() => void rate(current.id, "not_me")}>
                     Not me
                   </Button>
                 </>
@@ -191,12 +193,12 @@ export function PhotoGallery({
               </Button>
               <Button
                 variant="ghost"
-                className="text-white hover:bg-white/10 hover:text-white"
+                className="text-ink hover:bg-mist hover:text-ink"
                 onClick={() => setReporting(current.id)}
               >
                 Report
               </Button>
-              <Button variant="ghost" className="text-white hover:bg-white/10 hover:text-white" onClick={() => setOpen(null)}>
+              <Button variant="ghost" className="text-ink hover:bg-mist hover:text-ink" onClick={() => setOpen(null)}>
                 Close
               </Button>
             </div>
@@ -205,7 +207,7 @@ export function PhotoGallery({
             <Button
               variant="ghost"
               aria-label="Previous"
-              className="text-2xl text-white hover:bg-white/10 hover:text-white"
+              className="text-2xl text-ink hover:bg-mist hover:text-ink"
               disabled={open === 0}
               onClick={() => setOpen(open - 1)}
             >
@@ -221,7 +223,7 @@ export function PhotoGallery({
             <Button
               variant="ghost"
               aria-label="Next"
-              className="text-2xl text-white hover:bg-white/10 hover:text-white"
+              className="text-2xl text-ink hover:bg-mist hover:text-ink"
               disabled={open === photos.length - 1}
               onClick={() => setOpen(open + 1)}
             >
@@ -229,7 +231,7 @@ export function PhotoGallery({
             </Button>
           </div>
           {reporting && (
-            <div className="absolute inset-0 flex items-center justify-center bg-ink/60 p-4">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-4">
               <ReportDialog eventId={eventId} photoId={reporting} onClose={() => setReporting(null)} />
             </div>
           )}

@@ -1,6 +1,7 @@
 import uuid
 from typing import Annotated, Literal
 
+from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
@@ -17,7 +18,11 @@ from app.workers.tasks import sync_drive
 router = APIRouter(prefix="/api", tags=["photos"])
 
 
-@router.get("/drive/service-account")
+class ServiceAccountOut(BaseModel):
+    email: str | None
+
+
+@router.get("/drive/service-account", response_model=ServiceAccountOut)
 def drive_service_account(user: VerifiedUser) -> dict[str, str | None]:
     """The email organizers share their Drive folder with."""
     if user.role == UserRole.attendee:

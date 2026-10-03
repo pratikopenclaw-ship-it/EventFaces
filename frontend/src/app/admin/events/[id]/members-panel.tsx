@@ -59,7 +59,7 @@ export function MembersPanel({ eventId }: { eventId: string }) {
       )}
       <div className="overflow-x-auto rounded-2xl border border-line bg-paper">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-line text-ink/70">
+          <thead className="border-b border-line text-muted">
             <tr>
               <th className="px-5 py-3 font-medium">Email</th>
               <th className="px-5 py-3 font-medium">Role</th>
@@ -71,7 +71,7 @@ export function MembersPanel({ eventId }: { eventId: string }) {
           <tbody>
             {members?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-ink/70">
+                <td colSpan={5} className="px-5 py-6 text-center text-muted">
                   No members yet.
                 </td>
               </tr>
@@ -85,7 +85,7 @@ export function MembersPanel({ eventId }: { eventId: string }) {
                   <td className="px-5 py-3">
                     <Badge tone={STATUS_TONE[m.status]}>{m.status.charAt(0).toUpperCase() + m.status.slice(1)}</Badge>
                   </td>
-                  <td className="px-5 py-3 text-ink/70">{formatDate(m.joined_at)}</td>
+                  <td className="px-5 py-3 text-muted">{formatDate(m.joined_at)}</td>
                   <td className="px-5 py-3 text-right">
                     {editable && m.user_id !== user?.id && (
                       m.status === "approved" ? (
@@ -108,20 +108,20 @@ export function MembersPanel({ eventId }: { eventId: string }) {
       <div className="overflow-x-auto rounded-2xl border border-line bg-paper">
         <div className="border-b border-line px-5 py-3 text-sm">
           <span className="font-medium">Search log</span>{" "}
-          <span className="text-ink/70">(who searched and how many photos matched; selfies are never stored)</span>
+          <span className="text-muted">(who searched and how many photos matched; selfies are never stored)</span>
         </div>
         <table className="w-full text-left text-sm">
           <tbody>
             {(searchLog.data ?? []).length === 0 && (
               <tr>
-                <td className="px-5 py-6 text-center text-ink/70">No searches yet.</td>
+                <td className="px-5 py-6 text-center text-muted">No searches yet.</td>
               </tr>
             )}
             {(searchLog.data ?? []).map((row, i) => (
               <tr key={i} className="border-b border-line last:border-0">
-                <td className="px-5 py-2.5">{row.user_email ?? <span className="text-ink/70">deleted account</span>}</td>
-                <td className="px-5 py-2.5 text-ink/70">{row.match_count} matched</td>
-                <td className="px-5 py-2.5 text-right text-ink/70">{new Date(row.created_at).toLocaleString()}</td>
+                <td className="px-5 py-2.5">{row.user_email ?? <span className="text-muted">deleted account</span>}</td>
+                <td className="px-5 py-2.5 text-muted">{row.match_count} matched</td>
+                <td className="px-5 py-2.5 text-right text-muted">{new Date(row.created_at).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

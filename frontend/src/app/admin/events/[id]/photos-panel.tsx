@@ -91,14 +91,14 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
           <div className="min-w-0 flex-1 space-y-3">
             <h2 className="font-medium">Google Drive</h2>
             {!s ? (
-              <p className="text-sm text-ink/70">Loading…</p>
+              <p className="text-sm text-muted">Loading…</p>
             ) : !s.drive_configured ? (
               <Alert kind="info">
                 Drive import isn&apos;t configured on the server. Set <code className="break-all">GOOGLE_SERVICE_ACCOUNT_JSON</code> (see
                 README).
               </Alert>
             ) : !s.folder_id ? (
-              <p className="text-sm text-ink/70">
+              <p className="text-sm text-muted">
                 No folder linked.{" "}
                 <button onClick={onEditSettings} className="font-medium text-accent hover:underline">
                   Add one in Settings
@@ -107,13 +107,13 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
               </p>
             ) : (
               <>
-                <p className="text-sm text-ink/70">
+                <p className="text-sm text-muted">
                   Share the folder (Viewer access) with{" "}
                   <span className="break-all rounded bg-mist px-1.5 py-0.5 font-mono text-xs">
                     {s.service_account_email}
                   </span>
                 </p>
-                <p className="text-xs text-ink/70">
+                <p className="text-xs text-muted">
                   Folder <span className="font-mono">{s.folder_id}</span> · top-level JPEG, PNG and HEIC files
                 </p>
               </>
@@ -134,7 +134,7 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
 
         {inProgress && s && (
           <div className="mt-5">
-            <div className="mb-1.5 flex justify-between text-xs text-ink/70">
+            <div className="mb-1.5 flex justify-between text-xs text-muted">
               <span>
                 {s.pipeline.importing > 0 && `${s.pipeline.importing} importing · `}
                 {s.pipeline.indexing > 0 && `${s.pipeline.indexing} finding faces · `}
@@ -149,7 +149,7 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
         )}
 
         {run && (
-          <p className="mt-4 text-xs text-ink/70">
+          <p className="mt-4 text-xs text-muted">
             Last sync {timeAgo(run.created_at)}:{" "}
             {run.status === "failed" ? (
               <span className="text-alarm">{run.error}</span>
@@ -164,16 +164,16 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
 
       <div className="flex items-center justify-between">
         <h2 className="font-medium">
-          Photos <span className="text-ink/70">({total})</span>
+          Photos <span className="text-muted">({total})</span>
         </h2>
-        <label className="flex items-center gap-2 text-sm text-ink/70">
+        <label className="flex items-center gap-2 text-sm text-muted">
           <input type="checkbox" className="accent-accent" checked={failedOnly} onChange={(e) => setFailedOnly(e.target.checked)} />
           Failed only
         </label>
       </div>
 
       {photos.length === 0 ? (
-        <Card className="text-center text-sm text-ink/70">
+        <Card className="text-center text-sm text-muted">
           {failedOnly ? "No failed photos." : "No photos yet. Link a Drive folder and press Sync."}
         </Card>
       ) : (
@@ -213,7 +213,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone?: "ba
   return (
     <div>
       <p className={`font-display text-3xl ${tone === "bad" ? "text-alarm" : ""}`}>{value.toLocaleString()}</p>
-      <p className="text-xs text-ink/70">{label}</p>
+      <p className="text-xs text-muted">{label}</p>
     </div>
   );
 }
@@ -241,11 +241,11 @@ function PhotoTile({ eventId, photo, onDelete }: { eventId: string; photo: Photo
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-xs text-ink/70">{STAGE_LABEL[photo.index_status]}</div>
+          <div className="flex h-full items-center justify-center text-xs text-muted">{STAGE_LABEL[photo.index_status]}</div>
         )}
       </div>
       <div className="flex items-center justify-between gap-2 px-2.5 py-2 text-xs">
-        <span className="truncate text-ink/70">{photo.original_filename}</span>
+        <span className="truncate text-muted">{photo.original_filename}</span>
         {photo.index_status === "failed" ? (
           <Badge tone="bad">{photo.status === "rejected" ? "Rejected" : "Failed"}</Badge>
         ) : photo.index_status === "indexed" ? (

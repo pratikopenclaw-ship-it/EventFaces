@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 
 import { Alert, Button, Field, Input, Select, Textarea, Toggle } from "@/components/ui";
+import { SURFACES, readableAccent } from "@/lib/accent";
 import type { EventAdmin, EventInput } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
@@ -26,6 +27,7 @@ export function initialInput(event?: EventAdmin): EventInput {
     allow_selfie_file_upload: event?.allow_selfie_file_upload ?? false,
     delete_photos_on_expiry: event?.delete_photos_on_expiry ?? false,
     drive_folder: event?.drive_folder_id ?? null,
+    accent_color: event?.accent_color ?? null,
   };
 }
 
@@ -121,6 +123,8 @@ export function EventForm({
         </div>
       </section>
 
+      <AccentField value={v.accent_color} onChange={(c) => set("accent_color", c)} />
+
       <section className="space-y-4">
         <Toggle
           label="Allow selfie file upload"
@@ -159,5 +163,55 @@ export function EventForm({
         {busy ? "Saving…" : submitLabel}
       </Button>
     </form>
+  );
+}
+
+const DEFAULT_ACCENT = "#0f766e";
+
+/** Brand colour picker with a preview of the readable variant used in each theme. */
+function AccentField({ value, onChange }: { value: string | null; onChange: (c: string | null) => void }) {
+  return (
+    <section className="space-y-3">
+      <div className="flex flex-wrap items-end gap-3">
+        <Field label="Accent colour" hint="Buttons and links on this event's pages. Adjusted automatically so text stays readable in light and dark mode.">
+          <span className="flex items-center gap-3">
+            <input
+              type="color"
+              value={value ?? DEFAULT_ACCENT}
+              onChange={(e) => onChange(e.target.value.toLowerCase())}
+              className="h-11 w-16 cursor-pointer rounded-lg border border-line bg-paper p-1"
+            />
+            <span className="font-mono text-sm text-muted">{value ?? "Default"}</span>
+          </span>
+        </Field>
+        {value && (
+          <Button type="button" variant="ghost" onClick={() => onChange(null)}>
+            Use default
+          </Button>
+        )}
+      </div>
+      {value && (
+        <div className="flex flex-wrap gap-3" aria-label="Accent preview">
+          {(["light", "dark"] as const).map((theme) => {
+            const { accent, onAccent } = readableAccent(value, theme);
+            return (
+              <div
+                key={theme}
+                className="flex items-center gap-3 rounded-lg border border-line px-3 py-2 text-sm"
+                style={{ background: SURFACES[theme][0], color: theme === "light" ? "#10231f" : "#f4f5f7" }}
+              >
+                <span>{theme === "light" ? "Light" : "Dark"}:</span>
+                <span style={{ color: accent }} className="font-medium">
+                  Link
+                </span>
+                <span style={{ background: accent, color: onAccent }} className="rounded-md px-2 py-0.5 font-medium">
+                  Button
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }

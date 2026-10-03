@@ -35,9 +35,9 @@ def is_selfie_set(request: Request) -> bool:
     return _content_type(request) == SELFIE_SET_TYPE
 
 
-async def _read_body(request: Request, limit: int) -> bytes:
+async def _read_body(request: Request, limit: int, too_large_message: str = "Selfie is too large (max 10 MB per photo)") -> bytes:
     declared = request.headers.get("content-length")
-    too_large = HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, "Selfie is too large (max 10 MB per photo)")
+    too_large = HTTPException(status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, too_large_message)
     if declared and declared.isdigit() and int(declared) > limit:
         raise too_large
     chunks: list[bytes] = []
@@ -48,6 +48,11 @@ async def _read_body(request: Request, limit: int) -> bytes:
             raise too_large
         chunks.append(chunk)
     return b"".join(chunks)
+
+
+async def read_capped_body(request: Request, limit: int, too_large_message: str) -> bytes:
+    """A raw request body read in memory with a hard cap (never spooled to disk)."""
+    return await _read_body(request, limit, too_large_message)
 
 
 async def read_selfie(request: Request) -> bytes:
@@ -76,3 +81,30 @@ async def read_selfie_set(request: Request) -> list[tuple[str, bytes]]:
         parts.append((shot, body[offset : offset + n]))
         offset += n
     return parts
+
+
+def _binary(*types: str) -> dict[str, dict[str, object]]:
+    return {t: {"schema": {"type": "string", "format": "binary"}} for t in types}
+
+
+def _header(name: str, description: str, required: bool = False) -> dict[str, object]:
+    return {"name": name, "in": "header", "required": required, "description": description, "schema": {"type": "string"}}
+
+
+# OpenAPI for the raw-body endpoints (they read the request stream, so FastAPI can't infer
+# it). The iOS client is generated from this.
+SEARCH_OPENAPI: dict[str, object] = {
+    "requestBody": {
+        "required": True,
+        "description": "Camera: a selfie set (front, left, right JPEGs concatenated). Upload: one image.",
+        "content": _binary(SELFIE_SET_TYPE, "image/jpeg", "image/png", "image/heic"),
+    },
+    "parameters": [
+        _header("X-Capture-Token", "Single-use capture token (camera searches)"),
+        _header("X-Selfie-Shots", "Comma-separated shot names, e.g. front,left,right"),
+        _header("X-Selfie-Lengths", "Comma-separated byte lengths of the shots"),
+    ],
+}
+REMOVAL_SUBMIT_OPENAPI: dict[str, object] = {
+    "requestBody": {"required": False, "description": "Optional reference selfie", "content": _binary("image/jpeg", "image/png", "image/heic")},
+}

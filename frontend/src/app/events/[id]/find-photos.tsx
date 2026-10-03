@@ -92,7 +92,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `previous` is a stable loader
   }, [event.id, step]);
 
-  if (consent.loading || previous.loading || requirements.loading) return <p className="text-sm text-ink/70">Loading…</p>;
+  if (consent.loading || previous.loading || requirements.loading) return <p className="text-sm text-muted">Loading…</p>;
   if (consent.error) return <Alert>{consent.error.message}</Alert>;
   const info = consent.data;
   const req = requirements.data;
@@ -179,11 +179,11 @@ export function FindPhotos({ event }: { event: EventPublic }) {
       {effective === "queued" ? (
         <Card className="mx-auto max-w-xl text-center">
           <h2 className="font-display text-2xl">You&apos;re in the queue</h2>
-          <p className="mt-2 text-sm text-ink/70">
+          <p className="mt-2 text-sm text-muted">
             Lots of people are searching right now. We&apos;ll email you and show your photos here as soon as they&apos;re
             ready, usually within a few minutes. You can close this page.
           </p>
-          <p role="status" aria-live="polite" className="mt-4 text-xs text-ink/70">
+          <p role="status" aria-live="polite" className="mt-4 text-xs text-muted">
             Checking for your results…
           </p>
         </Card>
@@ -191,7 +191,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         <>
           <GuidedCapture key={attempt} requirements={req} busy={searching} onSubmit={searchCamera} />
           {uploadAllowed && (
-            <label className="block text-center text-sm text-ink/70">
+            <label className="block text-center text-sm text-muted">
               No camera?{" "}
               <span className="cursor-pointer font-medium text-accent hover:underline">
                 Upload a photo of yourself
@@ -209,7 +209,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
       ) : shown.length === 0 ? (
         <Card className="mx-auto max-w-xl text-center">
           <h2 className="font-display text-2xl">No photos found yet</h2>
-          <p className="mt-2 text-sm text-ink/70">
+          <p className="mt-2 text-sm text-muted">
             We couldn&apos;t find you in this event&apos;s photos. More photos may be added later.
           </p>
           <div className="mt-5 flex justify-center gap-2">
@@ -241,8 +241,9 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         </>
       )}
 
-      <p className="pt-6 text-center text-xs text-ink/70">
-        Face-search consent given {info.given_at ? new Date(info.given_at).toLocaleDateString() : ""}.{" "}
+      <p className="pt-6 text-center text-xs text-muted">
+        Face-search consent given{" "}
+        {info.given_at ? <time dateTime={info.given_at}>{new Date(info.given_at).toLocaleDateString()}</time> : null}.{" "}
         <button onClick={() => void withdraw()} className="underline hover:text-ink">
           Withdraw consent
         </button>

@@ -1,20 +1,134 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-ink: #1a1d24;
+/* Theme tokens: teal + midnight, from design/tokens.json (shared with the iOS app; the
+   web names map onto it: ink=text, paper=surface, canvas=bg, mist=surface-2, line=border,
+   muted=text-muted, leaf/alarm=success/danger, good/bad/warn=the *-text tokens).
+   Utilities reference the variables (not `inline`), so the sets below can switch them.
+   src/lib/theme-tokens.test.ts checks every value against tokens.json and every
+   text/background pair for >= 4.5:1 in both themes. */
+@theme {
+  --color-ink: #10231f;
   --color-paper: #ffffff;
-  --color-canvas: #f6f5f1;
-  --color-mist: #efeee9;
-  --color-line: #e2e0d8;
-  --color-accent: #b53c0a; /* WCAG AA for text on paper, canvas and mist (>= 4.8:1) */
-  --color-alarm: #c62f2f;
-  --color-leaf: #2f7d4f;
+  --color-canvas: #f3f7f6;
+  --color-mist: #e7efed;
+  --color-line: #dce6e3;
+  --color-muted: #586b66;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b5f58;
+  --color-on-accent: #ffffff;
+  --color-accent-soft: #d7efea;
+  --color-highlight: #d9a441;
+  --color-alarm: #b42828;
+  --color-leaf: #256b43;
+  --color-good: #1f5c39;
+  --color-bad: #9b2020;
+  --color-warn: #7a4b00;
+  --color-warn-tint: #fbefd5;
+}
+
+@theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-fraunces);
 }
 
+:root {
+  color-scheme: light;
+}
+
+/* Dark (midnight). The same set appears three times on purpose:
+   1. System preference with no explicit choice (CSS only, so no script and no flash).
+   2. An explicit choice rendered server-side as <html data-theme="dark">.
+   3. .theme-dark islands: the photo gallery and viewer are always dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-ink: #f4f5f7;
+    --color-paper: #171a21;
+    --color-canvas: #0f1115;
+    --color-mist: #1e222b;
+    --color-line: #262b35;
+    --color-muted: #9aa1ae;
+    --color-accent: #2dd4bf;
+    --color-accent-hover: #5eead4;
+    --color-on-accent: #06201c;
+    --color-accent-soft: #0e2f2b;
+    --color-highlight: #e3b25a;
+    --color-alarm: #f08585;
+    --color-leaf: #62c98e;
+    --color-good: #86dcab;
+    --color-bad: #ffa3a3;
+    --color-warn: #f2c66d;
+    --color-warn-tint: #3a2d10;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"],
+.theme-dark {
+  --color-ink: #f4f5f7;
+  --color-paper: #171a21;
+  --color-canvas: #0f1115;
+  --color-mist: #1e222b;
+  --color-line: #262b35;
+  --color-muted: #9aa1ae;
+  --color-accent: #2dd4bf;
+  --color-accent-hover: #5eead4;
+  --color-on-accent: #06201c;
+  --color-accent-soft: #0e2f2b;
+  --color-highlight: #e3b25a;
+  --color-alarm: #f08585;
+  --color-leaf: #62c98e;
+  --color-good: #86dcab;
+  --color-bad: #ffa3a3;
+  --color-warn: #f2c66d;
+  --color-warn-tint: #3a2d10;
+  color-scheme: dark;
+}
+
+.theme-dark {
+  color: var(--color-ink);
+}
+
+/* Per-event organizer accents: src/lib/accent.ts computes a readable variant per theme
+   and sets these four properties on the .event-accent wrapper. */
+.event-accent {
+  --color-accent: var(--ev-accent-light, #0f766e);
+  --color-accent-hover: var(--ev-accent-light, #0b5f58);
+  --color-on-accent: var(--ev-on-accent-light, #ffffff);
+  --color-accent-soft: color-mix(in oklab, var(--color-accent) 14%, var(--color-paper));
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .event-accent {
+    --color-accent: var(--ev-accent-dark, #2dd4bf);
+    --color-accent-hover: var(--ev-accent-dark, #5eead4);
+    --color-on-accent: var(--ev-on-accent-dark, #06201c);
+  }
+}
+:root[data-theme="dark"] .event-accent,
+.event-accent .theme-dark,
+.theme-dark .event-accent {
+  --color-accent: var(--ev-accent-dark, #2dd4bf);
+  --color-accent-hover: var(--ev-accent-dark, #5eead4);
+  --color-on-accent: var(--ev-on-accent-dark, #06201c);
+}
+
 body {
   background: var(--color-canvas);
   color: var(--color-ink);
+}
+
+/* A short cross-fade when the user switches theme (never on first load: the class is
+   added only by the switcher, and only for the switch itself). */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition:
+      background-color 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      fill 180ms ease,
+      stroke 180ms ease !important;
+  }
 }

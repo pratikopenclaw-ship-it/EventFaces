@@ -87,8 +87,9 @@ plausible abuse path), **Low** (hardening, minor info leak), **Info** (no action
 | SEC-042 | Medium | Under a 60-way burst the connection pool ran dry during auth checks and requests failed with 500 instead of degrading; pool undersized | Fixed |
 | QA-004 | Low | A queued search lost in a server restart kept showing "in the queue" for up to 15 min | Fixed |
 | QA-005 | Low | "One queued search per user and event" was check-then-set (not atomic across API processes) | Fixed |
+| QA-006 | Low | Account page: the inline "privacy notice" link was distinguishable by colour only (axe `link-in-text-block`, 1.05:1 against the surrounding text) | Fixed |
 
-**Totals:** 47 findings: 3 High, 15 Medium, 26 Low, 3 Info, and 0 Critical. **All 47 fixed**, each with a regression test. The delta pass (2026-09-30) added SEC-041/042 and QA-004/005 and the UX findings UX-001…UX-010 (section "Delta pass").
+**Totals:** 48 findings: 3 High, 15 Medium, 27 Low, 3 Info, and 0 Critical. **All 48 fixed**, each with a regression test. The delta pass (2026-09-30) added SEC-041/042 and QA-004/005 and the UX findings UX-001…UX-010 (section "Delta pass"); the theme switcher (2026-10-01) added QA-006 and UX-011.
 
 ## Finding details
 
@@ -438,6 +439,154 @@ Privacy and security review of the design:
 - **Authorization:** the status endpoint is event-member only and returns only the caller's own job (`::test_status_is_private_to_its_owner`; added to the authorization matrix, now 68 operations).
 - **End to end:** `frontend/e2e/queued-search.spec.ts` (saturated server → queued card → badge → results on the open page → email with link → "Photos ready").
 
+## Theme switcher and per-event accents (2026-10-01)
+
+Built at the owner's request: System (default) / Light / Dark, a teal + midnight re-theme, and organizer accent colours per event (owner's decisions, 2026-10-01).
+
+**Design, and why it needs no script:** the preference lives in the `ef_theme` cookie (first-party, `SameSite=Lax`, `Path=/`, 1 year; not `HttpOnly` because the switcher writes it, and it holds nothing sensitive). The root layout reads it on the server and renders `<html data-theme="light|dark">`, the matching `theme-color` meta and `color-scheme`. "System" (and a missing or tampered cookie) renders no attribute: `globals.css` then applies the dark tokens under `@media (prefers-color-scheme: dark)`, so the first paint is right in every mode and System follows OS changes live, with no inline script and **no CSP change**. Signed-in users: `users.theme` (Postgres enum, migration 0010) is the source of truth; login, refresh and `PATCH /api/me/preferences` set the cookie from it, so another device's first page after login is already correct. The gallery and photo viewer are `.theme-dark` islands (always dark), which the switcher and the settings page state.
+
+**Security review (no new vulnerabilities):**
+- **Theme value:** a three-value enum at every layer: pydantic `ThemePreference` (422 for anything else, including CR/LF and markup), the Postgres enum, and `parseThemePref` on the server render (anything unknown means System; React escapes attributes anyway). Regression: `backend/tests/test_theme.py` (30, including CSRF and login/refresh cookie sync), `src/lib/theme.test.ts`, `e2e/theme.spec.ts` "tampered theme cookie" and "API accepts only the three theme values". Mutation-checked: loosening the schema to `str` fails 15 tests; returning the cookie value unparsed fails the unit and e2e tests.
+- **Accent colour:** it ends up in a `style` attribute (`style-src 'unsafe-inline'` is the existing accepted risk for style attributes), so only `#rrggbb` is accepted: pydantic validator (normalised to lowercase), a DB `CHECK` constraint, and a client-side regex before use. `url(…)`, `expression(…)`, `;`, `!important`, short hex and named colours are rejected (`test_accent_color_accepts_only_hex`, 10 cases; `test_database_rejects_malformed_accent`). Mutation-checked (6 tests fail without the validator; the DB constraint is the second layer).
+- **Authorization:** `PATCH /api/me/preferences` acts only on the caller (matrix: 69 operations). Event accents are editable only through the existing organizer `PATCH /api/events/{id}`.
+- **CSP:** unchanged. `e2e/theme.spec.ts` injects a nonce-less inline `<script>` into the real HTML response and asserts it doesn't run and raises a `script-src-elem` violation, while the app's own nonced scripts still run. ZAP baseline re-run on the rebuilt production web image (2026-10-01): **0 FAIL, 61 PASS, the same 6 justified warnings**; `scripts/security-scan.sh` 18/18.
+
+**Readability:** all text/background token pairs are ≥ 4.5:1 in both themes (lowest 5.1:1 light, 6.0:1 dark), checked from the stylesheet itself by `src/lib/theme-tokens.test.ts`, which also asserts the three copies of the dark set are identical. Organizer accents are nudged in lightness (hue kept) until they reach 4.5:1 on every surface of each theme, and the on-accent text colour is picked per theme (`src/lib/accent.ts`; 12 sample colours including pure yellow, white and black in `theme.test.ts`; in-browser check of the real button in both themes in `e2e/theme.spec.ts`).
+
+| ID | Finding | Fix | Regression |
+|---|---|---|---|
+| QA-006 (Low) | Found by axe once `/account` (the settings page) was added to the audited screens: the inline privacy link differed from the text around it by colour only, in both themes | Underlined | `e2e/a11y.spec.ts` "settings (account) page", light and dark |
+| UX-011 | Visual review of the new mobile screenshots: the photo viewer's toolbar squeezed its labels to one word per line on phones | The toolbar wraps onto a second row | `e2e/visual.spec.ts` viewer baselines (Pixel 7) |
+
+Caught before merge (not shipped): the 44 px theme button pushed the organizer header 13 px past a 390 px iPhone (`e2e/ux.spec.ts` "no sideways scroll"); fixed by tighter link padding on phones.
+
+**Tests added:** backend 30; vitest 26 (theme, accent, token pairs); Playwright `theme.spec.ts` (12: System default in light and dark emulation, live OS change, persistence across reload and a new browser session, profile sync to a second browser context, first-frame "no flash" probe recorded before hydration, keyboard/ARIA/44 px/announcement, 180 ms transition that is off under reduced motion and absent on load, dark viewer in light mode in Chromium and Firefox, accent contrast, tampered cookie, API values, CSP); axe in **both themes** on every main screen (landing and auth, events, consent, capture, results, viewer, all organizer tabs, settings, queued and paused states); visual baselines for landing, settings, organizer list and event, capture, results and viewer in both themes on desktop Chromium and Pixel 7 (28 screenshots, volatile content masked, `e2e/visual.spec.ts-snapshots`).
+
+## Mobile API for the iOS app (Phase 0, 2026-10-01)
+
+Backend changes for the native iOS app (plan approved 2026-10-01). Goal: the app is **never a weaker path** than the web app. The event, photo, search, upload and privacy endpoints are shared unchanged: the same dependencies, rules and limits apply whichever transport authenticated the user.
+
+**What was added:**
+- **Bearer transport:** access JWTs carry an audience (`web` = httpOnly cookie only, `mobile` = `Authorization` header only). A request with an `Authorization` header is judged on it alone (cookies are ignored).
+- **CSRF:** the check is skipped only for cookie-less requests that carry `Authorization` (a cross-site page can't add it; CORS is off), or for the cookie-free sign-in endpoints.
+- **Passwordless sign-in** (`/api/mobile/auth/code/*`, `/magic`):
+  - 6-digit codes are stored as HMACs in Redis, never in the DB. They live 10 minutes, are single-use and die after 5 wrong guesses.
+  - Wrong guesses also count toward the same email+IP lockout as web join codes (5 → 15 min).
+  - Requests are rate-limited per address and per IP and always get the same answer.
+  - The magic link is single-use and kills the code. Passwords are never hashed on this path (no Argon2 load, SEC-041).
+- **Device-bound sessions** (`devices` table, migration 0011):
+  - An app session is the web session model (a refresh-token family in `auth_tokens`) plus a Secure Enclave P-256 key.
+  - Refreshing needs an ECDSA signature by that key over (token hash, device, time), fresh (±60 s) and never reused, for a token of that device's own session. A copied refresh token is useless off the device.
+  - The web refresh endpoint refuses app-session tokens.
+- **Sign-out paths:** logout, device list/revoke, password reset and account deletion end app sessions exactly like web sessions.
+- **Deleting a passwordless account** re-authenticates with an emailed `reauth` code. Sign-in codes can't be used for this.
+- **Push (APNs, token auth, HTTP/2):**
+  - Payloads are built only by `push.payload`: localization keys plus `kind`/`event_id`/`search_id`. No names, photos, counts or email addresses.
+  - Sent after commit as a background task. Dead tokens are dropped, and a token moves with the install when someone else signs in on the same phone.
+  - Off until configured; the production guard refuses a malformed key.
+- **Forced updates:** app requests below `IOS_MIN_SUPPORTED_VERSION` (or without a version) get **426** before anything else runs. `/api/app/config` stays reachable.
+- **Universal Links:** `/.well-known/apple-app-site-association` (JSON, no redirect, built from `APPLE_TEAM_ID`/`IOS_BUNDLE_ID`; admin and API paths excluded).
+  - The browser fallback `/m/signin` drops the token from the URL with a 303 before rendering, and never spends it.
+- **Event logos:** organizer upload as a raw body ≤ 1 MB, magic-byte sniffed, pixel-capped from the header, re-encoded to a metadata-free PNG ≤ 512 px. Members only, streamed; stored under the event prefix, so event deletion removes it.
+- **API schema:** `backend/openapi.json` is the iOS client's source. A drift test fails until `python -m app.cli export-openapi` is re-run, and the raw selfie and logo bodies are documented in it.
+
+**Regression and security tests (all new):**
+
+| Area | Tests |
+|---|---|
+| Authorization matrix | Every operation × 9 roles × **2 transports** (cookie and bearer): **1,364 cells**, identical outcomes required. New operations: 14 (83 in total, incl. the theme endpoint). A new `CREDENTIAL` class asserts that a session never substitutes for body credentials (device-signed refresh → 401 for every role). |
+| `tests/test_mobile_auth.py` (47) | Codes: account creation, no enumeration, no cookies set, single use, replacement, attempt limit, lockout, rate limit, expiry, concurrent first sign-in. Magic link single use. Bad device keys. Existing password accounts. Passwordless accounts can't use the password login. Refresh rotation; tampered key, stale/future time, wrong device, garbage signature. **Replayed signed request** (with zero reuse grace, so a replay would otherwise sign the user out). Reuse detection revokes the session. Cross-device and cross-transport refresh tokens. Token confusion (cookie ↔ bearer, hand-made wrong-audience JWT). Bearer ignores cookies. Malformed `Authorization` never authenticates and never switches CSRF off. Logout, device list/revoke, **IDOR on device revoke (404)**, password reset and web logout parity, re-auth for deletion, code purposes don't mix, push registration and token format. |
+| `tests/test_push.py` (17) | Payload key whitelist per kind. APNs request format (ES256 provider JWT with `kid`/`iss`, topic, push type), with no email or event name in the body. Only live devices in the configured environment. Dead-token handling (410/400 dropped; 429/500 kept). Off until configured. Production key guard. Network errors. Errors never reach the caller. The real client is HTTP/2. Queued-search push. Moderation push goes to organizers only. |
+| `tests/test_app_version.py` (16) | Missing, old and malformed versions → 426; supported versions pass; the gate runs before sign-in; config is reachable; browsers unaffected. |
+| `tests/test_logo.py` (8) | Re-encode, bound and keep transparency; EXIF/GPS stripped; text, truncated PNG and > 1 MB refused; **100 MP pixel bomb refused before decoding**; delete removes the object; stored under the event prefix. |
+| Other | `tests/test_openapi_contract.py` (drift check, documented raw bodies). `tests/test_endpoint_contracts.py` (new endpoints: malformed / missing / mistyped bodies → 422; 5 new rate-limited endpoints → 429). Migration round trip with a device and a passwordless user (the downgrade maps NULL → `'!'` and the upgrade maps it back, lossless). vitest `aasa.test.ts`. Playwright `mobile-links.spec.ts` (AASA served, sign-in link landing strips and keeps the token, logo upload → shown to attendees). |
+
+**Mutation checks:** each guard was removed in turn, and the named tests failed every time:
+- bearer-ignores-cookies, audience check, device signature, signature replay cache, token-belongs-to-device-session
+- code attempt limit, code lockout, web refresh refusing app tokens, CSRF "no auth cookie" condition
+- app-version gate, push payload whitelist, re-auth code purpose, device-revoke ownership, logo re-encode
+
+The replay-cache mutant was initially **not** caught: within the 20 s reuse grace, a replay fails harmlessly anyway. The test now runs with zero grace, which is the case the cache exists for, and the mutant is caught.
+
+**Caught before merge (not shipped):**
+- **Refresh-path bypass:** the web cookie refresh endpoint would have rotated an app session's refresh token without the device signature. It now refuses device-session tokens (`test_app_refresh_token_is_refused_by_the_web_refresh_endpoint`).
+- **Passwordless login crash:** a password login against a passwordless account would have reached Argon2 with `None` and raised (a 500). It now takes the dummy-hash path like an unknown email (`test_passwordless_accounts_cannot_log_in_with_a_password`).
+- **Token in the page:** a sign-in link opened in a browser embedded the token in the page's RSC payload (same-origin only, never sent anywhere). The proxy now strips it with a 303 before rendering.
+- **Scan harness noise:** the first ZAP API runs reported 5xx responses. Every one came from the e2e harness's own `/__e2e/event` seeding endpoint (test-only; it refuses to start outside `ENVIRONMENT=test`), fuzzed because it appears in the e2e server's schema. The scans were re-run against the production schema (`backend/openapi.json`); results are under "Scanner results".
+
+**Coverage of the new modules:**
+
+| Module | Coverage |
+|---|---|
+| `push.py` | 100% |
+| `app_version.py` | 100% |
+| `csrf.py` | 100% |
+| `routes/mobile.py` | 98% |
+| `deps.py` | 98% |
+| `routes/events.py` | 98% |
+| `mobile_auth.py` | 97% |
+
+The whole app is at 96%. Backend: **2,098 tests** passing.
+
+**Residual risks (iOS-specific, tracked for later phases):**
+- **App Attest:** built in Phase 7, report-only (see "App Attest, report-only"). Until enforcement, a scripted client can call the same endpoints the web app can, under the same limits.
+- **Anonymous app calls:** the app needs a session for everything except sign-in and config. Anonymous public flows (removal requests) stay on the web.
+- **Universal Links and push** can only be verified end-to-end with an Apple Developer account and a real domain (Phase 4/7). Here they are covered by the AASA content tests and a fake APNs server.
+
+## App Attest, report-only (iOS Phase 7, 2026-10-02)
+
+Owner decision: build App Attest in Phase 7, **report-only first**. Nothing is blocked: results are recorded so enforcing can be decided on real data.
+
+**What was added:**
+- `services/app_attest.py`: Apple's attestation checks in Apple's order:
+  - certificate chain to the **pinned Apple App Attestation Root CA** (signatures, names, validity, CA constraints)
+  - nonce = SHA-256(authData ‖ SHA-256(challenge)) equals the credential certificate's extension
+  - key id = SHA-256 of the certificate's public key
+  - RP ID = SHA-256(Team ID.bundle id); counter 0; AAGUID matches the environment; credential id = key id
+  - validation category and bundle version recorded when present
+- Assertion checks: signature over SHA-256(authenticatorData ‖ SHA-256(clientData)), RP ID, and a counter that must increase. The client data is the device-signed refresh message, which is already time-bound and single-use.
+- Endpoints `POST /api/me/devices/current/attest/challenge` (app sessions only, single-use per device, 5 min, rate-limited) and `POST /api/me/devices/current/attest`. The optional `assertion` field on `/api/mobile/auth/refresh`. Migration 0012 (device columns; the attested key id is unique).
+- `python -m app.cli attest-report`: counts per status and reason code, with no user or device data.
+- **No new dependency:** the attestation format is CBOR, so a minimal decoder (definite lengths only, depth and size caps) was written instead of adding a CBOR library.
+- Production refuses `APP_ATTEST_ENV=development` once App Attest is configured.
+
+**Tests (`tests/test_app_attest.py`, 52; plus the matrix, contracts and config):**
+- A test CA shaped like Apple's builds real attestations.
+- 16 rejection cases, each with its exact reason code. Among them: an impostor chain that copies the names, expired and non-CA intermediates, a development key in production and vice versa.
+- The pinned root's fingerprint; a test-CA attestation refused against Apple's root.
+- CBOR edge cases: indefinite length, tags, floats, truncation, depth, duplicate keys.
+- Assertions: replayed counter, other key, other client data, wrong RP ID.
+- Recording: single-use and device-bound challenges, key reuse across devices refused, failed attestations block nothing, assertions bound to their refresh.
+- Both transports in the authorization matrix; the rate-limit contract.
+
+**Found by the fuzz test (fixed before use):** the `cryptography` library parses certificates lazily. A corrupted certificate in an attestation therefore raised `ValueError`, `UnsupportedAlgorithm` or `InvalidVersion` from inside later checks, which the endpoint would have answered with a 500. The verifier now maps any parser error to `AttestError("malformed")`. 20,000 mutated attestations and 2,000 random CBOR inputs only ever produce `AttestError`.
+
+**Also fixed:** `test_rate_limited_list_matches_the_code` only counted handlers on `@router.` and missed `@me_router.` handlers. It now counts every router.
+
+**Mutation checks:** the test suite caught all 12 mutants:
+- chain trust, CA constraint, certificate validity
+- nonce, key id, counter 0, AAGUID, credential id
+- assertion counter replay, key reuse
+- challenge single use (GETDEL → GET), CBOR depth cap
+
+**Full re-run after Phase 7:**
+- backend **2,225 passed**, 0 failed (134 skips are the matrix's by-design transport cells);
+- `scripts/security-scan.sh` **18/18** (after the 3 fixes under "Scanner results");
+- ZAP API scans 0 FAIL, all three variants (see "Scanner results").
+
+**Web re-run (Playwright):**
+- The first run failed the capture/results visual test, plus load-dependent flakes that passed alone and in the re-run.
+- The visual failure was a test-design flaw. The consent line shows today's date outside a `<time>` element, so it wasn't masked and the baseline went stale overnight. The seeded event name's random suffix also shifted its mask's width.
+- Fixes:
+  - the date is now a `<time dateTime>` element (better markup, masked like other dates);
+  - the visual tests seed a fixed event name (`/__e2e/event?name=`), so names are compared, not masked;
+  - baselines regenerated and inspected.
+- Final: **64 passed** (Chromium, WebKit, mobile Chrome/Safari) and **5 passed** in Firefox (Linux image).
+
+**Residual:**
+- App Attest exists only on real devices, so it can't run in the simulator. The client path is tested with a fake provider; the server path is tested with the test CA. **Verify on TestFlight** (ios/APP_STORE.md) before deciding to enforce.
+- Fraud-risk receipts (Apple's server-to-server metric) are not used; the receipt is not stored.
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |
@@ -448,6 +597,7 @@ Privacy and security review of the design:
 | mypy | whole app; strict on 12 authn/authz modules | 42 (+6 strict) | **0** | |
 | semgrep (python, owasp-top-ten, secrets, js, ts, react, dockerfile, docker-compose) | repo | 2 | **0** | README placeholder reworded (was a false positive); SEC-006 |
 | gitleaks | full git history + working tree | 0 history / 18 tree | **0** | 18 were generated, git-ignored caches → path allowlist in `.gitleaks.toml` |
+| Re-scan, iOS Phase 7 (2026-10-02) | all 18 steps | 3 FAIL | **18/18 PASS** | **mypy:** 2 real typing gaps in the new App Attest code; one was a missing `None` check (a device removed between the session check and the row lock), now answered with 401. **gitleaks (tree):** Xcode derived data in the git-ignored `ios/build/` (third-party OpenAPIKit test fixtures) → path allowlist like `node_modules/`; and the declaration `let key: P256.Signing.PrivateKey` in `DeviceKey.swift` matched `generic-api-key` (its "secret" is the Swift type name) → exact-value allowlist (`^P256\.Signing\.PrivateKey$`), not key material. **trivy config:** one HIGH in an example Dockerfile inside a SwiftPM checkout under `ios/build/` → that directory skipped; the project's own Dockerfiles have 0 findings. The git-history scan still covers everything committed. |
 | npm audit | frontend | 0 | **0** | |
 | eslint + eslint-plugin-security | frontend | 17 warnings | **0** | `detect-object-injection` off with justification (SEC-007) |
 | tsc --noEmit | frontend | 0 | **0** | |
@@ -456,6 +606,9 @@ Privacy and security review of the design:
 | pip-audit re-run (2026-09-30) | dev + prod API image | 7 (pip 25.0.1 ×6, pytest 8.3.5) | **0** | SEC-040 |
 | ZAP baseline | web app, **production image** (re-run 2026-09-30) | 0 FAIL, 10 WARN | **0 FAIL, 6 WARN** | Each WARN justified below (§ZAP warnings) |
 | ZAP API scan (OpenAPI), unauthenticated | API | 0 FAIL, 2 WARN | 0 FAIL, 1 WARN | CORP fixed; `ef_csrf` not HttpOnly = double-submit design (test-enforced) |
+| ZAP API scans, **Phase 0 re-run** (2026-10-01, production schema `backend/openapi.json`) | API: unauthenticated, cookie-authenticated, **bearer-authenticated (iOS app path)** | — | **0 FAIL** in all three (117/116/116 PASS); **0 tracebacks** in the API log | Warnings: `ef_csrf`/`ef_theme` not HttpOnly (double-submit and theme-switcher design), "Server" header from the local scan proxy (R-4). The first run's 5xx all came from the e2e harness's `/__e2e/event` (see "Mobile API") |
+| ZAP API scans, **iOS Phase 7 re-run** (2026-10-02, production schema incl. App Attest endpoints) | API: unauthenticated, cookie-authenticated, bearer-authenticated | — | **0 FAIL** in all three (117/115/115 PASS); **0 tracebacks** in the API log; both authenticated sessions still alive at the end | Status mix through the proxies, ~9,600 requests each: mostly 422 (fuzzing) and 403 (other events), with 200s present. **A first attempt was invalid and was discarded**: a fuzzed logout ended the scan session mid-run, and the first fix (re-login on any 401) then hit the sign-in code limit (5 per 15 min), because the device-signed refresh endpoints answer 401 to every fuzzed token by design. That left 29,222 requests failing inside the proxy. `scripts/zap_auth_proxy.py` now excludes the two logout endpoints (they are covered by the unauthenticated scan and the tests), signs in again only when `/api/me` shows the session really ended, logs a status mix, and reports its own failures as `proxy-error` (0 in the valid runs). New warning, a proxy artifact: "CORP header missing" on the proxy's synthetic 204 replies for the excluded logouts; the API itself sends `Cross-Origin-Resource-Policy: same-origin`. |
+| ZAP baseline, Phase 0 re-run | web app, production image incl. `/m/signin`, `/terms`, AASA | — | **0 FAIL, 6 WARN** (same justified set) | AASA served as JSON (200, no redirect); sign-in links 303 to the token-free page |
 | ZAP API scan, **authenticated** | API | — | 0 FAIL | ~6,500 attack requests, **0 × 5xx, 0 tracebacks**. The first two "authenticated" runs were silently unauthenticated (ZAP's replacer does not add missing headers; 0 × 200). Fixed with `scripts/zap_auth_proxy.py`, verified by response mix (200s present, no 401s). |
 
 ### ZAP warnings: justification (production image, 2026-09-30)

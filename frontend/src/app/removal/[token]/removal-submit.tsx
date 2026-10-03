@@ -40,7 +40,7 @@ export function RemovalSubmit({ token }: { token: string }) {
   if (step === "done") {
     return (
       <AuthCard title="Request sent">
-        <p className="text-sm text-ink/70">
+        <p className="text-sm text-muted">
           The organizers of {info.data.event_name} will review it and email {info.data.email} with the outcome.
         </p>
       </AuthCard>
@@ -62,7 +62,7 @@ export function RemovalSubmit({ token }: { token: string }) {
 
   return (
     <AuthCard title={`Removal request: ${info.data.event_name}`}>
-      <div className="space-y-4 text-sm text-ink/70">
+      <div className="space-y-4 text-sm text-muted">
         {error && <Alert>{error}</Alert>}
         <p>
           Adding a reference photo of yourself lets us find the pictures you appear in. It&apos;s compared once with

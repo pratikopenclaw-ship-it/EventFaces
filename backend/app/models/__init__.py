@@ -11,10 +11,12 @@ from app.models.enums import (
     RemovalStatus,
     ReportStatus,
     SyncStatus,
+    ThemePreference,
     TokenKind,
     UserRole,
 )
 from app.models.community import Invite, PhotoReport, RemovalRequest
+from app.models.device import Device
 from app.models.event import Event, EventMember
 from app.models.photo import DriveSyncRun, Face, Photo
 from app.models.search import MatchFeedback, SearchAudit, SearchGrant, SelfieQuality
@@ -22,6 +24,7 @@ from app.models.user import AuthToken, User
 
 __all__ = [
     "AuthToken",
+    "Device",
     "DriveSyncRun",
     "Event",
     "EventMember",
@@ -46,6 +49,7 @@ __all__ = [
     "SearchGrant",
     "SelfieQuality",
     "SyncStatus",
+    "ThemePreference",
     "TokenKind",
     "User",
     "UserRole",

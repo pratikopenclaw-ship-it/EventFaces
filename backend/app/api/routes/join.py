@@ -7,7 +7,7 @@ from app.core import rate_limit
 from app.core.config import get_settings
 from app.core.security import constant_time_equals, utcnow
 from app.models import Event, EventMember, JoinMode, MemberRole, MemberStatus
-from app.schemas.event import EventPublicOut, JoinIn, JoinPreviewOut
+from app.schemas.event import CodeOnlyJoinIn, EventPublicOut, JoinIn, JoinPreviewOut
 from app.services.events import normalize_code
 
 router = APIRouter(prefix="/api/join", tags=["join"])
@@ -52,12 +52,18 @@ def join_by_code(body: JoinIn, request: Request, user: VerifiedUser, db: DB) -> 
             rate_limit.record_failure(k, s.join_lockout_seconds)
         raise INVALID
 
+    event = _admit(db, event, user)
+    rate_limit.clear_failures(lock_keys[0])  # only after a successful join, as before
+    return event
+
+
+def _admit(db: DB, event: Event, user: VerifiedUser) -> Event:
+    """Membership for a correct code: the same rules for slug+code and code-only joins."""
     if event.join_mode != JoinMode.code:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "This event is invite-only")
     if event.access_expires_at is not None and event.access_expires_at <= utcnow():
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Access to this event has ended")
 
-    rate_limit.clear_failures(lock_keys[0])
     # Insert-if-absent atomically (a double-clicked join must not hit the primary key),
     # then lock whatever row exists and apply the rules to it.
     db.execute(
@@ -75,4 +81,25 @@ def join_by_code(body: JoinIn, request: Request, user: VerifiedUser, db: DB) -> 
     if membership.status == MemberStatus.pending:
         membership.status = MemberStatus.approved
     db.commit()
+    return event
+
+
+@router.post("/by-code", response_model=EventPublicOut)
+def join_with_code_only(body: CodeOnlyJoinIn, request: Request, user: VerifiedUser, db: DB) -> Event:
+    """Join with just the access code (typed in the app). One endpoint covers every event,
+    so the lockout is global per user and per IP rather than per event."""
+    s = get_settings()
+    ip = rate_limit.client_ip(request)
+    rate_limit.enforce(f"join:{ip}", rate_limit.Limit.parse(s.join_rate_limit))
+    lock_keys = [f"join-code:{user.id}", f"join-code-ip:{ip}"]
+    if any(rate_limit.is_locked(k, s.join_lockout_attempts) for k in lock_keys):
+        raise LOCKED
+    code = normalize_code(body.code)
+    event = db.scalar(select(Event).where(Event.access_code == code))
+    if event is None or not constant_time_equals(code, event.access_code):
+        for k in lock_keys:
+            rate_limit.record_failure(k, s.join_lockout_seconds)
+        raise INVALID
+    event = _admit(db, event, user)
+    rate_limit.clear_failures(lock_keys[0])
     return event

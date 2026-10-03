@@ -1,0 +1,6918 @@
+{
+  "components": {
+    "schemas": {
+      "AppConfigOut": {
+        "properties": {
+          "app_attest": {
+            "title": "App Attest",
+            "type": "boolean"
+          },
+          "latest_version": {
+            "title": "Latest Version",
+            "type": "string"
+          },
+          "min_supported_version": {
+            "title": "Min Supported Version",
+            "type": "string"
+          },
+          "update_url": {
+            "title": "Update Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "min_supported_version",
+          "latest_version",
+          "update_url",
+          "app_attest"
+        ],
+        "title": "AppConfigOut",
+        "type": "object"
+      },
+      "AttestChallengeOut": {
+        "properties": {
+          "challenge": {
+            "title": "Challenge",
+            "type": "string"
+          }
+        },
+        "required": [
+          "challenge"
+        ],
+        "title": "AttestChallengeOut",
+        "type": "object"
+      },
+      "AttestIn": {
+        "properties": {
+          "attestation": {
+            "maxLength": 22000,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+            "title": "Attestation",
+            "type": "string"
+          },
+          "key_id": {
+            "maxLength": 44,
+            "minLength": 44,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+            "title": "Key Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key_id",
+          "attestation"
+        ],
+        "title": "AttestIn",
+        "type": "object"
+      },
+      "AttestOut": {
+        "properties": {
+          "status": {
+            "enum": [
+              "verified",
+              "failed"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "AttestOut",
+        "type": "object"
+      },
+      "BandOut": {
+        "properties": {
+          "lower": {
+            "title": "Lower",
+            "type": "number"
+          },
+          "me": {
+            "title": "Me",
+            "type": "integer"
+          },
+          "not_me": {
+            "title": "Not Me",
+            "type": "integer"
+          },
+          "upper": {
+            "title": "Upper",
+            "type": "number"
+          },
+          "wrong_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong Rate"
+          }
+        },
+        "required": [
+          "lower",
+          "upper",
+          "me",
+          "not_me",
+          "wrong_rate"
+        ],
+        "title": "BandOut",
+        "type": "object"
+      },
+      "CaptureTokenOut": {
+        "properties": {
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "token": {
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "expires_in"
+        ],
+        "title": "CaptureTokenOut",
+        "type": "object"
+      },
+      "CodeOnlyJoinIn": {
+        "properties": {
+          "code": {
+            "maxLength": 32,
+            "minLength": 4,
+            "title": "Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "title": "CodeOnlyJoinIn",
+        "type": "object"
+      },
+      "CodeRequestIn": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "CodeRequestIn",
+        "type": "object"
+      },
+      "CodeVerifyIn": {
+        "properties": {
+          "code": {
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
+          },
+          "device": {
+            "$ref": "#/components/schemas/DeviceIn"
+          },
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "code",
+          "device"
+        ],
+        "title": "CodeVerifyIn",
+        "type": "object"
+      },
+      "ConsentIn": {
+        "properties": {
+          "version": {
+            "maxLength": 40,
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "ConsentIn",
+        "type": "object"
+      },
+      "ConsentInfo": {
+        "properties": {
+          "given": {
+            "title": "Given",
+            "type": "boolean"
+          },
+          "given_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given At"
+          },
+          "grant_days": {
+            "title": "Grant Days",
+            "type": "integer"
+          },
+          "text": {
+            "$ref": "#/components/schemas/ConsentTextOut"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "grant_days",
+          "given",
+          "given_at",
+          "text"
+        ],
+        "title": "ConsentInfo",
+        "type": "object"
+      },
+      "ConsentSectionOut": {
+        "properties": {
+          "heading": {
+            "title": "Heading",
+            "type": "string"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Paragraphs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "heading",
+          "paragraphs"
+        ],
+        "title": "ConsentSectionOut",
+        "type": "object"
+      },
+      "ConsentTextOut": {
+        "description": "The text of this consent version, in the request's language (en or de).",
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "agreement": {
+            "title": "Agreement",
+            "type": "string"
+          },
+          "intro": {
+            "title": "Intro",
+            "type": "string"
+          },
+          "locale": {
+            "title": "Locale",
+            "type": "string"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/ConsentSectionOut"
+            },
+            "title": "Sections",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "locale",
+          "title",
+          "intro",
+          "sections",
+          "agreement",
+          "action"
+        ],
+        "title": "ConsentTextOut",
+        "type": "object"
+      },
+      "DeleteMeIn": {
+        "description": "Re-authenticate with the password, or (accounts without one: app sign-in) with the\ncode from POST /api/me/reauth-code.",
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "password": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
+          }
+        },
+        "title": "DeleteMeIn",
+        "type": "object"
+      },
+      "DeviceIn": {
+        "properties": {
+          "name": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "platform": {
+            "const": "ios",
+            "default": "ios",
+            "title": "Platform",
+            "type": "string"
+          },
+          "public_key": {
+            "maxLength": 88,
+            "minLength": 88,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+            "title": "Public Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "public_key"
+        ],
+        "title": "DeviceIn",
+        "type": "object"
+      },
+      "DeviceOut": {
+        "properties": {
+          "app_version": {
+            "title": "App Version",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current": {
+            "default": false,
+            "title": "Current",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "title": "Last Seen At",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "platform",
+          "app_version",
+          "created_at",
+          "last_seen_at"
+        ],
+        "title": "DeviceOut",
+        "type": "object"
+      },
+      "DownloadIn": {
+        "properties": {
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Photo Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "photo_ids"
+        ],
+        "title": "DownloadIn",
+        "type": "object"
+      },
+      "DownloadOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "expires_in",
+          "count"
+        ],
+        "title": "DownloadOut",
+        "type": "object"
+      },
+      "EmailIn": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "EmailIn",
+        "type": "object"
+      },
+      "EventAdminOut": {
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_code": {
+            "title": "Access Code",
+            "type": "string"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "delete_photos_on_expiry": {
+            "title": "Delete Photos On Expiry",
+            "type": "boolean"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "drive_folder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder Id"
+          },
+          "guest_upload_enabled": {
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "has_logo": {
+            "default": false,
+            "title": "Has Logo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "join_mode": {
+            "$ref": "#/components/schemas/JoinMode"
+          },
+          "moderation_mode": {
+            "$ref": "#/components/schemas/ModerationMode"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "upload_max_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "date",
+          "description",
+          "access_expires_at",
+          "guest_upload_enabled",
+          "allow_selfie_file_upload",
+          "join_mode",
+          "access_code",
+          "moderation_mode",
+          "delete_photos_on_expiry",
+          "drive_folder_id",
+          "created_at"
+        ],
+        "title": "EventAdminOut",
+        "type": "object"
+      },
+      "EventCreate": {
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "default": false,
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "delete_photos_on_expiry": {
+            "default": false,
+            "title": "Delete Photos On Expiry",
+            "type": "boolean"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
+          },
+          "drive_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder"
+          },
+          "guest_upload_enabled": {
+            "default": false,
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "join_mode": {
+            "$ref": "#/components/schemas/JoinMode",
+            "default": "code"
+          },
+          "moderation_mode": {
+            "$ref": "#/components/schemas/ModerationMode",
+            "default": "manual"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "EventCreate",
+        "type": "object"
+      },
+      "EventListItem": {
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "can_manage": {
+            "default": false,
+            "title": "Can Manage",
+            "type": "boolean"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "guest_upload_enabled": {
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "has_logo": {
+            "default": false,
+            "title": "Has Logo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "my_role": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MemberRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "photo_count": {
+            "default": 0,
+            "title": "Photo Count",
+            "type": "integer"
+          },
+          "search_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search State"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "upload_max_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "date",
+          "description",
+          "access_expires_at",
+          "guest_upload_enabled",
+          "allow_selfie_file_upload"
+        ],
+        "title": "EventListItem",
+        "type": "object"
+      },
+      "EventMatchQualityOut": {
+        "properties": {
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_name": {
+            "title": "Event Name",
+            "type": "string"
+          },
+          "feedback": {
+            "title": "Feedback",
+            "type": "integer"
+          },
+          "missing_reports": {
+            "title": "Missing Reports",
+            "type": "integer"
+          },
+          "searches": {
+            "title": "Searches",
+            "type": "integer"
+          },
+          "wrong_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong Rate"
+          }
+        },
+        "required": [
+          "event_id",
+          "event_name",
+          "searches",
+          "feedback",
+          "wrong_rate",
+          "missing_reports"
+        ],
+        "title": "EventMatchQualityOut",
+        "type": "object"
+      },
+      "EventPublicOut": {
+        "description": "What attendees see: no access code, no admin settings.",
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "guest_upload_enabled": {
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "has_logo": {
+            "default": false,
+            "title": "Has Logo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "upload_max_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "date",
+          "description",
+          "access_expires_at",
+          "guest_upload_enabled",
+          "allow_selfie_file_upload"
+        ],
+        "title": "EventPublicOut",
+        "type": "object"
+      },
+      "EventUpdate": {
+        "description": "All fields optional; only provided fields are changed.",
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Selfie File Upload"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "delete_photos_on_expiry": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delete Photos On Expiry"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "drive_folder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder"
+          },
+          "guest_upload_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Upload Enabled"
+          },
+          "join_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JoinMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "moderation_mode": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModerationMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          }
+        },
+        "title": "EventUpdate",
+        "type": "object"
+      },
+      "FeedbackIn": {
+        "properties": {
+          "photo_id": {
+            "format": "uuid",
+            "title": "Photo Id",
+            "type": "string"
+          },
+          "verdict": {
+            "enum": [
+              "me",
+              "not_me"
+            ],
+            "title": "Verdict",
+            "type": "string"
+          }
+        },
+        "required": [
+          "photo_id",
+          "verdict"
+        ],
+        "title": "FeedbackIn",
+        "type": "object"
+      },
+      "GlobalMatchQualityOut": {
+        "properties": {
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/BandOut"
+            },
+            "title": "Bands",
+            "type": "array"
+          },
+          "current_best": {
+            "title": "Current Best",
+            "type": "number"
+          },
+          "current_possible": {
+            "title": "Current Possible",
+            "type": "number"
+          },
+          "events": {
+            "items": {
+              "$ref": "#/components/schemas/EventMatchQualityOut"
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "feedback": {
+            "title": "Feedback",
+            "type": "integer"
+          },
+          "missing_reports": {
+            "title": "Missing Reports",
+            "type": "integer"
+          },
+          "quality_histogram": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Quality Histogram",
+            "type": "array"
+          },
+          "rejection_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Rejection Reasons",
+            "type": "object"
+          },
+          "searches": {
+            "title": "Searches",
+            "type": "integer"
+          },
+          "shots_passed": {
+            "title": "Shots Passed",
+            "type": "integer"
+          },
+          "shots_total": {
+            "title": "Shots Total",
+            "type": "integer"
+          },
+          "suggested_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Threshold"
+          },
+          "suggestion_note": {
+            "title": "Suggestion Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "searches",
+          "feedback",
+          "missing_reports",
+          "bands",
+          "current_possible",
+          "current_best",
+          "suggested_threshold",
+          "suggestion_note",
+          "quality_histogram",
+          "rejection_reasons",
+          "shots_total",
+          "shots_passed",
+          "events"
+        ],
+        "title": "GlobalMatchQualityOut",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "IndexStatus": {
+        "description": "Pipeline progress: queued \u2192 importing \u2192 indexing \u2192 indexed (or failed).",
+        "enum": [
+          "queued",
+          "importing",
+          "indexing",
+          "indexed",
+          "failed"
+        ],
+        "title": "IndexStatus",
+        "type": "string"
+      },
+      "InviteCsvIn": {
+        "properties": {
+          "csv": {
+            "maxLength": 500000,
+            "minLength": 3,
+            "title": "Csv",
+            "type": "string"
+          }
+        },
+        "required": [
+          "csv"
+        ],
+        "title": "InviteCsvIn",
+        "type": "object"
+      },
+      "InviteOut": {
+        "properties": {
+          "accepted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InviteStatus"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status",
+          "sent_at",
+          "expires_at",
+          "accepted_at"
+        ],
+        "title": "InviteOut",
+        "type": "object"
+      },
+      "InvitePreview": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "account_exists": {
+            "title": "Account Exists",
+            "type": "boolean"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "event_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
+          },
+          "event_name": {
+            "title": "Event Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_name",
+          "event_date",
+          "email",
+          "account_exists",
+          "accepted"
+        ],
+        "title": "InvitePreview",
+        "type": "object"
+      },
+      "InviteRegisterIn": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 10,
+            "title": "Password",
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "InviteRegisterIn",
+        "type": "object"
+      },
+      "InviteStatus": {
+        "enum": [
+          "pending",
+          "accepted",
+          "revoked"
+        ],
+        "title": "InviteStatus",
+        "type": "string"
+      },
+      "InviteTokenIn": {
+        "properties": {
+          "token": {
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "InviteTokenIn",
+        "type": "object"
+      },
+      "InviteUploadOut": {
+        "properties": {
+          "already_accepted": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Already Accepted",
+            "type": "array"
+          },
+          "already_members": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Already Members",
+            "type": "array"
+          },
+          "invalid": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Invalid",
+            "type": "array"
+          },
+          "sent": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sent",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sent",
+          "invalid",
+          "already_members",
+          "already_accepted"
+        ],
+        "title": "InviteUploadOut",
+        "type": "object"
+      },
+      "JoinIn": {
+        "properties": {
+          "code": {
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Code",
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "code"
+        ],
+        "title": "JoinIn",
+        "type": "object"
+      },
+      "JoinMode": {
+        "enum": [
+          "code",
+          "invite"
+        ],
+        "title": "JoinMode",
+        "type": "string"
+      },
+      "JoinPreviewOut": {
+        "properties": {
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "join_mode": {
+            "$ref": "#/components/schemas/JoinMode"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "name",
+          "date",
+          "join_mode"
+        ],
+        "title": "JoinPreviewOut",
+        "type": "object"
+      },
+      "LoginIn": {
+        "properties": {
+          "email": {
+            "maxLength": 320,
+            "minLength": 3,
+            "title": "Email",
+            "type": "string"
+          },
+          "password": {
+            "maxLength": 128,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "LoginIn",
+        "type": "object"
+      },
+      "MagicLinkIn": {
+        "properties": {
+          "device": {
+            "$ref": "#/components/schemas/DeviceIn"
+          },
+          "token": {
+            "maxLength": 100,
+            "minLength": 20,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "device"
+        ],
+        "title": "MagicLinkIn",
+        "type": "object"
+      },
+      "MatchOut": {
+        "properties": {
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "similarity": {
+            "title": "Similarity",
+            "type": "number"
+          },
+          "tier": {
+            "enum": [
+              "best",
+              "possible"
+            ],
+            "title": "Tier",
+            "type": "string"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "required": [
+          "id",
+          "similarity",
+          "tier",
+          "width",
+          "height"
+        ],
+        "title": "MatchOut",
+        "type": "object"
+      },
+      "MatchQualityOut": {
+        "properties": {
+          "bands": {
+            "items": {
+              "$ref": "#/components/schemas/BandOut"
+            },
+            "title": "Bands",
+            "type": "array"
+          },
+          "current_best": {
+            "title": "Current Best",
+            "type": "number"
+          },
+          "current_possible": {
+            "title": "Current Possible",
+            "type": "number"
+          },
+          "feedback": {
+            "title": "Feedback",
+            "type": "integer"
+          },
+          "missing_reports": {
+            "title": "Missing Reports",
+            "type": "integer"
+          },
+          "quality_histogram": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Quality Histogram",
+            "type": "array"
+          },
+          "rejection_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Rejection Reasons",
+            "type": "object"
+          },
+          "searches": {
+            "title": "Searches",
+            "type": "integer"
+          },
+          "shots_passed": {
+            "title": "Shots Passed",
+            "type": "integer"
+          },
+          "shots_total": {
+            "title": "Shots Total",
+            "type": "integer"
+          },
+          "suggested_threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Threshold"
+          },
+          "suggestion_note": {
+            "title": "Suggestion Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "searches",
+          "feedback",
+          "missing_reports",
+          "bands",
+          "current_possible",
+          "current_best",
+          "suggested_threshold",
+          "suggestion_note",
+          "quality_histogram",
+          "rejection_reasons",
+          "shots_total",
+          "shots_passed"
+        ],
+        "title": "MatchQualityOut",
+        "type": "object"
+      },
+      "MemberOut": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "joined_at": {
+            "format": "date-time",
+            "title": "Joined At",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/MemberRole"
+          },
+          "status": {
+            "$ref": "#/components/schemas/MemberStatus"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "email",
+          "role",
+          "status",
+          "joined_at",
+          "expires_at"
+        ],
+        "title": "MemberOut",
+        "type": "object"
+      },
+      "MemberRole": {
+        "enum": [
+          "organizer",
+          "attendee"
+        ],
+        "title": "MemberRole",
+        "type": "string"
+      },
+      "MemberStatus": {
+        "enum": [
+          "pending",
+          "approved",
+          "revoked"
+        ],
+        "title": "MemberStatus",
+        "type": "string"
+      },
+      "MemberUpdate": {
+        "properties": {
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MemberStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "MemberUpdate",
+        "type": "object"
+      },
+      "MessageOut": {
+        "properties": {
+          "detail": {
+            "title": "Detail",
+            "type": "string"
+          }
+        },
+        "required": [
+          "detail"
+        ],
+        "title": "MessageOut",
+        "type": "object"
+      },
+      "MobileTokensOut": {
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string"
+          },
+          "token_type": {
+            "const": "bearer",
+            "default": "bearer",
+            "title": "Token Type",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserOut"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_in",
+          "device_id",
+          "user"
+        ],
+        "title": "MobileTokensOut",
+        "type": "object"
+      },
+      "ModerateIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "ModerateIn",
+        "type": "object"
+      },
+      "ModerationItem": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "face_count": {
+            "title": "Face Count",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "index_status": {
+            "$ref": "#/components/schemas/IndexStatus"
+          },
+          "original_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
+          },
+          "uploader_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploader Email"
+          }
+        },
+        "required": [
+          "id",
+          "original_filename",
+          "uploader_email",
+          "index_status",
+          "face_count",
+          "created_at"
+        ],
+        "title": "ModerationItem",
+        "type": "object"
+      },
+      "ModerationMode": {
+        "enum": [
+          "auto",
+          "manual"
+        ],
+        "title": "ModerationMode",
+        "type": "string"
+      },
+      "MyPhotoOut": {
+        "properties": {
+          "expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "similarity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity"
+          },
+          "tier": {
+            "anyOf": [
+              {
+                "enum": [
+                  "best",
+                  "possible"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tier"
+          },
+          "verdict": {
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "not_me"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verdict"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "required": [
+          "id",
+          "width",
+          "height",
+          "similarity",
+          "tier",
+          "verdict",
+          "expires_at"
+        ],
+        "title": "MyPhotoOut",
+        "type": "object"
+      },
+      "MyUploadOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "index_status": {
+            "$ref": "#/components/schemas/IndexStatus"
+          },
+          "original_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PhotoStatus"
+          }
+        },
+        "required": [
+          "id",
+          "original_filename",
+          "status",
+          "index_status",
+          "error",
+          "created_at"
+        ],
+        "title": "MyUploadOut",
+        "type": "object"
+      },
+      "OrganizerAssign": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "OrganizerAssign",
+        "type": "object"
+      },
+      "PhotoAdminOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "face_count": {
+            "title": "Face Count",
+            "type": "integer"
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "index_status": {
+            "$ref": "#/components/schemas/IndexStatus"
+          },
+          "original_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
+          },
+          "source": {
+            "$ref": "#/components/schemas/PhotoSource"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PhotoStatus"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "required": [
+          "id",
+          "source",
+          "status",
+          "index_status",
+          "original_filename",
+          "width",
+          "height",
+          "face_count",
+          "error",
+          "created_at"
+        ],
+        "title": "PhotoAdminOut",
+        "type": "object"
+      },
+      "PhotoPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PhotoAdminOut"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "PhotoPage",
+        "type": "object"
+      },
+      "PhotoSource": {
+        "enum": [
+          "drive",
+          "guest"
+        ],
+        "title": "PhotoSource",
+        "type": "string"
+      },
+      "PhotoStatus": {
+        "description": "Visibility. Only `published` photos may ever appear in search or galleries.",
+        "enum": [
+          "processing",
+          "published",
+          "pending_review",
+          "rejected",
+          "removed"
+        ],
+        "title": "PhotoStatus",
+        "type": "string"
+      },
+      "PipelineCounts": {
+        "properties": {
+          "failed": {
+            "default": 0,
+            "title": "Failed",
+            "type": "integer"
+          },
+          "importing": {
+            "default": 0,
+            "title": "Importing",
+            "type": "integer"
+          },
+          "indexed": {
+            "default": 0,
+            "title": "Indexed",
+            "type": "integer"
+          },
+          "indexing": {
+            "default": 0,
+            "title": "Indexing",
+            "type": "integer"
+          },
+          "queued": {
+            "default": 0,
+            "title": "Queued",
+            "type": "integer"
+          }
+        },
+        "title": "PipelineCounts",
+        "type": "object"
+      },
+      "PreferencesIn": {
+        "properties": {
+          "theme": {
+            "$ref": "#/components/schemas/ThemePreference"
+          }
+        },
+        "required": [
+          "theme"
+        ],
+        "title": "PreferencesIn",
+        "type": "object"
+      },
+      "PushTokenIn": {
+        "properties": {
+          "env": {
+            "enum": [
+              "sandbox",
+              "production"
+            ],
+            "title": "Env",
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 200,
+            "minLength": 64,
+            "pattern": "^[0-9a-fA-F]+$",
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "env"
+        ],
+        "title": "PushTokenIn",
+        "type": "object"
+      },
+      "RefreshIn": {
+        "properties": {
+          "assertion": {
+            "anyOf": [
+              {
+                "maxLength": 1400,
+                "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assertion"
+          },
+          "device_id": {
+            "format": "uuid",
+            "title": "Device Id",
+            "type": "string"
+          },
+          "refresh_token": {
+            "maxLength": 100,
+            "minLength": 20,
+            "pattern": "^[A-Za-z0-9_-]+$",
+            "title": "Refresh Token",
+            "type": "string"
+          },
+          "signature": {
+            "maxLength": 100,
+            "minLength": 8,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+            "title": "Signature",
+            "type": "string"
+          },
+          "ts": {
+            "maximum": 100000000000.0,
+            "minimum": 0.0,
+            "title": "Ts",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "refresh_token",
+          "device_id",
+          "ts",
+          "signature"
+        ],
+        "title": "RefreshIn",
+        "type": "object"
+      },
+      "RemovalCreateIn": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "event": {
+            "description": "Event slug from the removal link",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Event",
+            "type": "string"
+          },
+          "message": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event",
+          "email"
+        ],
+        "title": "RemovalCreateIn",
+        "type": "object"
+      },
+      "RemovalInfo": {
+        "properties": {
+          "event_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
+          },
+          "event_name": {
+            "title": "Event Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_name",
+          "event_date"
+        ],
+        "title": "RemovalInfo",
+        "type": "object"
+      },
+      "RemovalOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "matched_photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Matched Photo Ids",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/RemovalStatus"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "message",
+          "status",
+          "matched_photo_ids",
+          "created_at"
+        ],
+        "title": "RemovalOut",
+        "type": "object"
+      },
+      "RemovalResolveIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "remove",
+              "decline"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "photo_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 500,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Ids"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "RemovalResolveIn",
+        "type": "object"
+      },
+      "RemovalStatus": {
+        "enum": [
+          "unverified",
+          "submitted",
+          "resolved",
+          "declined"
+        ],
+        "title": "RemovalStatus",
+        "type": "string"
+      },
+      "ReportIn": {
+        "properties": {
+          "details": {
+            "default": "",
+            "maxLength": 1000,
+            "title": "Details",
+            "type": "string"
+          },
+          "reason": {
+            "enum": [
+              "inappropriate",
+              "its_me_remove",
+              "privacy",
+              "other"
+            ],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "title": "ReportIn",
+        "type": "object"
+      },
+      "ReportOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "details": {
+            "title": "Details",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "photo_id": {
+            "format": "uuid",
+            "title": "Photo Id",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "reporter_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter Email"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReportStatus"
+          }
+        },
+        "required": [
+          "id",
+          "photo_id",
+          "reason",
+          "details",
+          "status",
+          "reporter_email",
+          "created_at"
+        ],
+        "title": "ReportOut",
+        "type": "object"
+      },
+      "ReportStatus": {
+        "enum": [
+          "open",
+          "dismissed",
+          "photo_removed"
+        ],
+        "title": "ReportStatus",
+        "type": "string"
+      },
+      "ResetPasswordIn": {
+        "properties": {
+          "password": {
+            "maxLength": 128,
+            "minLength": 10,
+            "title": "Password",
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ],
+        "title": "ResetPasswordIn",
+        "type": "object"
+      },
+      "ResolveReportIn": {
+        "properties": {
+          "action": {
+            "enum": [
+              "dismiss",
+              "remove_photo"
+            ],
+            "title": "Action",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action"
+        ],
+        "title": "ResolveReportIn",
+        "type": "object"
+      },
+      "SearchLogRow": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "match_count": {
+            "title": "Match Count",
+            "type": "integer"
+          },
+          "user_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Email"
+          }
+        },
+        "required": [
+          "user_email",
+          "match_count",
+          "created_at"
+        ],
+        "title": "SearchLogRow",
+        "type": "object"
+      },
+      "SearchOut": {
+        "properties": {
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/MatchOut"
+            },
+            "title": "Matches",
+            "type": "array"
+          },
+          "quality": {
+            "items": {
+              "$ref": "#/components/schemas/ShotQualityOut"
+            },
+            "title": "Quality",
+            "type": "array"
+          },
+          "search_id": {
+            "title": "Search Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "search_id",
+          "matches",
+          "quality"
+        ],
+        "title": "SearchOut",
+        "type": "object"
+      },
+      "SearchStatusOut": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "match_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Count"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "queued_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
+          },
+          "shot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shot"
+          },
+          "state": {
+            "enum": [
+              "none",
+              "queued",
+              "done",
+              "rejected",
+              "cancelled",
+              "expired"
+            ],
+            "title": "State",
+            "type": "string"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "required": [
+          "state"
+        ],
+        "title": "SearchStatusOut",
+        "type": "object"
+      },
+      "SelfieRejectionOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "shot": {
+            "title": "Shot",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "shot"
+        ],
+        "title": "SelfieRejectionOut",
+        "type": "object"
+      },
+      "SelfieRequirementsOut": {
+        "description": "The server's selfie quality thresholds, so live guidance (web and app) matches them.",
+        "properties": {
+          "capture_token_seconds": {
+            "title": "Capture Token Seconds",
+            "type": "integer"
+          },
+          "face_height_max": {
+            "title": "Face Height Max",
+            "type": "number"
+          },
+          "face_height_min": {
+            "title": "Face Height Min",
+            "type": "number"
+          },
+          "front_max_yaw": {
+            "title": "Front Max Yaw",
+            "type": "number"
+          },
+          "global_file_upload": {
+            "title": "Global File Upload",
+            "type": "boolean"
+          },
+          "max_brightness": {
+            "title": "Max Brightness",
+            "type": "number"
+          },
+          "max_pitch": {
+            "title": "Max Pitch",
+            "type": "number"
+          },
+          "max_roll": {
+            "title": "Max Roll",
+            "type": "number"
+          },
+          "max_yaw": {
+            "title": "Max Yaw",
+            "type": "number"
+          },
+          "min_brightness": {
+            "title": "Min Brightness",
+            "type": "number"
+          },
+          "min_height": {
+            "title": "Min Height",
+            "type": "integer"
+          },
+          "min_width": {
+            "title": "Min Width",
+            "type": "integer"
+          },
+          "side_min_yaw": {
+            "title": "Side Min Yaw",
+            "type": "number"
+          }
+        },
+        "required": [
+          "min_width",
+          "min_height",
+          "face_height_min",
+          "face_height_max",
+          "max_yaw",
+          "max_pitch",
+          "max_roll",
+          "front_max_yaw",
+          "side_min_yaw",
+          "min_brightness",
+          "max_brightness",
+          "capture_token_seconds",
+          "global_file_upload"
+        ],
+        "title": "SelfieRequirementsOut",
+        "type": "object"
+      },
+      "ServiceAccountOut": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "ServiceAccountOut",
+        "type": "object"
+      },
+      "ShotQualityOut": {
+        "properties": {
+          "score": {
+            "title": "Score",
+            "type": "integer"
+          },
+          "shot": {
+            "title": "Shot",
+            "type": "string"
+          }
+        },
+        "required": [
+          "shot",
+          "score"
+        ],
+        "title": "ShotQualityOut",
+        "type": "object"
+      },
+      "SignupIn": {
+        "properties": {
+          "email": {
+            "format": "email",
+            "title": "Email",
+            "type": "string"
+          },
+          "next": {
+            "anyOf": [
+              {
+                "maxLength": 130,
+                "pattern": "^/join/[a-z0-9-]{1,80}(\\?code=[A-Za-z0-9]{1,32})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
+          },
+          "password": {
+            "maxLength": 128,
+            "minLength": 10,
+            "title": "Password",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "SignupIn",
+        "type": "object"
+      },
+      "SyncRunOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "files_listed": {
+            "title": "Files Listed",
+            "type": "integer"
+          },
+          "files_new": {
+            "title": "Files New",
+            "type": "integer"
+          },
+          "files_retried": {
+            "title": "Files Retried",
+            "type": "integer"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "folder_id": {
+            "title": "Folder Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "started_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SyncStatus"
+          }
+        },
+        "required": [
+          "id",
+          "status",
+          "folder_id",
+          "files_listed",
+          "files_new",
+          "files_retried",
+          "error",
+          "created_at",
+          "started_at",
+          "finished_at"
+        ],
+        "title": "SyncRunOut",
+        "type": "object"
+      },
+      "SyncStatus": {
+        "enum": [
+          "queued",
+          "running",
+          "completed",
+          "failed"
+        ],
+        "title": "SyncStatus",
+        "type": "string"
+      },
+      "SyncStatusOut": {
+        "properties": {
+          "drive_configured": {
+            "title": "Drive Configured",
+            "type": "boolean"
+          },
+          "faces": {
+            "title": "Faces",
+            "type": "integer"
+          },
+          "folder_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
+          },
+          "in_progress": {
+            "title": "In Progress",
+            "type": "boolean"
+          },
+          "last_run": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncRunOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pipeline": {
+            "$ref": "#/components/schemas/PipelineCounts"
+          },
+          "published_photos": {
+            "title": "Published Photos",
+            "type": "integer"
+          },
+          "service_account_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Account Email"
+          }
+        },
+        "required": [
+          "drive_configured",
+          "service_account_email",
+          "folder_id",
+          "last_run",
+          "in_progress",
+          "pipeline",
+          "published_photos",
+          "faces"
+        ],
+        "title": "SyncStatusOut",
+        "type": "object"
+      },
+      "ThemePreference": {
+        "enum": [
+          "system",
+          "light",
+          "dark"
+        ],
+        "title": "ThemePreference",
+        "type": "string"
+      },
+      "TokenIn": {
+        "properties": {
+          "token": {
+            "maxLength": 200,
+            "minLength": 10,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "title": "TokenIn",
+        "type": "object"
+      },
+      "UploadStartIn": {
+        "properties": {
+          "content_type": {
+            "maxLength": 40,
+            "title": "Content Type",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "size": {
+            "exclusiveMinimum": 0.0,
+            "title": "Size",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "filename",
+          "content_type",
+          "size"
+        ],
+        "title": "UploadStartIn",
+        "type": "object"
+      },
+      "UploadStartOut": {
+        "properties": {
+          "content_type": {
+            "title": "Content Type",
+            "type": "string"
+          },
+          "expires_in": {
+            "title": "Expires In",
+            "type": "integer"
+          },
+          "photo_id": {
+            "format": "uuid",
+            "title": "Photo Id",
+            "type": "string"
+          },
+          "upload_url": {
+            "title": "Upload Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "photo_id",
+          "upload_url",
+          "content_type",
+          "expires_in"
+        ],
+        "title": "UploadStartOut",
+        "type": "object"
+      },
+      "UserOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "email_verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Verified At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/ThemePreference"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "email_verified_at",
+          "created_at",
+          "theme"
+        ],
+        "title": "UserOut",
+        "type": "object"
+      },
+      "UserRole": {
+        "enum": [
+          "super_admin",
+          "organizer",
+          "attendee"
+        ],
+        "title": "UserRole",
+        "type": "string"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "EventFaces API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/admin/match-quality": {
+      "get": {
+        "operationId": "search_global_match_quality",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalMatchQualityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Global Match Quality",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/app/config": {
+      "get": {
+        "operationId": "mobile_app_config",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "platform",
+            "required": false,
+            "schema": {
+              "const": "ios",
+              "default": "ios",
+              "title": "Platform",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppConfigOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "App Config",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/auth/csrf": {
+      "get": {
+        "operationId": "auth_csrf",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Auth Csrf",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Csrf",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "operationId": "auth_forgot_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Forgot Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "operationId": "auth_login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Login",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "operationId": "auth_logout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
+      "post": {
+        "operationId": "auth_refresh",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/resend-verification": {
+      "post": {
+        "operationId": "auth_resend_verification",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resend Verification",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "operationId": "auth_reset_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Reset Password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/signup": {
+      "post": {
+        "operationId": "auth_signup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignupIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Signup",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/auth/verify-email": {
+      "post": {
+        "operationId": "auth_verify_email",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Email",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/downloads/{token}": {
+      "get": {
+        "operationId": "search_redeem_download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Redeem Download",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/drive/service-account": {
+      "get": {
+        "description": "The email organizers share their Drive folder with.",
+        "operationId": "photos_drive_service_account",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceAccountOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Drive Service Account",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events": {
+      "get": {
+        "operationId": "events_list_events",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventListItem"
+                  },
+                  "title": "Response Events List Events",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Events",
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "operationId": "events_create_event",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Event",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}": {
+      "delete": {
+        "operationId": "events_delete_event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Event",
+        "tags": [
+          "events"
+        ]
+      },
+      "get": {
+        "operationId": "events_get_event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPublicOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event",
+        "tags": [
+          "events"
+        ]
+      },
+      "patch": {
+        "operationId": "events_update_event",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Event",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/access-code/rotate": {
+      "post": {
+        "operationId": "events_rotate_access_code",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Rotate Access Code",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/admin": {
+      "get": {
+        "operationId": "events_get_event_admin",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Event Admin",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/capture-token": {
+      "post": {
+        "description": "Issued when the guided camera flow starts; valid once, for 60 s, for this user+event.",
+        "operationId": "search_capture_token",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaptureTokenOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Capture Token",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/downloads": {
+      "post": {
+        "operationId": "search_create_download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DownloadIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DownloadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Download",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/feedback": {
+      "post": {
+        "operationId": "search_give_feedback",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Give Feedback",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/feedback/missing": {
+      "post": {
+        "operationId": "search_report_missing",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report Missing",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/invites": {
+      "get": {
+        "operationId": "invites_list_invites",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InviteOut"
+                  },
+                  "title": "Response Invites List Invites",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Invites",
+        "tags": [
+          "invites"
+        ]
+      },
+      "post": {
+        "operationId": "invites_upload_invites",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteCsvIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteUploadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Upload Invites",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/events/{event_id}/invites/{invite_id}": {
+      "delete": {
+        "operationId": "invites_revoke_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invite Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Invite",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/events/{event_id}/invites/{invite_id}/resend": {
+      "post": {
+        "operationId": "invites_resend_invite",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invite_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invite Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resend Invite",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/events/{event_id}/logo": {
+      "delete": {
+        "operationId": "events_delete_logo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Logo",
+        "tags": [
+          "events"
+        ]
+      },
+      "get": {
+        "operationId": "events_get_logo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Logo",
+        "tags": [
+          "events"
+        ]
+      },
+      "put": {
+        "description": "Raw image body (\u2264 1 MB, JPEG/PNG/HEIC), re-encoded to a metadata-free PNG.",
+        "operationId": "events_put_logo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "image/heic": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAdminOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Put Logo",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/match-quality": {
+      "get": {
+        "operationId": "search_event_match_quality",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchQualityOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Event Match Quality",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/members": {
+      "get": {
+        "operationId": "members_list_members",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MemberOut"
+                  },
+                  "title": "Response Members List Members",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Members",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/events/{event_id}/members/{user_id}": {
+      "delete": {
+        "operationId": "members_remove_member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Member",
+        "tags": [
+          "members"
+        ]
+      },
+      "patch": {
+        "operationId": "members_update_member",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "user_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "User Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Member",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/events/{event_id}/moderation": {
+      "get": {
+        "operationId": "moderation_moderation_queue",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModerationItem"
+                  },
+                  "title": "Response Moderation Moderation Queue",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Moderation Queue",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/my-photos": {
+      "get": {
+        "description": "Photos this user matched earlier (until the grant expires) or uploaded.",
+        "operationId": "search_my_photos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyPhotoOut"
+                  },
+                  "title": "Response Search My Photos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "My Photos",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/my-uploads": {
+      "get": {
+        "description": "The uploader's own photos with their moderation status (images only once published).",
+        "operationId": "uploads_my_uploads",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyUploadOut"
+                  },
+                  "title": "Response Uploads My Uploads",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "My Uploads",
+        "tags": [
+          "uploads"
+        ]
+      }
+    },
+    "/api/events/{event_id}/organizers": {
+      "post": {
+        "operationId": "members_assign_organizer",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OrganizerAssign"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Assign Organizer",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos": {
+      "get": {
+        "operationId": "photos_list_photos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 1000000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 60,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "index_status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IndexStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Index Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PhotoStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Photos",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/{photo_id}": {
+      "delete": {
+        "description": "Admin delete: removes embeddings, grants and files; keeps a tombstone row.",
+        "operationId": "moderation_delete_photo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Photo",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/{photo_id}/moderate": {
+      "post": {
+        "operationId": "moderation_moderate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ModerateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Moderate",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/{photo_id}/report": {
+      "post": {
+        "operationId": "moderation_report_photo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Moderation Report Photo",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Report Photo",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/{photo_id}/{variant}": {
+      "get": {
+        "description": "Thumbnail/preview streamed from storage (storage URLs are never exposed).\n\nOrganizers see every photo of their event; attendees only photos they matched or\nuploaded. `viewable_photo` also requires the photo to belong to *this* event, so an\nID from another event can't be smuggled in via this event's URL.",
+        "operationId": "photos_photo_image",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thumb",
+                "preview"
+              ],
+              "title": "Variant",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Photo Image",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events/{event_id}/qr": {
+      "get": {
+        "description": "QR code of the event's join link (code-mode events). The link embeds the access code.",
+        "operationId": "invites_join_qr",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "svg",
+              "enum": [
+                "svg",
+                "png"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Join Qr",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/events/{event_id}/removal-requests": {
+      "get": {
+        "operationId": "privacy_list_removal_requests",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RemovalOut"
+                  },
+                  "title": "Response Privacy List Removal Requests",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Removal Requests",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/events/{event_id}/removal-requests/{request_id}/resolve": {
+      "post": {
+        "operationId": "privacy_resolve_removal_request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Request Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovalResolveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Resolve Removal Request",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resolve Removal Request",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/events/{event_id}/reports": {
+      "get": {
+        "operationId": "moderation_list_reports",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "include_resolved",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Include Resolved",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReportOut"
+                  },
+                  "title": "Response Moderation List Reports",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Reports",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/reports/{report_id}/resolve": {
+      "post": {
+        "operationId": "moderation_resolve_report",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "report_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Report Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveReportIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Resolve Report",
+        "tags": [
+          "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/search": {
+      "post": {
+        "operationId": "search_search",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "source",
+            "required": false,
+            "schema": {
+              "default": "camera",
+              "enum": [
+                "camera",
+                "upload"
+              ],
+              "title": "Source",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Single-use capture token (camera searches)",
+            "in": "header",
+            "name": "X-Capture-Token",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated shot names, e.g. front,left,right",
+            "in": "header",
+            "name": "X-Selfie-Shots",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Comma-separated byte lengths of the shots",
+            "in": "header",
+            "name": "X-Selfie-Lengths",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-selfie-set": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/heic": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "Camera: a selfie set (front, left, right JPEGs concatenated). Upload: one image.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfieRejectionOut"
+                }
+              }
+            },
+            "description": "A selfie failed the quality gate"
+          }
+        },
+        "summary": "Search",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/search-log": {
+      "get": {
+        "operationId": "privacy_search_log",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 200,
+              "maximum": 1000,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SearchLogRow"
+                  },
+                  "title": "Response Privacy Search Log",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Log",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/events/{event_id}/search-status": {
+      "get": {
+        "description": "The caller's queued search for this event: none | queued | done | rejected | cancelled | expired.",
+        "operationId": "search_search_status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Search Status",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/sync": {
+      "get": {
+        "operationId": "photos_sync_status",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncStatusOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Sync Status",
+        "tags": [
+          "photos"
+        ]
+      },
+      "post": {
+        "operationId": "photos_start_sync",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncRunOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Sync",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events/{event_id}/uploads": {
+      "post": {
+        "operationId": "uploads_start_upload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadStartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadStartOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Upload",
+        "tags": [
+          "uploads"
+        ]
+      }
+    },
+    "/api/events/{event_id}/uploads/{photo_id}/complete": {
+      "post": {
+        "operationId": "uploads_complete_upload",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyUploadOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Complete Upload",
+        "tags": [
+          "uploads"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "health_health",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/api/invites/accept": {
+      "post": {
+        "operationId": "invites_accept_invite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteTokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPublicOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Invite",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/invites/register": {
+      "post": {
+        "description": "Create an account for the invited email and accept the invite in one step.",
+        "operationId": "invites_register_from_invite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteRegisterIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register From Invite",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/invites/{token}": {
+      "get": {
+        "operationId": "invites_invite_preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitePreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Invite Preview",
+        "tags": [
+          "invites"
+        ]
+      }
+    },
+    "/api/join": {
+      "post": {
+        "operationId": "join_join_by_code",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPublicOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Join By Code",
+        "tags": [
+          "join"
+        ]
+      }
+    },
+    "/api/join/by-code": {
+      "post": {
+        "description": "Join with just the access code (typed in the app). One endpoint covers every event,\nso the lockout is global per user and per IP rather than per event.",
+        "operationId": "join_join_with_code_only",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeOnlyJoinIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventPublicOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Join With Code Only",
+        "tags": [
+          "join"
+        ]
+      }
+    },
+    "/api/join/{slug}": {
+      "get": {
+        "operationId": "join_join_preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Join Preview",
+        "tags": [
+          "join"
+        ]
+      }
+    },
+    "/api/me": {
+      "delete": {
+        "operationId": "privacy_delete_me",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteMeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Delete Me",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Me",
+        "tags": [
+          "privacy"
+        ]
+      },
+      "get": {
+        "operationId": "me_me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Me",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/devices": {
+      "get": {
+        "operationId": "mobile_list_devices",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeviceOut"
+                  },
+                  "title": "Response Mobile List Devices",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Devices",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/me/devices/current/attest": {
+      "post": {
+        "description": "Report-only: the result is recorded on the device; nothing is blocked either way.",
+        "operationId": "mobile_attest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttestOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Attest",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/me/devices/current/attest/challenge": {
+      "post": {
+        "operationId": "mobile_attest_challenge",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttestChallengeOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Attest Challenge",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/me/devices/current/push": {
+      "delete": {
+        "operationId": "mobile_unregister_push",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Unregister Push",
+        "tags": [
+          "mobile"
+        ]
+      },
+      "put": {
+        "operationId": "mobile_register_push",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushTokenIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Register Push",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/me/devices/{device_id}": {
+      "delete": {
+        "operationId": "mobile_revoke_device",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Device Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Device",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/me/face-consent": {
+      "delete": {
+        "description": "Withdrawal stops future searches, forgets past results (grants) and unlinks\nthe user's match feedback from them.",
+        "operationId": "search_withdraw_consent",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Withdraw Consent",
+        "tags": [
+          "search"
+        ]
+      },
+      "get": {
+        "operationId": "search_get_consent",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Consent",
+        "tags": [
+          "search"
+        ]
+      },
+      "post": {
+        "operationId": "search_give_consent",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Give Consent",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/me/preferences": {
+      "patch": {
+        "operationId": "me_update_preferences",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreferencesIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Preferences",
+        "tags": [
+          "me"
+        ]
+      }
+    },
+    "/api/me/reauth-code": {
+      "post": {
+        "operationId": "privacy_send_reauth_code",
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Privacy Send Reauth Code",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Send Reauth Code",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/mobile/auth/code/request": {
+      "post": {
+        "operationId": "mobile_request_code",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeRequestIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Code",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/mobile/auth/code/verify": {
+      "post": {
+        "operationId": "mobile_verify_code",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CodeVerifyIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileTokensOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Code",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/mobile/auth/logout": {
+      "post": {
+        "operationId": "mobile_logout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Logout",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/mobile/auth/magic": {
+      "post": {
+        "operationId": "mobile_magic_link",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MagicLinkIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileTokensOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Magic Link",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/mobile/auth/refresh": {
+      "post": {
+        "operationId": "mobile_refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MobileTokensOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh",
+        "tags": [
+          "mobile"
+        ]
+      }
+    },
+    "/api/removal-requests": {
+      "post": {
+        "operationId": "privacy_create_removal_request",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemovalCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Create Removal Request",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Removal Request",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/removal-requests/event/{slug}": {
+      "get": {
+        "operationId": "privacy_removal_event_info",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemovalInfo"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Removal Event Info",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/removal-requests/{token}": {
+      "get": {
+        "operationId": "privacy_removal_request_info",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Removal Request Info",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Removal Request Info",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/removal-requests/{token}/submit": {
+      "post": {
+        "description": "Body: an image (reference selfie, optional) or empty to submit without one.",
+        "operationId": "privacy_submit_removal_request",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "title": "Token",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "image/heic": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "description": "Optional reference selfie",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Privacy Submit Removal Request",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Submit Removal Request",
+        "tags": [
+          "privacy"
+        ]
+      }
+    },
+    "/api/selfie-requirements": {
+      "get": {
+        "description": "The server's quality thresholds, so the browser's live guidance matches them.",
+        "operationId": "search_selfie_requirements",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelfieRequirementsOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Selfie Requirements",
+        "tags": [
+          "search"
+        ]
+      }
+    }
+  }
+}

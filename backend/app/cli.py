@@ -2,11 +2,14 @@
 
     python -m app.cli create-superadmin --email admin@example.com
     python -m app.cli init-storage
+    python -m app.cli attest-report
 """
 
 import argparse
+import json
 import getpass
 import sys
+from pathlib import Path
 
 from email_validator import EmailNotValidError, validate_email
 from sqlalchemy import select
@@ -67,6 +70,35 @@ def reindex_faces(all_photos: bool = False) -> int:
     return len(ids)
 
 
+def attest_report() -> list[tuple[str, str, str, int]]:
+    """App Attest results of active devices, as counts only (no user or device data):
+    (kind, status, reason, devices). Read before deciding to enforce."""
+    from sqlalchemy import func
+
+    from app.models import Device
+
+    rows: list[tuple[str, str, str, int]] = []
+    with SessionLocal() as db:
+        active = Device.revoked_at.is_(None)
+        for kind, status, reason in (
+            ("attestation", Device.attest_status, Device.attest_reason),
+            ("assertion", Device.assertion_status, Device.assertion_reason),
+        ):
+            q = select(status, reason, func.count()).where(active).group_by(status, reason).order_by(status, reason)
+            rows += [(kind, s or "none", r or "-", n) for s, r, n in db.execute(q)]
+    return rows
+
+
+OPENAPI_PATH = Path(__file__).resolve().parents[1] / "openapi.json"
+
+
+def openapi_document() -> str:
+    """The API schema as committed for the iOS client generator (stable formatting)."""
+    from app.main import app
+
+    return json.dumps(app.openapi(), indent=2, sort_keys=True) + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -76,9 +108,17 @@ def main() -> None:
     sub.add_parser("init-storage", help="Create the object storage bucket if missing")
     r = sub.add_parser("reindex-faces", help="Re-embed photos with the current FACE_ENGINE")
     r.add_argument("--all", action="store_true", help="Also re-scan photos with no faces from the old model")
+    sub.add_parser("export-openapi", help="Write backend/openapi.json (the iOS client is generated from it)")
+    sub.add_parser("attest-report", help="App Attest results of active devices (counts only)")
     args = parser.parse_args()
     if args.command == "create-superadmin":
         create_superadmin(args.email, args.password)
+    elif args.command == "export-openapi":
+        OPENAPI_PATH.write_text(openapi_document())
+        print(f"Wrote {OPENAPI_PATH}")
+    elif args.command == "attest-report":
+        for kind, status, reason, n in attest_report():
+            print(f"{kind:12} {status:9} {reason:24} {n}")
     elif args.command == "reindex-faces":
         print(f"Queued {reindex_faces(all_photos=args.all)} photo(s) for re-indexing")
     elif args.command == "init-storage":

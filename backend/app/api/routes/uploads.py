@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, status
+from fastapi import APIRouter, BackgroundTasks, status
 from sqlalchemy import select
 
 from app.api.deps import DB, MemberEvent, VerifiedUser
@@ -8,7 +8,7 @@ from app.core import rate_limit
 from app.core.config import get_settings
 from app.models import IndexStatus, Photo, PhotoSource, PhotoStatus
 from app.schemas.community import MyUploadOut, UploadStartIn, UploadStartOut
-from app.services import uploads
+from app.services import push, uploads
 from app.workers.tasks import ingest_upload
 
 router = APIRouter(prefix="/api/events/{event_id}", tags=["uploads"])
@@ -27,10 +27,17 @@ def start_upload(body: UploadStartIn, event: MemberEvent, user: VerifiedUser, db
 
 
 @router.post("/uploads/{photo_id}/complete", response_model=MyUploadOut)
-def complete_upload(photo_id: uuid.UUID, event: MemberEvent, user: VerifiedUser, db: DB) -> Photo:
+def complete_upload(
+    photo_id: uuid.UUID, event: MemberEvent, user: VerifiedUser, db: DB, background: BackgroundTasks
+) -> Photo:
     photo = uploads.finish_upload(db, event, user, photo_id)
     ingest_upload.delay(str(photo.id))
     db.refresh(photo)
+    if photo.status == PhotoStatus.pending_review:
+        # Organizers' devices: "photos waiting for review" (ids only, no content).
+        organizers = push.organizers_of(db, event.id)
+        db.commit()
+        background.add_task(push.notify_safely, organizers, push.Notice("moderation_pending", event.id))
     return photo
 
 

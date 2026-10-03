@@ -38,7 +38,7 @@ export function ReportDialog({ eventId, photoId, onClose }: { eventId: string; p
       </h2>
       {state === "done" ? (
         <>
-          <p className="mt-3 text-sm text-ink/70">Thanks. The organizers will review it and can remove it from the event.</p>
+          <p className="mt-3 text-sm text-muted">Thanks. The organizers will review it and can remove it from the event.</p>
           <Button className="mt-5 w-full" onClick={onClose}>
             Close
           </Button>

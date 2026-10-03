@@ -52,7 +52,7 @@ export function LoginForm({ next, joining }: { next: string; joining: string | n
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Logging in…" : "Log in"}
         </Button>
-        <Link href="/forgot-password" className="block text-center text-sm text-ink/70 hover:text-ink">
+        <Link href="/forgot-password" className="block text-center text-sm text-muted hover:text-ink">
           Forgot password?
         </Link>
       </form>

@@ -48,6 +48,10 @@ services:
         STORAGE_PUBLIC_ORIGIN: ${S3_PUBLIC_ENDPOINT_URL}
     read_only: true
     tmpfs: ["/tmp:size=64m", "/app/.next/cache:size=256m,uid=1000,gid=1000"]
+    environment:
+      # iOS Universal Links (/.well-known/apple-app-site-association); unset = no app links.
+      APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
+      IOS_BUNDLE_ID: ${IOS_BUNDLE_ID:-}
     mem_limit: 512m
     depends_on:
       api: { condition: service_healthy }

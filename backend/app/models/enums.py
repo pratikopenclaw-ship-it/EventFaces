@@ -90,3 +90,9 @@ class FeedbackVerdict(str, enum.Enum):
     me = "me"
     not_me = "not_me"
     missing = "missing"  # "photos of me are missing" (no photo attached)
+
+
+class ThemePreference(str, enum.Enum):
+    system = "system"  # follow the OS (prefers-color-scheme)
+    light = "light"
+    dark = "dark"

@@ -28,3 +28,7 @@ segno==1.6.*
 # Google Drive import
 google-api-python-client==2.*
 google-auth==2.*
+
+# Mobile app: APNs push (HTTP/2 only) and Secure Enclave device-key signatures
+httpx[http2]==0.27.*
+cryptography==50.*

@@ -41,7 +41,7 @@ export function VerifyEmail({ token, joining }: { token: string; joining: string
   if (state === "ok") {
     return (
       <AuthCard title="Email verified">
-        <p className="mb-4 text-sm text-ink/70">{joining ? "Log in to finish joining the event." : "You can now join events."}</p>
+        <p className="mb-4 text-sm text-muted">{joining ? "Log in to finish joining the event." : "You can now join events."}</p>
         <Link href={joining ?? "/events"} className="text-accent hover:underline">
           {joining ? "Continue to the event →" : "Continue →"}
         </Link>

@@ -8,6 +8,13 @@ const STORAGE_ORIGIN = process.env.STORAGE_PUBLIC_ORIGIN ?? "http://localhost:83
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // An app sign-in link opened in a browser: drop the token from the URL (and so from the
+  // page, history and any later Referer) before rendering. The app intercepts these links
+  // before any request is made, so this only affects browsers.
+  if (pathname === "/m/signin" && search) {
+    return NextResponse.redirect(new URL("/m/signin", request.url), 303);
+  }
+
   // Optimistic check only: redirect visitors with no session cookies to /login.
   // Real authorization happens in the API on every request.
   const needsSession = PROTECTED.some((p) => pathname === p || pathname.startsWith(`${p}/`));

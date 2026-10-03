@@ -16,18 +16,18 @@ export default function Home() {
           <br />
           Find every photo of you.
         </h1>
-        <p className="mt-6 max-w-md text-lg text-ink/70">
+        <p className="mt-6 max-w-md text-lg text-muted">
           Join your event, take a quick selfie, and see the photos you appear in. Your selfies are deleted as soon as
           matching finishes.
         </p>
         <div className="mt-8 flex gap-3">
           {user ? (
-            <Link href="/events" className="rounded-lg bg-ink px-5 py-3 font-medium text-paper hover:bg-ink/85">
+            <Link href="/events" className="rounded-lg bg-accent px-5 py-3 font-medium text-on-accent hover:bg-accent-hover">
               Go to my events
             </Link>
           ) : (
             <>
-              <Link href="/signup" className="rounded-lg bg-ink px-5 py-3 font-medium text-paper hover:bg-ink/85">
+              <Link href="/signup" className="rounded-lg bg-accent px-5 py-3 font-medium text-on-accent hover:bg-accent-hover">
                 Create account
               </Link>
               <Link href="/login" className="rounded-lg border border-line bg-paper px-5 py-3 font-medium hover:bg-mist">
@@ -47,7 +47,7 @@ export default function Home() {
             <span className="font-display text-3xl text-accent">{i + 1}</span>
             <span>
               <span className="block font-medium">{title}</span>
-              <span className="text-sm text-ink/70">{text}</span>
+              <span className="text-sm text-muted">{text}</span>
             </span>
           </li>
         ))}

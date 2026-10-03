@@ -245,6 +245,16 @@ verification part locally):
 5. Run `scripts/security-scan.sh` in CI on every release, and rebuild images at least monthly to
    pick up base-image security fixes.
 
+## 9a. iOS app (backend side)
+
+The API serves the iOS app with no extra services. Set these in `.env.prod` when the app ships:
+
+- **Universal Links:** `APPLE_TEAM_ID` and `IOS_BUNDLE_ID`. The web container then serves `/.well-known/apple-app-site-association` (JSON, no redirect; join, invite, sign-in and event links open the app; admin and API paths never do). Check with `curl -sI https://<domain>/.well-known/apple-app-site-association` and Apple's validator after the first TestFlight build.
+- **Push (APNs):** create a token-based key (`.p8`) in the Apple Developer portal, then set `APNS_KEY_P8` (the PEM contents), `APNS_KEY_ID`, `APNS_TEAM_ID`, `APNS_TOPIC` (the bundle id) and `APNS_ENV=production`. Store the key in the secret store like the other secrets; the production guard refuses a malformed key. Notifications carry only a localization key and ids (no names, photos or counts).
+- **App Attest (report-only):** set `APP_ATTEST_APP_ID` to `<Team ID>.<bundle id>` and `APP_ATTEST_ENV=production` (the production guard refuses development keys). The app then attests a fresh key after each sign-in and adds an assertion to every refresh; results are stored on the device row (`attest_status`/`attest_reason`, `assertion_status`/`assertion_reason`) and logged as reason codes, and **never block a request**. Review them with `docker compose exec api python -m app.cli attest-report` after the first TestFlight builds. Enforcing is a separate, later change once real installs pass.
+- **Forced updates:** after a security fix in the app, raise `IOS_MIN_SUPPORTED_VERSION`; older apps then get "update required" (HTTP 426) with `IOS_UPDATE_URL`.
+- **Sign-in codes** arrive by the same email setup as verification mails (section 4): check that the "is your EventFaces code" mail passes SPF/DKIM/DMARC.
+
 ## 10. Go / no-go checklist
 
 Launch only when every box is ticked.
@@ -273,6 +283,8 @@ Launch only when every box is ticked.
 - [ ] Capacity sized for the biggest expected event (searches per second × processes); `SEARCH_MAX_CONCURRENT` reviewed
 - [ ] `scripts/security-scan.sh` passes on the release tag; the full test suite passes from a clean checkout
 - [ ] A super admin exists; organizers briefed (Drive folder sharing, moderation, removal requests)
+- [ ] `/terms` carries your real terms of use (the shipped page is a placeholder)
+- [ ] iOS app only: `APPLE_TEAM_ID`/`IOS_BUNDLE_ID` set and the AASA file validates; APNs key in the secret store; `IOS_MIN_SUPPORTED_VERSION` matches the oldest build you support
 
 **Launch-day notes**
 - [ ] Users will be asked to **consent again once** (the consent text changed), and all sessions are logged out once by migration 0008

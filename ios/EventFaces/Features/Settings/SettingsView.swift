@@ -1,0 +1,150 @@
+import SwiftUI
+
+/// Settings in a sheet with our own header (a system nav bar's glass buttons failed the
+/// contrast audit).
+struct SettingsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Settings")
+                    .font(.headline)
+                    .foregroundStyle(Palette.text)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button("Done") { dismiss() }
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(Palette.text)
+                    .buttonStyle(.tapTarget)
+                    .accessibilityIdentifier("settings-done")
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .background(Palette.bg)
+            SettingsView()
+        }
+        .background(Palette.bg.ignoresSafeArea())
+    }
+}
+
+/// Settings built from our own components (not `Form`): every colour is a token and every
+/// text scales with Dynamic Type. The system form's internals failed the accessibility
+/// audit (contrast through its materials, fixed-size labels, clipped rows).
+struct SettingsView: View {
+    @Environment(AppModel.self) private var model
+    @Environment(\.openURL) private var openURL
+    @State private var showDelete = false
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+                section("Appearance", footer: "Photos always display on a dark background.") {
+                    ForEach(ThemePreference.allCases, id: \.self) { theme in
+                        ThemeRow(theme: theme, selected: model.theme == theme) { model.setTheme(theme) }
+                        if theme != ThemePreference.allCases.last { Divider().overlay(Palette.border) }
+                    }
+                }
+                section("Language") {
+                    RowAction(title: "Change app language", color: Palette.accent) {
+                        if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                    }
+                }
+                section("Account") {
+                    switch model.account {
+                    case let .signedIn(user):
+                        ValueRow(title: "Email", value: user.email)
+                        Divider().overlay(Palette.border)
+                        RowAction(title: "Sign out", color: Palette.dangerText) { Task { await model.signOut() } }
+                            .accessibilityIdentifier("sign-out")
+                    default:
+                        RowAction(title: "Sign in", color: Palette.accent) { model.showSignIn = true }
+                    }
+                }
+                if case .signedIn = model.account {
+                    section("Privacy") { PrivacySection() }
+                    section("Devices", footer: "Sign out a phone or tablet you no longer use.") { DevicesSection() }
+                    section("Delete account") {
+                        RowAction(title: "Delete my account", color: Palette.dangerText) { showDelete = true }
+                            .accessibilityIdentifier("delete-account")
+                    }
+                }
+                section("About") {
+                    RowAction(title: "Privacy notice", color: Palette.accent) { openURL(model.config.apiBaseURL.appending(path: "privacy")) }
+                    Divider().overlay(Palette.border)
+                    RowAction(title: "Terms of use", color: Palette.accent) { openURL(model.config.apiBaseURL.appending(path: "terms")) }
+                    Divider().overlay(Palette.border)
+                    ValueRow(title: "Version", value: model.config.appVersion)
+                }
+            }
+            .padding(20)
+            .readableWidth()
+        }
+        .background(Palette.bg.ignoresSafeArea())
+        .sheet(isPresented: $showDelete) { DeleteAccountView().hardScrollEdges() }
+    }
+
+    private func section<Content: View>(_ title: LocalizedStringKey, footer: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(Palette.text)
+                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 0) { content() }
+                .padding(.horizontal, 16)
+                // Rows clear of the border line: a single-row card otherwise puts the 1 pt
+                // stroke on its row's edges, and the contrast audit reads the stroke as text.
+                .padding(.vertical, 2)
+                .background(Palette.surface, in: .rect(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Palette.border))
+            if let footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(Palette.textMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+}
+
+/// One theme option: a full-width, 44 pt+ row that reports its selected state.
+private struct ThemeRow: View {
+    let theme: ThemePreference
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: theme.symbol).accessibilityHidden(true)
+                Text(theme.label).frame(maxWidth: .infinity, alignment: .leading)
+                if selected {
+                    Image(systemName: "checkmark").fontWeight(.semibold).foregroundStyle(Palette.accent).accessibilityHidden(true)
+                }
+            }
+            .font(.body)
+            .foregroundStyle(Palette.text)
+            .frame(minHeight: 50)
+            .contentShape(.rect)
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? [.isSelected] : [])
+        .accessibilityIdentifier("theme-\(theme.rawValue)")
+    }
+}
+
+/// Label above value: scales with Dynamic Type; long emails wrap instead of truncating.
+private struct ValueRow: View {
+    let title: LocalizedStringKey
+    let value: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(title).font(.subheadline).foregroundStyle(Palette.textMuted)
+            Text(value).font(.body).foregroundStyle(Palette.text).textSelection(.enabled)
+        }
+        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+        .padding(.vertical, 6)
+        .accessibilityElement(children: .combine)
+    }
+}

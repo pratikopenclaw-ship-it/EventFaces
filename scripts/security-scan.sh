@@ -55,7 +55,7 @@ build_prod() {
 }
 step "build production images" build_prod
 TRIVY=(docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v eventfaces-trivy-cache:/root/.cache -v "$ROOT:/src" aquasec/trivy:latest)
-step "trivy config (Dockerfiles)" "${TRIVY[@]}" config --exit-code 1 --severity HIGH,CRITICAL /src
+step "trivy config (Dockerfiles)" "${TRIVY[@]}" config --exit-code 1 --severity HIGH,CRITICAL --skip-dirs /src/ios/build /src
 # --ignore-unfixed: base-image packages with no upstream fix are accepted residual risk R-1.
 step "trivy image: API (fixable HIGH/CRITICAL)" "${TRIVY[@]}" image --exit-code 1 --ignore-unfixed --severity HIGH,CRITICAL eventfaces-api:prod
 step "trivy image: web (fixable HIGH/CRITICAL)" "${TRIVY[@]}" image --exit-code 1 --ignore-unfixed --severity HIGH,CRITICAL eventfaces-web:prod

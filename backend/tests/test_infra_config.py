@@ -44,6 +44,8 @@ def test_valid_production_settings_load() -> None:
         ({"s3_secret_key": "eventfaces-dev-secret"}, "S3_SECRET_KEY"),
         ({"smtp_host": "mailpit"}, "SMTP_HOST"),
         ({"allow_selfie_file_upload": True, "trusted_proxy_hops": 0}, None),  # allowed: not a secret
+        ({"app_attest_app_id": "ABCDE12345.app.eventfaces.ios"}, "APP_ATTEST_ENV"),  # development keys
+        ({"app_attest_app_id": "ABCDE12345.app.eventfaces.ios", "app_attest_env": "production"}, None),
     ],
 )
 def test_production_refuses_insecure_settings(override: dict[str, object], problem: str | None) -> None:
