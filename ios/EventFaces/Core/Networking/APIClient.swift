@@ -21,10 +21,12 @@ enum NetworkSession {
 
 extension HTTPField.Name {
     static let appVersion = Self("X-App-Version")!
+    static let requiredAction = Self("X-Required-Action")!
 }
 
 /// Adds the app version (the server answers 426 to unsupported versions) and the bearer
-/// token; on 401 refreshes once and retries; on 426 tells the session manager.
+/// token; on 401 refreshes once and retries; on 426, or on 403 + X-Required-Action (terms to
+/// accept), tells the session manager.
 struct AuthMiddleware: ClientMiddleware {
     let session: SessionManager
     let appVersion: String
@@ -51,10 +53,18 @@ struct AuthMiddleware: ClientMiddleware {
             await session.reportUpdateRequired(await Self.updateURL(from: responseBody))
             return (response, nil)
         }
-        guard response.status == .unauthorized, let token else { return (response, responseBody) }
+        guard response.status == .unauthorized, let token else { return await checked(response, responseBody) }
         let fresh = try await session.refresh(replacing: token)
         request.headerFields[.authorization] = "Bearer \(fresh)"
-        return try await next(request, bodyData.map { HTTPBody($0) }, baseURL)
+        let (retried, retriedBody) = try await next(request, bodyData.map { HTTPBody($0) }, baseURL)
+        return await checked(retried, retriedBody)
+    }
+
+    private func checked(_ response: HTTPResponse, _ body: HTTPBody?) async -> (HTTPResponse, HTTPBody?) {
+        if response.status == .forbidden, let action = response.headerFields[.requiredAction] {
+            await session.reportAcceptanceRequired(action == "accept-organizer-terms" ? .organizerTerms : .terms)
+        }
+        return (response, body)
     }
 
     private static func updateURL(from body: HTTPBody?) async -> URL? {

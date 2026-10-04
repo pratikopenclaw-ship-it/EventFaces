@@ -81,14 +81,14 @@ def test_register_from_invite_creates_verified_member_and_logs_in(invite_event, 
 
     c = new_client()
     assert c.get(f"/api/invites/{token}").json()["account_exists"] is False
-    r = c.post("/api/invites/register", json={"token": token, "password": PASSWORD})
+    r = c.post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD})
     assert r.status_code == 201, r.text
     assert r.json()["email_verified_at"] is not None
     assert c.cookies.get(ACCESS_COOKIE)
     assert c.get(f"/api/events/{event.id}").status_code == 200
 
     # The link can't be used to create a second account or be re-registered
-    assert new_client().post("/api/invites/register", json={"token": token, "password": PASSWORD}).status_code == 409
+    assert new_client().post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD}).status_code == 409
 
 
 def test_register_refused_when_account_exists(invite_event, make_user, mailer) -> None:
@@ -96,7 +96,7 @@ def test_register_refused_when_account_exists(invite_event, make_user, mailer) -
     make_user("existing@example.com")
     _invite(org, event, mailer, "existing@example.com")
     token = _link_token(mailer, "existing@example.com")
-    assert new_client().post("/api/invites/register", json={"token": token, "password": PASSWORD}).status_code == 409
+    assert new_client().post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD}).status_code == 409
 
 
 def test_revoked_expired_and_rotated_links(invite_event, make_user, login_as, mailer, db) -> None:

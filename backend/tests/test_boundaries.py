@@ -98,7 +98,7 @@ def _expire_all_tokens(db: Session) -> None:
 
 def test_expired_verification_link(db: Session, mailer: FakeMailer) -> None:
     c = new_client()
-    assert c.post("/api/auth/signup", json={"email": "late@example.com", "password": PASSWORD}).status_code == 202
+    assert c.post("/api/auth/signup", json={"accept_terms": True, "email": "late@example.com", "password": PASSWORD}).status_code == 202
     token = mailer.last_link_token("late@example.com")
     _expire_all_tokens(db)
     assert c.post("/api/auth/verify-email", json={"token": token}).status_code == 400
@@ -123,7 +123,7 @@ def test_expired_invite_link(world: World, db: Session, mailer: FakeMailer) -> N
     db.commit()
     anon = new_client()
     assert anon.get(f"/api/invites/{token}").status_code in (404, 410)
-    assert anon.post("/api/invites/register", json={"token": token, "password": PASSWORD}).status_code in (400, 404, 410)
+    assert anon.post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD}).status_code in (400, 404, 410)
     assert db.scalar(select(Invite.accepted_by).where(Invite.email == "slow@example.com")) is None
 
 
@@ -142,7 +142,7 @@ def test_expired_session_cookie(world: World, db: Session) -> None:  # noqa: F81
     ("path", "body"),
     [
         ("/api/auth/login", {"email": "a@example.com", "password": "p" * 2_000_000}),
-        ("/api/auth/signup", {"email": ("a" * 1_000_000) + "@example.com", "password": PASSWORD}),
+        ("/api/auth/signup", {"accept_terms": True, "email": ("a" * 1_000_000) + "@example.com", "password": PASSWORD}),
         ("/api/removal-requests", {"event": "x", "email": "a@example.com", "message": "m" * 2001}),
         ("/api/join", {"slug": "s" * 81, "code": "ABCDEFGH"}),
     ],

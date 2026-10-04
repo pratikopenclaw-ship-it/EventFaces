@@ -71,6 +71,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
                 <Link href="/terms" className="hover:text-ink">
                   Terms
                 </Link>
+                <Link href="/organizer-terms" className="hover:text-ink">
+                  Organizer terms
+                </Link>
+                <Link href="/imprint" className="hover:text-ink">
+                  Imprint
+                </Link>
                 <Link href="/removal-request" className="hover:text-ink">
                   In a photo? Request removal
                 </Link>

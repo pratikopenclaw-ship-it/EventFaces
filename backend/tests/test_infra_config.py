@@ -21,6 +21,14 @@ PROD_OK = {
     "s3_access_key": "AKIAEXAMPLEKEY123",
     "s3_secret_key": "wJalrXUtnFEMIK7MDENGbPxRfiCYEXAMPLEKEY",
     "smtp_host": "smtp.example.org",
+    "legal_operator_name": "Example Photos GmbH",
+    "legal_operator_address": "Musterstraße 1\\n10115 Berlin",
+    "legal_representative": "Erika Mustermann",
+    "legal_email": "legal@example.org",
+    "legal_phone": "+49 30 1234567",
+    "legal_dpo_contact": "dpo@example.org",
+    "legal_supervisory_authority": "Berliner Beauftragte für Datenschutz und Informationsfreiheit",
+    "legal_email_provider": "Example Mail GmbH, Germany",
 }
 
 
@@ -45,6 +53,10 @@ def test_valid_production_settings_load() -> None:
         ({"smtp_host": "mailpit"}, "SMTP_HOST"),
         ({"allow_selfie_file_upload": True, "trusted_proxy_hops": 0}, None),  # allowed: not a secret
         ({"app_attest_app_id": "ABCDE12345.app.eventfaces.ios"}, "APP_ATTEST_ENV"),  # development keys
+        ({"legal_operator_name": ""}, "LEGAL_OPERATOR_NAME"),  # Impressum/Terms can't ship with placeholders
+        ({"legal_phone": "  "}, "LEGAL_PHONE"),
+        ({"legal_dpo_contact": ""}, "LEGAL_DPO_CONTACT"),
+        ({"legal_register": "", "legal_vat_id": ""}, None),  # optional (sole proprietors)
         ({"app_attest_app_id": "ABCDE12345.app.eventfaces.ios", "app_attest_env": "production"}, None),
     ],
 )

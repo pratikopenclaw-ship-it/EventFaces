@@ -587,6 +587,75 @@ Owner decision: build App Attest in Phase 7, **report-only first**. Nothing is b
 - App Attest exists only on real devices, so it can't run in the simulator. The client path is tested with a fake provider; the server path is tested with the test CA. **Verify on TestFlight** (ios/APP_STORE.md) before deciding to enforce.
 - Fraud-risk receipts (Apple's server-to-server metric) are not used; the receipt is not stored.
 
+## Legal documents and provable acceptance (2026-10-03)
+
+Owner request: real terms on web and app, plus a cookie section. The owner decided:
+- the operator's identity stays as placeholders until founded;
+- organizers pay and attendees are free;
+- the organizer is the controller for event photos, with EventFaces as processor (Art. 28);
+- minimum age 16.
+
+**What was added:**
+- `services/legal.py`: Terms of Use, Organizer Terms with the data processing agreement, Privacy Notice (including a dedicated cookie section) and Impressum. They are German (binding) and English, versioned, and served by `GET /api/legal/{document}` to web (`/terms`, `/organizer-terms`, `/privacy`, `/imprint`) and app (sign-in, Settings › About).
+- **Operator identity** (`LEGAL_*`): production refuses to start while a required field is empty. Optional fields (register, VAT ID) disappear when empty.
+- **Acceptance:**
+  - every account creation (web sign-up, invitation, app sign-in) requires `accept_terms` ("Terms + at least 16") and writes a `legal_acceptances` row (document, version, time, language, web/ios);
+  - a changed version must be accepted before further use: 403 + `X-Required-Action`, and web and app show the acceptance screen;
+  - accepting a version the user wasn't shown is refused (409);
+  - organizers accept the Organizer Terms and DPA before managing events;
+  - account, deletion, consent withdrawal, devices and sign-out never depend on acceptance.
+- **Cookies:** the four first-party, strictly necessary cookies are listed with purpose and lifetime (lifetimes from the live settings). No banner is needed (§ 25(2) no. 2 TDDDG). A test fails if the API sets a cookie the notice doesn't list.
+
+**Tests and checks:**
+- `tests/test_legal.py` (30):
+  - pinned version hashes;
+  - both languages structurally equal;
+  - cookie honesty;
+  - placeholders and optional fields;
+  - public endpoint;
+  - acceptance required and recorded on every creation path;
+  - gates and their exemptions;
+  - stale-version refusal;
+  - super admin exemption;
+  - deletion.
+- Mass assignment: client-sent versions are ignored.
+- Authorization matrix: both new operations, both transports.
+- Six guards mutation-checked:
+  - the Terms gate;
+  - the Organizer Terms gate;
+  - the stale-version check;
+  - must-accept;
+  - sign-up recording;
+  - app recording.
+- Web: Playwright `legal.spec.ts`:
+  - footer documents in both languages;
+  - the cookie section;
+  - sign-up blocked until ticked;
+  - Terms and Organizer Terms acceptance after a version change.
+- Web: the axe audit now covers the legal pages.
+- iOS:
+  - `LegalTests` (unit and integration);
+  - `LegalUITests` (sign-in blocked until ticked, all documents from Settings in both languages with audits, acceptance after a change).
+
+**Found while building:**
+- `accept_terms` accepted `"yes"` and `1` (Pydantic lax mode). It is now `StrictBool`, so only `true` counts.
+- iOS: an acceptance request arriving while another sheet was open could never be shown. The app now closes the sheet first.
+- iOS: a container identifier hid the document view's Close button (IOS-018 again). The identifier moved to the scroll view.
+
+**Final gates (2026-10-04):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,296 passed**, 0 failed |
+| `scripts/security-scan.sh` | **18/18** |
+| iOS gate | iPhone 17 **112/112**, iPad Air **112/112**, screen matrix on iPhone 17e and 18 Pro Max **4/4** each |
+| Playwright | **75 passed**, plus Firefox **7/7** |
+
+- One scan run hit 3 transient failures in steps that download data: pip-audit (advisory database), semgrep (rule registry) and the image build. Each passed when run alone, and a full rerun passed 18/18.
+- Playwright: the e2e login helper had a pre-existing race. The page's own start-up request could replace the CSRF cookie between the token request and the login, which the server correctly refused (403). The helper now sends the cookie value actually in the jar and retries once on that refusal.
+
+**Not legal advice:** the texts are engineering drafts tailored to the service. LEGAL_REVIEW.md lists what counsel must decide. The biggest open point is the legal basis for face templates of everyone in event photos (Art. 9).
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

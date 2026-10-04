@@ -15,6 +15,14 @@ final class AppModel {
     private(set) var account: Account = .unknown
     private(set) var updateURL: URL?
     private(set) var updateRequired = false
+    /// A legal document the user must accept before going on (the server said so, or the
+    /// account's accepted Terms are outdated).
+    var requiredAcceptance: LegalDocumentKind?
+    /// The user ticked the Terms checkbox in this sign-in (a magic link opened right after
+    /// can complete without asking again).
+    var termsTickedForSignIn = false
+    /// A sign-in link opened without that tick: the sign-in sheet asks first.
+    private(set) var pendingMagicToken: String?
     private(set) var notice: Notice?
     /// A link opened before the user signed in or before its screen exists (joined in Phase 2).
     private(set) var pendingLink: DeepLink?
@@ -123,11 +131,15 @@ final class AppModel {
         myEvents = []
         path = []
         notice = nil  // a "You're signed in." banner must not outlive the session
+        requiredAcceptance = nil
+        termsTickedForSignIn = false
+        pendingMagicToken = nil
     }
 
     private func adopt(_ user: User) {
         account = .signedIn(user)
         theme = user.theme  // the profile wins: other devices see it too
+        if !user.termsAccepted { requiredAcceptance = .terms }  // e.g. the Terms changed since
         Task {
             await refreshEvents()
             await PushManager.shared.registerIfAuthorized()  // refresh the token for this account
@@ -183,7 +195,12 @@ final class AppModel {
     func follow(_ link: DeepLink) async {
         linkError = nil
         if case let .signIn(token) = link {
-            do { didSignIn(try await auth.signIn(magicToken: token)) } catch { notice = .linkExpired }
+            guard termsTickedForSignIn else {
+                pendingMagicToken = token
+                showSignIn = true
+                return
+            }
+            await completeMagicSignIn(token: token)
             return
         }
         guard case .signedIn = account else {
@@ -215,6 +232,21 @@ final class AppModel {
 
     func dismissNotice() { notice = nil }
 
+    /// Finishes a sign-in link once the Terms checkbox is ticked.
+    func completeMagicSignIn(token: String? = nil) async {
+        guard let token = token ?? pendingMagicToken else { return }
+        pendingMagicToken = nil
+        do { didSignIn(try await auth.signIn(magicToken: token, acceptedTerms: true)) } catch { notice = .linkExpired }
+    }
+
+    func cancelMagicSignIn() { pendingMagicToken = nil }
+
+    /// After accepting on the acceptance sheet.
+    func didAccept(_ user: User) {
+        adopt(user)
+        requiredAcceptance = nil
+    }
+
     private func handle(_ event: SessionEvent) {
         switch event {
         case .ended:
@@ -223,6 +255,22 @@ final class AppModel {
         case let .updateRequired(url):
             updateURL = url
             updateRequired = true
+        case let .acceptanceRequired(document):
+            guard requiredAcceptance == nil else { return }
+            // A sheet can't be presented over another one: close it first (join, settings),
+            // then ask once it has gone.
+            let covered = showJoin || showSettings || showSignIn
+            showJoin = false
+            showSettings = false
+            showSignIn = false
+            if covered {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(700))
+                    if requiredAcceptance == nil { requiredAcceptance = document }
+                }
+            } else {
+                requiredAcceptance = document
+            }
         }
     }
 }

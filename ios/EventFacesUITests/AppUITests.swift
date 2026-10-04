@@ -66,6 +66,7 @@ final class AppUITests: XCTestCase {
         try audit()
         field.tap()
         field.typeText(email)
+        tickTerms(app)  // Terms + 16+ (required)
         app.buttons["send-code"].tap()
 
         let codeField = app.textFields["code-field"]
@@ -96,6 +97,7 @@ final class AppUITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText(email)
+        tickTerms(app)  // Terms + 16+ (required)
         app.buttons["send-code"].tap()
         let codeField = app.textFields["code-field"]
         XCTAssertTrue(codeField.waitForExistence(timeout: 10))

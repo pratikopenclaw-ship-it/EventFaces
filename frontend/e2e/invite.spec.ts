@@ -20,6 +20,7 @@ test("organizer invites by email; invitee registers from the magic link and land
   await guest.goto(link);
   await guest.getByRole("textbox", { name: /^Password/ }).fill("dave-password-1");
   await guest.getByLabel("Confirm password").fill("dave-password-1");
+  await guest.getByRole("checkbox", { name: /I accept the Terms of Use/ }).check();
   await guest.getByRole("button", { name: "Create account and join" }).click();
   await expect(guest.getByRole("heading", { name: event.name })).toBeVisible();
 

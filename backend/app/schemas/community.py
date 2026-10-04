@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import IndexStatus, InviteStatus, PhotoStatus, ReportStatus
 from app.schemas.auth import Password
+from app.schemas.legal import AcceptsTerms
 
 
 class UploadStartIn(BaseModel):
@@ -101,6 +102,6 @@ class InviteTokenIn(BaseModel):
     token: str = Field(min_length=10, max_length=200)
 
 
-class InviteRegisterIn(BaseModel):
+class InviteRegisterIn(AcceptsTerms):
     token: str = Field(min_length=10, max_length=200)
     password: str = Password

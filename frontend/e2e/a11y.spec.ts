@@ -55,6 +55,9 @@ for (const scheme of ["light", "dark"] as const) {
         "/signup",
         "/forgot-password",
         "/privacy",
+        "/terms",
+        "/organizer-terms",
+        "/imprint",
         "/removal-request",
       ]) {
         await page.goto(path);

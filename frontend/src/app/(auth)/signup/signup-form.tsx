@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { AuthCard } from "@/components/auth-card";
 import { Alert, Button, Field, Input } from "@/components/ui";
+import { TermsCheckbox } from "@/components/terms-checkbox";
 import { post } from "@/lib/api";
 
 export function SignupForm({ joining }: { joining: string | null }) {
@@ -22,7 +23,12 @@ export function SignupForm({ joining }: { joining: string | null }) {
     setBusy(true);
     setError(null);
     try {
-      await post("/api/auth/signup", { email: form.get("email"), password: form.get("password"), ...(joining ? { next: joining } : {}) });
+      await post("/api/auth/signup", {
+        email: form.get("email"),
+        password: form.get("password"),
+        accept_terms: form.get("accept_terms") === "on",
+        ...(joining ? { next: joining } : {}),
+      });
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-up failed");
@@ -73,6 +79,7 @@ export function SignupForm({ joining }: { joining: string | null }) {
         <Field label="Confirm password">
           <Input name="confirm" type="password" autoComplete="new-password" minLength={10} required />
         </Field>
+        <TermsCheckbox />
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Creating…" : "Create account"}
         </Button>

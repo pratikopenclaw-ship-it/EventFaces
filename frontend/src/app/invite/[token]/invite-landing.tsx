@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 
 import { AuthCard } from "@/components/auth-card";
 import { useSession } from "@/components/session";
+import { TermsCheckbox } from "@/components/terms-checkbox";
 import { Alert, Button, Field, Input, formatDate } from "@/components/ui";
 import { post } from "@/lib/api";
 import type { EventPublic, InvitePreview } from "@/lib/types";
@@ -37,7 +38,7 @@ export function InviteLanding({ token }: { token: string }) {
     setBusy(true);
     setError(null);
     try {
-      await post("/api/invites/register", { token, password: form.get("password") });
+      await post("/api/invites/register", { token, password: form.get("password"), accept_terms: form.get("accept_terms") === "on" });
       await reload(); // pick up the new session cookies
       router.push("/events");
     } catch (err) {
@@ -121,6 +122,7 @@ export function InviteLanding({ token }: { token: string }) {
         <Field label="Confirm password">
           <Input name="confirm" type="password" autoComplete="new-password" minLength={10} required />
         </Field>
+        <TermsCheckbox />
         <Button type="submit" disabled={busy} className="w-full">
           {busy ? "Creating account…" : "Create account and join"}
         </Button>

@@ -66,6 +66,17 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
   return fetch(path, { method, headers, credentials: "same-origin", body: payload });
 }
 
+/** The API answers 403 + X-Required-Action when the current Terms of Use (or, for event
+ * management, the Organizer Terms) haven't been accepted: show the acceptance page, then
+ * come back here. */
+function requireAcceptance(res: Response): void {
+  const action = res.status === 403 ? res.headers.get("X-Required-Action") : null;
+  if (!action || typeof window === "undefined" || window.location.pathname === "/legal/accept") return;
+  const doc = action === "accept-organizer-terms" ? "organizer-terms" : "terms";
+  const next = `${window.location.pathname}${window.location.search}`;
+  window.location.assign(`/legal/accept?doc=${doc}&next=${encodeURIComponent(next)}`);
+}
+
 let refreshing: Promise<boolean> | null = null;
 
 async function tryRefresh(): Promise<boolean> {
@@ -84,6 +95,7 @@ export async function api<T>(method: string, path: string, body?: unknown): Prom
   }
   if (res.status === 204) return undefined as T;
   const data: unknown = await res.json().catch(() => null);
+  requireAcceptance(res);
   if (!res.ok) throw new ApiError(res.status, errorMessage(data, res.status), data);
   return data as T;
 }

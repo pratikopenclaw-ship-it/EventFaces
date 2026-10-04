@@ -15,7 +15,7 @@ struct RootView: View {
             }
         }
         .background(Palette.bg.ignoresSafeArea())
-        .sheet(isPresented: $model.showSignIn) { SignInView().hardScrollEdges() }
+        .sheet(isPresented: $model.showSignIn) { SignInView().sheetContent() }
     }
 }
 
@@ -32,7 +32,8 @@ struct MainView: View {
                 .navigationDestination(for: String.self) { id in EventView(eventID: id) }
                 .navigationDestination(for: OrganizerRoute.self) { route in OrganizerEventView(eventID: route.eventID) }
         }
-        .sheet(isPresented: $model.showSettings) { SettingsSheet().hardScrollEdges() }
-        .sheet(isPresented: $model.showJoin) { JoinView().hardScrollEdges() }
+        .sheet(isPresented: $model.showSettings) { SettingsSheet().sheetContent() }
+        .sheet(isPresented: $model.showJoin) { JoinView().sheetContent() }
+        .sheet(item: $model.requiredAcceptance) { AcceptLegalView(kind: $0).sheetContent() }
     }
 }

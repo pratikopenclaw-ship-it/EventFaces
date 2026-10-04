@@ -13,6 +13,9 @@ enum SessionEvent: Sendable, Equatable {
     case ended
     /// HTTP 426: this app version is no longer supported.
     case updateRequired(updateURL: URL?)
+    /// HTTP 403 + X-Required-Action: the current Terms of Use (or Organizer Terms) must be
+    /// accepted first.
+    case acceptanceRequired(LegalDocumentKind)
 }
 
 /// Owns the session secrets.
@@ -129,6 +132,10 @@ actor SessionManager {
 
     func reportUpdateRequired(_ url: URL?) {
         for listener in listeners { listener(.updateRequired(updateURL: url)) }
+    }
+
+    func reportAcceptanceRequired(_ document: LegalDocumentKind) {
+        for listener in listeners { listener(.acceptanceRequired(document)) }
     }
 
     /// Wipe every secret (sign-out, account deletion, server-ended session). The device

@@ -30,7 +30,7 @@ struct IntegrationTests {
         await auth.install()
         try await auth.requestCode(email: email)
         let code = try await lastMail(to: email).subject.split(separator: " ").first.map(String.init)
-        let user = try await auth.verify(email: email, code: try #require(code))
+        let user = try await auth.verify(email: email, code: try #require(code), acceptedTerms: true)
         #expect(user.email == email)
         return (auth, session)
     }
@@ -82,7 +82,7 @@ struct IntegrationTests {
             Issue.record("the emailed link didn't parse: \(link)")
             return
         }
-        #expect(try await auth.signIn(magicToken: token).email == email)
+        #expect(try await auth.signIn(magicToken: token, acceptedTerms: true).email == email)
     }
 
     @Test func aRefreshSignedByAnotherKeyEndsTheSession() async throws {

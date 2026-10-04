@@ -1,6 +1,30 @@
 {
   "components": {
     "schemas": {
+      "AcceptLegalIn": {
+        "properties": {
+          "document": {
+            "enum": [
+              "terms",
+              "organizer-terms"
+            ],
+            "title": "Document",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "version"
+        ],
+        "title": "AcceptLegalIn",
+        "type": "object"
+      },
       "AppConfigOut": {
         "properties": {
           "app_attest": {
@@ -172,6 +196,11 @@
       },
       "CodeVerifyIn": {
         "properties": {
+          "accept_terms": {
+            "description": "The user ticked: accepts the Terms of Use and is at least 16.",
+            "title": "Accept Terms",
+            "type": "boolean"
+          },
           "code": {
             "pattern": "^\\d{6}$",
             "title": "Code",
@@ -187,6 +216,7 @@
           }
         },
         "required": [
+          "accept_terms",
           "email",
           "code",
           "device"
@@ -1337,6 +1367,11 @@
       },
       "InviteRegisterIn": {
         "properties": {
+          "accept_terms": {
+            "description": "The user ticked: accepts the Terms of Use and is at least 16.",
+            "title": "Accept Terms",
+            "type": "boolean"
+          },
           "password": {
             "maxLength": 128,
             "minLength": 10,
@@ -1351,6 +1386,7 @@
           }
         },
         "required": [
+          "accept_terms",
           "token",
           "password"
         ],
@@ -1486,6 +1522,84 @@
         "title": "JoinPreviewOut",
         "type": "object"
       },
+      "LegalDocumentOut": {
+        "properties": {
+          "binding_locale": {
+            "const": "de",
+            "default": "de",
+            "title": "Binding Locale",
+            "type": "string"
+          },
+          "document": {
+            "enum": [
+              "terms",
+              "organizer-terms",
+              "privacy",
+              "imprint"
+            ],
+            "title": "Document",
+            "type": "string"
+          },
+          "intro": {
+            "title": "Intro",
+            "type": "string"
+          },
+          "locale": {
+            "enum": [
+              "de",
+              "en"
+            ],
+            "title": "Locale",
+            "type": "string"
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/LegalSectionOut"
+            },
+            "title": "Sections",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document",
+          "version",
+          "locale",
+          "title",
+          "intro",
+          "sections"
+        ],
+        "title": "LegalDocumentOut",
+        "type": "object"
+      },
+      "LegalSectionOut": {
+        "properties": {
+          "heading": {
+            "title": "Heading",
+            "type": "string"
+          },
+          "paragraphs": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Paragraphs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "heading",
+          "paragraphs"
+        ],
+        "title": "LegalSectionOut",
+        "type": "object"
+      },
       "LoginIn": {
         "properties": {
           "email": {
@@ -1509,6 +1623,11 @@
       },
       "MagicLinkIn": {
         "properties": {
+          "accept_terms": {
+            "description": "The user ticked: accepts the Terms of Use and is at least 16.",
+            "title": "Accept Terms",
+            "type": "boolean"
+          },
           "device": {
             "$ref": "#/components/schemas/DeviceIn"
           },
@@ -1521,6 +1640,7 @@
           }
         },
         "required": [
+          "accept_terms",
           "token",
           "device"
         ],
@@ -2838,6 +2958,11 @@
       },
       "SignupIn": {
         "properties": {
+          "accept_terms": {
+            "description": "The user ticked: accepts the Terms of Use and is at least 16.",
+            "title": "Accept Terms",
+            "type": "boolean"
+          },
           "email": {
             "format": "email",
             "title": "Email",
@@ -2864,6 +2989,7 @@
           }
         },
         "required": [
+          "accept_terms",
           "email",
           "password"
         ],
@@ -3137,8 +3263,41 @@
             "title": "Id",
             "type": "string"
           },
+          "organizer_terms_accepted": {
+            "readOnly": true,
+            "title": "Organizer Terms Accepted",
+            "type": "boolean"
+          },
+          "organizer_terms_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer Terms Version"
+          },
           "role": {
             "$ref": "#/components/schemas/UserRole"
+          },
+          "terms_accepted": {
+            "description": "The current Terms of Use are accepted (else the app asks before going on).",
+            "readOnly": true,
+            "title": "Terms Accepted",
+            "type": "boolean"
+          },
+          "terms_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Version"
           },
           "theme": {
             "$ref": "#/components/schemas/ThemePreference"
@@ -3150,7 +3309,9 @@
           "role",
           "email_verified_at",
           "created_at",
-          "theme"
+          "theme",
+          "terms_accepted",
+          "organizer_terms_accepted"
         ],
         "title": "UserOut",
         "type": "object"
@@ -6138,6 +6299,75 @@
         ]
       }
     },
+    "/api/legal/{document}": {
+      "get": {
+        "description": "`lang` picks the language; otherwise Accept-Language (German or English).",
+        "operationId": "legal_get_document",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "document",
+            "required": true,
+            "schema": {
+              "enum": [
+                "terms",
+                "organizer-terms",
+                "privacy",
+                "imprint"
+              ],
+              "title": "Document",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "de",
+                    "en"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegalDocumentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Document",
+        "tags": [
+          "legal"
+        ]
+      }
+    },
     "/api/me": {
       "delete": {
         "operationId": "privacy_delete_me",
@@ -6447,6 +6677,48 @@
         "summary": "Give Consent",
         "tags": [
           "search"
+        ]
+      }
+    },
+    "/api/me/legal/accept": {
+      "post": {
+        "description": "Accept the current version of the Terms of Use or the Organizer Terms (with the DPA).",
+        "operationId": "legal_accept_document",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AcceptLegalIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Document",
+        "tags": [
+          "legal"
         ]
       }
     },

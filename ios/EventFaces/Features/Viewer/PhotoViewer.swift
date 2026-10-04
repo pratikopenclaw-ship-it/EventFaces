@@ -36,7 +36,7 @@ struct PhotoViewer: View {
         .environment(\.colorScheme, .dark)
         .onAppear { index = min(startIndex, max(0, photos.count - 1)) }
         .onChange(of: photos.count) { _, count in if count == 0 { dismiss() } else { index = min(index, count - 1) } }
-        .sheet(item: $reporting) { photo in ReportSheet(results: results, photo: photo).hardScrollEdges() }
+        .sheet(item: $reporting) { photo in ReportSheet(results: results, photo: photo).sheetContent() }
         .sheet(item: Binding(get: { shareFile.map(SharedFile.init) }, set: { if $0 == nil { shareFile = nil } })) { file in
             ShareSheet(items: [file.url]) { try? FileManager.default.removeItem(at: file.url) }
         }

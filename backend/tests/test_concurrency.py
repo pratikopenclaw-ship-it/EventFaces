@@ -88,7 +88,7 @@ def test_parallel_invite_register_creates_one_account(world: World, db: Session,
     org = _login("org-this@example.com")
     org.post(f"/api/events/{world.event_a.id}/invites", json={"csv": "newbie@example.com"})
     token = next(m for m in reversed(mailer.outbox) if m.to == "newbie@example.com").body.split("/invite/")[1].split()[0]
-    codes = _race([lambda c=c: c.post("/api/invites/register", json={"token": token, "password": PASSWORD}) for c in [new_client() for _ in range(N)]])
+    codes = _race([lambda c=c: c.post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD}) for c in [new_client() for _ in range(N)]])
     assert Counter(codes)[201] == 1, codes
     db.expire_all()
     assert db.scalar(select(func.count()).select_from(Invite).where(Invite.email == "newbie@example.com", Invite.accepted_by.is_not(None))) == 1

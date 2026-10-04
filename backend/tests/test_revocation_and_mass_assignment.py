@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.services import legal
 from app.core.security import utcnow
 from app.models import Event, EventMember, MemberRole, MemberStatus, User, UserRole
 from tests.conftest import PASSWORD, new_client
@@ -125,7 +126,10 @@ def test_signup_ignores_privileged_fields(db: Session) -> None:
         json={
             "email": "sneaky@example.com",
             "password": PASSWORD,
+            "accept_terms": True,
             "role": "super_admin",
+            "terms_version": "1999-01-01",
+            "organizer_terms_version": "2026-10-03",
             "email_verified_at": "2020-01-01T00:00:00Z",
             "is_verified": True,
             "face_consent_version": "x",
@@ -138,6 +142,8 @@ def test_signup_ignores_privileged_fields(db: Session) -> None:
     assert u.role == UserRole.attendee
     assert u.email_verified_at is None
     assert u.face_consent_version is None
+    assert u.organizer_terms_version is None  # organizer terms are never accepted by sign-up
+    assert u.terms_version == legal.VERSIONS["terms"]  # the server's version, not the client's
     assert str(u.id) != "00000000-0000-0000-0000-000000000001"
 
 

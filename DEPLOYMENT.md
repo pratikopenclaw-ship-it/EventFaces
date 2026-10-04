@@ -17,7 +17,12 @@ Read this once end to end before starting. Commands assume Ubuntu 24.04, a domai
    Google if you use Drive import. Keep them with your records of processing (Art. 30).
 3. Name a **security contact** and a **privacy contact**, and decide who answers access and erasure
    requests (the app handles erasure itself; data export is manual, see report R-6).
-4. Calibrate the face-match thresholds on **consented** pilot data (see step 10). The shipped
+4. Have the **legal texts** reviewed and the operator's details filled in (`LEGAL_*` variables;
+   production won't start without them). The Terms, Organizer Terms with the data processing
+   agreement, Privacy Notice (with its cookie section) and Impressum are served from
+   `backend/app/services/legal.py` to web and app. The checklist for your lawyer is in
+   **LEGAL_REVIEW.md**.
+5. Calibrate the face-match thresholds on **consented** pilot data (see step 10). The shipped
    defaults were validated on synthetic data only.
 
 ## 1. Server (Hetzner Cloud)
@@ -283,7 +288,8 @@ Launch only when every box is ticked.
 - [ ] Capacity sized for the biggest expected event (searches per second × processes); `SEARCH_MAX_CONCURRENT` reviewed
 - [ ] `scripts/security-scan.sh` passes on the release tag; the full test suite passes from a clean checkout
 - [ ] A super admin exists; organizers briefed (Drive folder sharing, moderation, removal requests)
-- [ ] `/terms` carries your real terms of use (the shipped page is a placeholder)
+- [ ] Legal texts reviewed by counsel (LEGAL_REVIEW.md); `LEGAL_*` set in `.env.prod`; `/imprint`, `/terms`, `/organizer-terms` and `/privacy` show your details (no `[placeholder]` left)
+- [ ] Log rotation keeps server logs ≤ 14 days and backups drop deleted photos within 30 days (both promised in the Privacy Notice and the DPA)
 - [ ] iOS app only: `APPLE_TEAM_ID`/`IOS_BUNDLE_ID` set and the AASA file validates; APNs key in the secret store; `IOS_MIN_SUPPORTED_VERSION` matches the oldest build you support
 
 **Launch-day notes**

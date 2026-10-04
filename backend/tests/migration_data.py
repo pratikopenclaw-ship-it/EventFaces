@@ -20,6 +20,7 @@ from app.models import (
     FeedbackVerdict,
     IndexStatus,
     Invite,
+    LegalAcceptance,
     JoinMode,
     MatchFeedback,
     MemberRole,
@@ -72,6 +73,9 @@ def populate(session: Session) -> None:
     session.add(app_user)
     session.flush()
     session.add(Device(user_id=app_user.id, session_id=uuid.uuid4(), name="Drill iPhone", platform="ios", app_version="1.0.0", public_key="B" + "A" * 87))
+    # Proof of acceptance of the Terms of Use (the history table; users.terms_version is a
+    # cache that a downgrade below 0013 drops, so it isn't "surviving data").
+    session.add(LegalAcceptance(user_id=app_user.id, document="terms", version="2026-10-03", locale="de", channel="ios"))
     session.commit()
 
 

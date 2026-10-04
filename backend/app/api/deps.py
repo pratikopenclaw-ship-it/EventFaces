@@ -8,12 +8,24 @@ from sqlalchemy.orm import Session
 from app.core.db import get_db
 from app.core.security import ACCESS_COOKIE, decode_access_token
 from app.models import Event, User, UserRole
-from app.services import membership
+from app.services import legal, membership
 from app.services.tokens import session_is_live
 
 DB = Annotated[Session, Depends(get_db)]
 
 FORBIDDEN = HTTPException(status.HTTP_403_FORBIDDEN, "You don't have access to this event")
+# Outdated or missing acceptance of the legal documents (services/legal.py). The header tells
+# the web app and the iOS app which acceptance screen to show; the account, its deletion,
+# consent withdrawal, devices and sign-out stay available without it (CurrentUser routes).
+REQUIRED_ACTION = "X-Required-Action"
+TERMS_REQUIRED = HTTPException(
+    status.HTTP_403_FORBIDDEN, "Please accept the current Terms of Use to continue.", headers={REQUIRED_ACTION: "accept-terms"}
+)
+ORGANIZER_TERMS_REQUIRED = HTTPException(
+    status.HTTP_403_FORBIDDEN,
+    "Please accept the current Organizer Terms and data processing agreement to manage this event.",
+    headers={REQUIRED_ACTION: "accept-organizer-terms"},
+)
 
 
 def bearer_token(request: Request) -> str | None:
@@ -53,6 +65,8 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 def get_verified_user(user: CurrentUser) -> User:
     if not user.is_verified:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Please verify your email address first")
+    if user.role != UserRole.super_admin and not legal.has_current_terms(user):  # the operator's own staff
+        raise TERMS_REQUIRED
     return user
 
 
@@ -94,6 +108,8 @@ def get_managed_event(event_id: uuid.UUID, user: VerifiedUser, db: DB) -> Event:
     event = _load_event(db, event_id, user)
     if not membership.can_manage(db, event, user):
         raise FORBIDDEN
+    if user.role != UserRole.super_admin and not legal.has_current_organizer_terms(user):
+        raise ORGANIZER_TERMS_REQUIRED
     return event
 
 

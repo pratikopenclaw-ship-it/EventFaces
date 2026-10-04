@@ -77,7 +77,7 @@ def test_login_hashes_without_holding_a_db_connection(make_user: Callable[..., U
 
 def test_signup_and_reset_hash_without_holding_a_db_connection(spy: SpyHasher, mailer: FakeMailer) -> None:
     c = new_client()
-    assert c.post("/api/auth/signup", json={"email": "new-hash@example.com", "password": PASSWORD}).status_code == 202
+    assert c.post("/api/auth/signup", json={"accept_terms": True, "email": "new-hash@example.com", "password": PASSWORD}).status_code == 202
     c.post("/api/auth/forgot-password", json={"email": "new-hash@example.com"})
     token = mailer.last_link_token("new-hash@example.com")
     assert c.post("/api/auth/reset-password", json={"token": token, "password": "another-pass-12"}).status_code == 200
@@ -94,7 +94,7 @@ def test_delete_me_and_invite_register_hash_without_holding_a_db_connection(
     event, org = invite_event
     org.post(f"/api/events/{event.id}/invites", json={"csv": "invitee-hash@example.com"})
     token = next(m for m in reversed(mailer.outbox) if m.to == "invitee-hash@example.com").body.split("/invite/")[1].split()[0]
-    assert new_client().post("/api/invites/register", json={"token": token, "password": PASSWORD}).status_code == 201
+    assert new_client().post("/api/invites/register", json={"accept_terms": True, "token": token, "password": PASSWORD}).status_code == 201
     assert spy.connections and set(spy.connections) == {0}, spy.connections
 
 

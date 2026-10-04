@@ -33,7 +33,7 @@ test("a sign-in link opened in a browser explains itself and never spends the to
     return btoa(String.fromCharCode(...raw));
   });
   const signIn = await request.post(`${API}/api/mobile/auth/magic`, {
-    data: { token: link.searchParams.get("t"), device: { name: "Phone", public_key: key } },
+    data: { token: link.searchParams.get("t"), accept_terms: true, device: { name: "Phone", public_key: key } },  // as the app sends it
     headers: { "X-App-Version": "1.0.0" },
   });
   expect(signIn.status()).toBe(200);

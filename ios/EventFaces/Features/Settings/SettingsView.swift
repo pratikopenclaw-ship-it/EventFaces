@@ -6,6 +6,15 @@ struct SettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        // A navigation stack (bar hidden, our own header) so documents open inside this
+        // sheet: a sheet stacked on a sheet is shrunk on iPad and its geometry no longer
+        // matches what's on screen.
+        NavigationStack {
+            content.toolbar(.hidden, for: .navigationBar)
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             HStack {
                 Text("Settings")
@@ -35,6 +44,7 @@ struct SettingsView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.openURL) private var openURL
     @State private var showDelete = false
+    @State private var shownDocument: LegalDocumentKind?
 
     var body: some View {
         ScrollView {
@@ -70,9 +80,17 @@ struct SettingsView: View {
                     }
                 }
                 section("About") {
-                    RowAction(title: "Privacy notice", color: Palette.accent) { openURL(model.config.apiBaseURL.appending(path: "privacy")) }
+                    RowAction(title: "Privacy Notice", color: Palette.accent) { shownDocument = .privacy }
+                        .accessibilityIdentifier("about-privacy")
                     Divider().overlay(Palette.border)
-                    RowAction(title: "Terms of use", color: Palette.accent) { openURL(model.config.apiBaseURL.appending(path: "terms")) }
+                    RowAction(title: "Terms of Use", color: Palette.accent) { shownDocument = .terms }
+                        .accessibilityIdentifier("about-terms")
+                    Divider().overlay(Palette.border)
+                    RowAction(title: "Organizer Terms", color: Palette.accent) { shownDocument = .organizerTerms }
+                        .accessibilityIdentifier("about-organizer-terms")
+                    Divider().overlay(Palette.border)
+                    RowAction(title: "Legal notice", color: Palette.accent) { shownDocument = .imprint }
+                        .accessibilityIdentifier("about-imprint")
                     Divider().overlay(Palette.border)
                     ValueRow(title: "Version", value: model.config.appVersion)
                 }
@@ -81,7 +99,8 @@ struct SettingsView: View {
             .readableWidth()
         }
         .background(Palette.bg.ignoresSafeArea())
-        .sheet(isPresented: $showDelete) { DeleteAccountView().hardScrollEdges() }
+        .sheet(isPresented: $showDelete) { DeleteAccountView().sheetContent() }
+        .navigationDestination(item: $shownDocument) { LegalDocumentView(kind: $0, pushed: true) }
     }
 
     private func section<Content: View>(_ title: LocalizedStringKey, footer: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) -> some View {

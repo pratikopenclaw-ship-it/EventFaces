@@ -41,6 +41,7 @@ final class Phase2UITests: XCTestCase {
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText(email)
+        tickTerms(app)  // Terms + 16+ (required)
         app.buttons["send-code"].tap()
         let codeField = app.textFields["code-field"]
         XCTAssertTrue(codeField.waitForExistence(timeout: 10))

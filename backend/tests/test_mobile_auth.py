@@ -83,7 +83,7 @@ def request_code(email: str):  # type: ignore[no-untyped-def]
 def verify(email: str, code: str, key: DeviceKey | None = None):  # type: ignore[no-untyped-def]
     key = key or DeviceKey()
     return app_client().post(
-        "/api/mobile/auth/code/verify", json={"email": email, "code": code, "device": {"name": "Test iPhone", "public_key": key.public_b64}}
+        "/api/mobile/auth/code/verify", json={"accept_terms": True, "email": email, "code": code, "device": {"name": "Test iPhone", "public_key": key.public_b64}}
     )
 
 
@@ -140,7 +140,7 @@ def test_a_new_code_replaces_the_old_code_and_link(mailer: FakeMailer) -> None:
     new_code = last_code(mailer, "again@example.com")
     if new_code != old_code:  # 1-in-a-million collision would make the first check meaningless
         assert verify("again@example.com", old_code).status_code == 400
-    r = app_client().post("/api/mobile/auth/magic", json={"token": old_magic, "device": {"name": "x", "public_key": DeviceKey().public_b64}})
+    r = app_client().post("/api/mobile/auth/magic", json={"accept_terms": True, "token": old_magic, "device": {"name": "x", "public_key": DeviceKey().public_b64}})
     assert r.status_code == 400
     assert verify("again@example.com", new_code).status_code == 200
 
@@ -205,7 +205,7 @@ def _create(email: str) -> uuid.UUID:
 def test_magic_link_signs_in_once_and_kills_the_code(mailer: FakeMailer) -> None:
     request_code("magic@example.com")
     token, code = last_magic(mailer, "magic@example.com"), last_code(mailer, "magic@example.com")
-    body = {"token": token, "device": {"name": "x", "public_key": DeviceKey().public_b64}}
+    body = {"token": token, "accept_terms": True, "device": {"name": "x", "public_key": DeviceKey().public_b64}}
     r = app_client().post("/api/mobile/auth/magic", json=body)
     assert r.status_code == 200
     assert app_client(r.json()["access_token"]).get("/api/me").json()["email"] == "magic@example.com"
@@ -217,7 +217,7 @@ def test_bad_device_keys_are_refused(mailer: FakeMailer) -> None:
     request_code("badkey@example.com")
     code = last_code(mailer, "badkey@example.com")
     not_on_curve = base64.b64encode(b"\x04" + b"\x01" * 64).decode()
-    r = app_client().post("/api/mobile/auth/code/verify", json={"email": "badkey@example.com", "code": code, "device": {"name": "x", "public_key": not_on_curve}})
+    r = app_client().post("/api/mobile/auth/code/verify", json={"accept_terms": True, "email": "badkey@example.com", "code": code, "device": {"name": "x", "public_key": not_on_curve}})
     assert r.status_code == 422
 
 

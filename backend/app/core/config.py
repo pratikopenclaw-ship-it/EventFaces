@@ -162,6 +162,22 @@ class Settings(BaseSettings):
     app_attest_app_id: str = Field(default="", pattern=r"^([A-Z0-9]{10}\.[A-Za-z0-9.-]+)?$")
     app_attest_env: Literal["development", "production"] = "development"
 
+    # Operator identity for the legal documents (services/legal.py: Impressum, Terms,
+    # Privacy Notice). Empty fields show as visible placeholders; production refuses to
+    # start while a required one is empty. LEGAL_OPERATOR_ADDRESS may use "\n" for lines.
+    legal_operator_name: str = ""
+    legal_operator_address: str = ""
+    legal_representative: str = ""  # managing director / owner, also responsible under § 18(2) MStV
+    legal_email: str = ""
+    legal_phone: str = ""
+    legal_register: str = ""  # e.g. "Amtsgericht Berlin-Charlottenburg, HRB 123456" (optional)
+    legal_vat_id: str = ""  # optional
+    legal_dpo_contact: str = ""
+    legal_supervisory_authority: str = ""
+    legal_hosting_provider: str = "Hetzner Online GmbH, Gunzenhausen (Germany)"
+    legal_storage_provider: str = "Cloudflare, Inc. (R2 object storage, EU jurisdiction)"
+    legal_email_provider: str = ""
+
 
     @model_validator(mode="after")
     def _refuse_insecure_production(self) -> "Settings":
@@ -194,6 +210,19 @@ class Settings(BaseSettings):
             problems.append("APNS_KEY_P8 must be the PEM contents of the .p8 key")
         if self.apns_key_p8 and self.apns_env != "production":
             problems.append("APNS_ENV must be production")
+        legal_required = {
+            "LEGAL_OPERATOR_NAME": self.legal_operator_name,
+            "LEGAL_OPERATOR_ADDRESS": self.legal_operator_address,
+            "LEGAL_REPRESENTATIVE": self.legal_representative,
+            "LEGAL_EMAIL": self.legal_email,
+            "LEGAL_PHONE": self.legal_phone,
+            "LEGAL_DPO_CONTACT": self.legal_dpo_contact,
+            "LEGAL_SUPERVISORY_AUTHORITY": self.legal_supervisory_authority,
+            "LEGAL_EMAIL_PROVIDER": self.legal_email_provider,
+        }
+        missing = [k for k, v in legal_required.items() if not v.strip()]
+        if missing:
+            problems.append("legal identity incomplete (Impressum, Terms, Privacy Notice): set " + ", ".join(missing))
         if self.app_attest_app_id and self.app_attest_env != "production":
             problems.append("APP_ATTEST_ENV must be production")  # development keys are never accepted in production
         if problems:

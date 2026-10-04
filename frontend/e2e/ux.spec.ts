@@ -48,6 +48,7 @@ test("QR join link survives sign-up and email verification", async ({ page, requ
   await page.getByLabel("Email").fill("qr-newcomer@example.com");
   await page.getByRole("textbox", { name: /^Password/ }).fill("qr-newcomer-pass-1");
   await page.getByLabel("Confirm password").fill("qr-newcomer-pass-1");
+  await page.getByRole("checkbox", { name: /I accept the Terms of Use/ }).check();
   await page.getByRole("button", { name: /create account/i }).click();
   await expect(page.getByText("it will bring you back to the event")).toBeVisible();
 
