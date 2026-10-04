@@ -51,6 +51,7 @@ from app.models import (
 from app.services import mobile_auth
 from app.services.events import generate_access_code
 from app.services.search import FACE_CONSENT_VERSION
+from app.services import legal
 from tests.conftest import PASSWORD, new_client
 from tests.helpers import solid_jpeg
 
@@ -113,6 +114,8 @@ def world(db: Session) -> World:
             email_verified_at=now if verified else None,
             face_consent_at=now,
             face_consent_version=FACE_CONSENT_VERSION,
+            terms_version=legal.VERSIONS["terms"],  # established users (the gates: test_legal.py)
+            organizer_terms_version=legal.VERSIONS["organizer-terms"],
         )
         db.add(u)
         return u
@@ -197,7 +200,7 @@ OPS: list[Op] = [
     # --- public ---
     Op("GET", "/api/health", "PUBLIC"),
     Op("GET", "/api/auth/csrf", "PUBLIC"),
-    Op("POST", "/api/auth/signup", "PUBLIC", json={"email": "new-person@example.com", "password": PASSWORD}),
+    Op("POST", "/api/auth/signup", "PUBLIC", json={"accept_terms": True, "email": "new-person@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/login", "PUBLIC", json={"email": "member@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/logout", "PUBLIC"),
     Op("POST", "/api/auth/refresh", "SESSION", transports=("cookie",)),
@@ -206,7 +209,7 @@ OPS: list[Op] = [
     Op("POST", "/api/auth/forgot-password", "PUBLIC", json={"email": "someone@example.com"}),
     Op("POST", "/api/auth/reset-password", "PUBLIC", json={"token": "not-a-real-token-123", "password": PASSWORD}),
     Op("GET", "/api/invites/not-a-real-token-123", "PUBLIC"),
-    Op("POST", "/api/invites/register", "PUBLIC", json={"token": "not-a-real-token-123", "password": PASSWORD}),
+    Op("POST", "/api/invites/register", "PUBLIC", json={"accept_terms": True, "token": "not-a-real-token-123", "password": PASSWORD}),
     Op("POST", "/api/removal-requests", "PUBLIC", json={"event": "{slug_a}", "email": "b@example.com"}),
     Op("GET", "/api/removal-requests/event/{slug_a}", "PUBLIC"),
     Op("GET", "/api/removal-requests/not-a-real-token-123", "PUBLIC"),
@@ -214,11 +217,13 @@ OPS: list[Op] = [
     Op("GET", "/api/app/config", "PUBLIC"),
     # --- the app's pre-login endpoints (bearer transport only: they're app requests) ---
     Op("POST", "/api/mobile/auth/code/request", "PUBLIC", json={"email": "phone@example.com"}, transports=("bearer",)),
-    Op("POST", "/api/mobile/auth/code/verify", "PUBLIC", json={"email": "phone@example.com", "code": "000000", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
-    Op("POST", "/api/mobile/auth/magic", "PUBLIC", json={"token": "not-a-real-token-1234567", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
+    Op("POST", "/api/mobile/auth/code/verify", "PUBLIC", json={"accept_terms": True, "email": "phone@example.com", "code": "000000", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
+    Op("POST", "/api/mobile/auth/magic", "PUBLIC", json={"accept_terms": True, "token": "not-a-real-token-1234567", "device": {"name": "Phone", "public_key": "{device_key}"}}, transports=("bearer",)),
     Op("POST", "/api/mobile/auth/refresh", "CREDENTIAL", json={"refresh_token": "not-a-real-token-1234567", "device_id": "{random_id}", "ts": 1, "signature": "AAAAAAAAAAAA"}, transports=("bearer",)),
+    Op("GET", "/api/legal/terms", "PUBLIC"),
     # --- any logged-in user ---
     Op("GET", "/api/me", "AUTH"),
+    Op("POST", "/api/me/legal/accept", "AUTH", json={"document": "terms", "version": "{terms_version}"}),
     Op("DELETE", "/api/me", "AUTH", json={"password": PASSWORD}),
     Op("GET", "/api/me/face-consent", "AUTH"),
     Op("DELETE", "/api/me/face-consent", "AUTH"),
@@ -301,6 +306,7 @@ def _fill(template: Any, w: World) -> Any:
         "member_a": str(w.users["attendee_member"].id),
         "random_id": str(uuid.uuid4()),
         "device_key": DEVICE_KEY,
+        "terms_version": legal.VERSIONS["terms"],
     }
     if isinstance(template, str):
         for k, v in values.items():
@@ -344,6 +350,7 @@ def _normalise(path: str) -> str:
     path = path.split("?")[0]
     replacements = [
         (r"/api/me/devices/\{random_id\}", "/api/me/devices/{device_id}"),
+        (r"^/api/legal/(terms|organizer-terms|privacy|imprint)$", "/api/legal/{document}"),
         (r"/api/events/\{event_a\}", "/api/events/{event_id}"),
         (r"\{photo_a\}", "{photo_id}"),
         (r"\{random_id\}", "{photo_id}"),

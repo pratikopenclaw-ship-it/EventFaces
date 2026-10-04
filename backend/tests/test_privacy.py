@@ -214,7 +214,7 @@ def test_search_log_visible_to_organizers_only(two_events, make_user, login_as, 
 @pytest.mark.parametrize(
     ("path", "body", "limit"),
     [
-        ("/api/auth/signup", {"email": "s{i}@example.com", "password": PASSWORD}, 10),
+        ("/api/auth/signup", {"accept_terms": True, "email": "s{i}@example.com", "password": PASSWORD}, 10),
         ("/api/auth/forgot-password", {"email": "f{i}@example.com"}, 5),
         ("/api/auth/resend-verification", {"email": "r{i}@example.com"}, 5),
     ],

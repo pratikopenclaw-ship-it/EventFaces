@@ -29,7 +29,7 @@ from app.schemas.auth import (
     TokenIn,
     UserOut,
 )
-from app.services import mobile_auth
+from app.services import legal, mobile_auth
 from app.services.tokens import (
     consume_token,
     end_session,
@@ -91,6 +91,7 @@ def signup(body: SignupIn, request: Request, db: DB, background: BackgroundTasks
         user = User(email=body.email, password_hash=password_hash, role=UserRole.attendee)
         db.add(user)
         db.flush()
+        legal.accept(db, user, "terms", locale=legal.locale_from(request.headers.get("accept-language")), channel="web")
         _send_verification(db, background, user, body.next)
     db.commit()
     return MessageOut(detail="Check your inbox to verify your email address.")

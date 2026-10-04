@@ -10,6 +10,7 @@ struct SignInView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var vm: SignInViewModel?
+    @State private var shownDocument: LegalDocumentKind?
     @FocusState private var focused: Bool
 
     var body: some View {
@@ -23,6 +24,7 @@ struct SignInView: View {
                 .readableWidth()
             }
             .scrollDismissesKeyboard(.immediately)  // the number pad has no key to close it
+            .navigationDestination(item: $shownDocument) { LegalDocumentView(kind: $0, pushed: true) }
             .background(Palette.bg.ignoresSafeArea())
             .navigationTitle("Sign in")
             .navigationBarTitleDisplayMode(.inline)
@@ -42,6 +44,7 @@ struct SignInView: View {
             }
         }
         .onAppear { if vm == nil { vm = SignInViewModel(auth: model.auth) } }
+        .onDisappear { model.cancelMagicSignIn() }
     }
 
     @ViewBuilder
@@ -52,6 +55,32 @@ struct SignInView: View {
                 Banner(kind: .error, text: Text(message(for: error)))
                     .accessibilityIdentifier("sign-in-error")
             }
+            if model.pendingMagicToken != nil {
+                magicLinkConfirmation(vm)
+            } else {
+                steps(vm)
+            }
+        }
+    }
+
+    /// A sign-in link opened without ticking the Terms in this app first: ask now.
+    @ViewBuilder
+    private func magicLinkConfirmation(_ vm: SignInViewModel) -> some View {
+        @Bindable var vm = vm
+        Text("Almost there. Please accept the Terms of Use to finish signing in.")
+            .foregroundStyle(Palette.text)
+            .fixedSize(horizontal: false, vertical: true)
+        TermsCheckbox(isOn: $vm.acceptedTerms) { shownDocument = $0 }
+        Button("Sign in") { Task { await model.completeMagicSignIn() } }
+            .buttonStyle(.primary)
+            .disabled(!vm.acceptedTerms)
+            .accessibilityIdentifier("confirm-magic-sign-in")
+    }
+
+    @ViewBuilder
+    private func steps(_ vm: SignInViewModel) -> some View {
+        @Bindable var vm = vm
+        VStack(alignment: .leading, spacing: 16) {
             switch vm.step {
             case .email:
                 Text("We'll email you a 6-digit code. No password needed.")
@@ -65,19 +94,24 @@ struct SignInView: View {
                     .autocorrectionDisabled()
                     .submitLabel(.send)
                     .focused($focused)
-                    .onSubmit { Task { await vm.sendCode() } }
+                    .onSubmit {
+                        model.termsTickedForSignIn = vm.acceptedTerms
+                        Task { await vm.sendCode() }
+                    }
                     .padding(14)
                     .frame(minHeight: 50)
                     .background(Palette.surface, in: .rect(cornerRadius: 12))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.border))
                     .accessibilityIdentifier("email-field")
+                TermsCheckbox(isOn: $vm.acceptedTerms) { shownDocument = $0 }
                 Button {
+                    model.termsTickedForSignIn = vm.acceptedTerms
                     Task { await vm.sendCode() }
                 } label: {
                     if vm.busy { ProgressView().tint(Palette.onAccent) } else { Text("Send code") }
                 }
                 .buttonStyle(.primary)
-                .disabled(!vm.emailLooksValid || vm.busy)
+                .disabled(!vm.canSendCode)
                 .accessibilityIdentifier("send-code")
             case .code:
                 Text("Enter the code we sent to \(vm.email). You can also tap the link in that email.")
@@ -140,7 +174,7 @@ struct SignInView: View {
         case .tooManyAttempts: "Too many tries. Wait a few minutes, then try again."
         case .offline: "You're offline. Check your connection and try again."
         case .sessionEnded: "You were signed out. Sign in again to continue."
-        case .noAccess, .consentRequired, .server: "Something went wrong on our side. Try again in a moment."
+        case .noAccess, .consentRequired, .legalChanged, .server: "Something went wrong on our side. Try again in a moment."
         }
     }
 }

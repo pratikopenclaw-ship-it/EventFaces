@@ -1,9 +1,10 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
 
 from app.models.enums import ThemePreference, UserRole
+from app.schemas.legal import AcceptsTerms
 
 Password = Field(min_length=10, max_length=128)
 
@@ -13,7 +14,7 @@ Password = Field(min_length=10, max_length=128)
 JOIN_DESTINATION = r"^/join/[a-z0-9-]{1,80}(\?code=[A-Za-z0-9]{1,32})?$"
 
 
-class SignupIn(BaseModel):
+class SignupIn(AcceptsTerms):
     email: EmailStr
     password: str = Password
     next: str | None = Field(default=None, max_length=130, pattern=JOIN_DESTINATION)
@@ -48,6 +49,23 @@ class UserOut(BaseModel):
     email_verified_at: datetime | None
     created_at: datetime
     theme: ThemePreference
+    terms_version: str | None = None
+    organizer_terms_version: str | None = None
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def terms_accepted(self) -> bool:
+        """The current Terms of Use are accepted (else the app asks before going on)."""
+        from app.services.legal import VERSIONS
+
+        return self.terms_version == VERSIONS["terms"]
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def organizer_terms_accepted(self) -> bool:
+        from app.services.legal import VERSIONS
+
+        return self.organizer_terms_version == VERSIONS["organizer-terms"]
 
 
 class PreferencesIn(BaseModel):

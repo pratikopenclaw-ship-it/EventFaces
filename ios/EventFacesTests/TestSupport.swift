@@ -12,6 +12,8 @@ final class FakeTransport: ClientTransport, @unchecked Sendable {
     var handler: @Sendable (HTTPRequest, Data?) async throws -> (Int, String) = { _, _ in (200, "{}") }
 
     var sent: [Sent] { lock.withLock { _sent } }
+    /// Extra headers on every response (e.g. X-Required-Action).
+    var responseHeaders: [String: String] = [:]
 
     func send(_ request: HTTPRequest, body: HTTPBody?, baseURL: URL, operationID: String) async throws -> (HTTPResponse, HTTPBody?) {
         let data: Data? = if let body { try await Data(collecting: body, upTo: .max) } else { nil }
@@ -19,6 +21,7 @@ final class FakeTransport: ClientTransport, @unchecked Sendable {
         let (status, json) = try await handler(request, data)
         var response = HTTPResponse(status: .init(code: status))
         response.headerFields[.contentType] = "application/json"
+        for (name, value) in responseHeaders { response.headerFields[HTTPField.Name(name)!] = value }
         return (response, HTTPBody(json))
     }
 }
@@ -32,8 +35,8 @@ struct TestSigner: DeviceSigner {
 
 let testConfig = AppConfig(apiBaseURL: URL(string: "https://api.test.example")!, appLinkHost: "eventfaces.example", appVersion: "1.2.3")
 
-func userJSON(email: String = "me@example.com", theme: String = "system") -> String {
-    #"{"id":"0b7c1e2a-1111-4c1e-9a0c-0305e82c3301","email":"\#(email)","role":"attendee","email_verified_at":"2026-10-01T09:30:12.528837Z","created_at":"2026-10-01T09:30:12.528837Z","theme":"\#(theme)"}"#
+func userJSON(email: String = "me@example.com", theme: String = "system", termsAccepted: Bool = true) -> String {
+    #"{"id":"0b7c1e2a-1111-4c1e-9a0c-0305e82c3301","email":"\#(email)","role":"attendee","email_verified_at":"2026-10-01T09:30:12.528837Z","created_at":"2026-10-01T09:30:12.528837Z","theme":"\#(theme)","terms_version":"2026-10-03","terms_accepted":\#(termsAccepted),"organizer_terms_accepted":true}"#
 }
 
 func tokensJSON(access: String = "access-1", refresh: String = "refresh-token-000000000001", device: String = "3f2504e0-4f89-11d3-9a0c-0305e82c3301") -> String {

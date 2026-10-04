@@ -37,6 +37,7 @@ final class DemoWalkthrough: XCTestCase {
         let field = app.textFields["email-field"]
         _ = field.waitForExistence(timeout: 5)
         field.tap(); field.typeText(email); shot("05-sign-in-email", app)
+        tickTerms(app)  // Terms + 16+ (required)
         app.buttons["send-code"].tap()
         let codeField = app.textFields["code-field"]
         _ = codeField.waitForExistence(timeout: 10)

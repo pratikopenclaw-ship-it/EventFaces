@@ -71,6 +71,16 @@
         }
       }
     },
+    "Accept and continue" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Akzeptieren und fortfahren"
+          }
+        }
+      }
+    },
     "Access code" : {
       "localizations" : {
         "de" : {
@@ -131,6 +141,16 @@
         }
       }
     },
+    "Almost there. Please accept the Terms of Use to finish signing in." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fast geschafft. Bitte akzeptiere die Nutzungsbedingungen, um die Anmeldung abzuschließen."
+          }
+        }
+      }
+    },
     "Anything else the organizer should know (optional)" : {
       "localizations" : {
         "de" : {
@@ -177,6 +197,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Teilnehmer"
+          }
+        }
+      }
+    },
+    "Back" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zurück"
           }
         }
       }
@@ -317,6 +347,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Speichern in Fotos nicht möglich. Erlaube EventFaces in den Einstellungen, Fotos hinzuzufügen."
+          }
+        }
+      }
+    },
+    "Couldn't save your acceptance. Try again in a moment." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Zustimmung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
           }
         }
       }
@@ -701,6 +741,26 @@
         }
       }
     },
+    "I accept the Organizer Terms and the data processing agreement on behalf of the organizer." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich akzeptiere die Veranstalterbedingungen und den Auftragsverarbeitungsvertrag im Namen des Veranstalters."
+          }
+        }
+      }
+    },
+    "I accept the Terms of Use and confirm that I am at least 16 years old." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ich akzeptiere die Nutzungsbedingungen und bestätige, dass ich mindestens 16 Jahre alt bin."
+          }
+        }
+      }
+    },
     "Importing from Google Drive…" : {
       "localizations" : {
         "de" : {
@@ -857,6 +917,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Zuletzt genutzt am %@"
+          }
+        }
+      }
+    },
+    "Legal notice" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impressum"
           }
         }
       }
@@ -1161,6 +1231,16 @@
         }
       }
     },
+    "Not now" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht jetzt"
+          }
+        }
+      }
+    },
     "Nothing to review." : {
       "localizations" : {
         "de" : {
@@ -1237,6 +1317,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Veranstalter"
+          }
+        }
+      }
+    },
+    "Organizer Terms" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veranstalterbedingungen"
           }
         }
       }
@@ -1321,6 +1411,16 @@
         }
       }
     },
+    "Please read and accept the current Terms of Use to continue. You can still manage or delete your account without accepting." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bitte lies und akzeptiere die aktuellen Nutzungsbedingungen, um fortzufahren. Dein Konto kannst du auch ohne Zustimmung verwalten oder löschen."
+          }
+        }
+      }
+    },
     "Possible matches" : {
       "localizations" : {
         "de" : {
@@ -1337,6 +1437,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datenschutz"
+          }
+        }
+      }
+    },
+    "Privacy Notice" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzerklärung"
           }
         }
       }
@@ -1781,6 +1891,16 @@
         }
       }
     },
+    "Terms of Use" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nutzungsbedingungen"
+          }
+        }
+      }
+    },
     "Terms of use" : {
       "localizations" : {
         "de" : {
@@ -1932,12 +2052,32 @@
         }
       }
     },
+    "These terms have just changed. Please read the current version." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Bedingungen wurden gerade geändert. Bitte lies die aktuelle Fassung."
+          }
+        }
+      }
+    },
     "This device" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieses Gerät"
+          }
+        }
+      }
+    },
+    "This document couldn't be loaded. Check your connection and try again." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Dokument konnte nicht geladen werden. Prüfe deine Verbindung und versuch es noch einmal."
           }
         }
       }
@@ -2082,6 +2222,16 @@
         }
       }
     },
+    "To manage events, please read and accept the Organizer Terms, including the data processing agreement." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um Veranstaltungen zu verwalten, lies und akzeptiere bitte die Veranstalterbedingungen einschließlich des Auftragsverarbeitungsvertrags."
+          }
+        }
+      }
+    },
     "Too bright: move out of direct light" : {
       "localizations" : {
         "de" : {
@@ -2218,6 +2368,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "EventFaces aktualisieren"
+          }
+        }
+      }
+    },
+    "Updated terms" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aktualisierte Bedingungen"
           }
         }
       }

@@ -13,6 +13,9 @@ final class SignInViewModel {
             if digits != code { code = digits }
         }
     }
+    /// "I accept the Terms of Use and am at least 16": required before a code is sent; the
+    /// server records it when the code is verified.
+    var acceptedTerms = false
     private(set) var step: Step = .email
     private(set) var busy = false
     private(set) var error: AppError?
@@ -34,8 +37,10 @@ final class SignInViewModel {
 
     var canResend: Bool { resendAvailableAt.map { now() >= $0 } ?? true }
 
+    var canSendCode: Bool { emailLooksValid && acceptedTerms && !busy }
+
     func sendCode() async {
-        guard emailLooksValid, !busy else { return }
+        guard emailLooksValid, acceptedTerms, !busy else { return }
         busy = true
         error = nil
         defer { busy = false }
@@ -56,7 +61,7 @@ final class SignInViewModel {
         error = nil
         defer { busy = false }
         do {
-            return try await auth.verify(email: email.trimmingCharacters(in: .whitespaces), code: code)
+            return try await auth.verify(email: email.trimmingCharacters(in: .whitespaces), code: code, acceptedTerms: acceptedTerms)
         } catch {
             self.error = Self.appError(error)
             code = ""

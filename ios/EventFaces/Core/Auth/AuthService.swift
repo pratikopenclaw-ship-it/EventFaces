@@ -11,6 +11,7 @@ enum AppError: Error, Equatable {
     case sessionEnded
     case noAccess
     case consentRequired
+    case legalChanged
     case server(status: Int)
 }
 
@@ -74,8 +75,10 @@ struct AuthService: Sendable {
         }
     }
 
-    func verify(email: String, code: String) async throws -> User {
-        let output = try await unwrapped({ try await publicAPI.mobileVerifyCode(body: .json(.init(code: code, device: try await device(), email: email))) })
+    /// `acceptedTerms`: the user ticked "I accept the Terms of Use and am at least 16"
+    /// (required; the server records it).
+    func verify(email: String, code: String, acceptedTerms: Bool) async throws -> User {
+        let output = try await unwrapped({ try await publicAPI.mobileVerifyCode(body: .json(.init(acceptTerms: acceptedTerms, code: code, device: try await device(), email: email))) })
         switch output {
         case let .ok(ok): return try await start(ok.body.json)
         case .unprocessableContent: throw AppError.invalidCode
@@ -83,8 +86,8 @@ struct AuthService: Sendable {
         }
     }
 
-    func signIn(magicToken: String) async throws -> User {
-        let output = try await unwrapped({ try await publicAPI.mobileMagicLink(body: .json(.init(device: try await device(), token: magicToken))) })
+    func signIn(magicToken: String, acceptedTerms: Bool) async throws -> User {
+        let output = try await unwrapped({ try await publicAPI.mobileMagicLink(body: .json(.init(acceptTerms: acceptedTerms, device: try await device(), token: magicToken))) })
         switch output {
         case let .ok(ok): return try await start(ok.body.json)
         case .unprocessableContent: throw AppError.linkExpired

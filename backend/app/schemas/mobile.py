@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.schemas.auth import UserOut
+from app.schemas.legal import AcceptsTerms
 
 # base64 of a 65-byte X9.63 point (88 chars) / a DER ECDSA signature (<= 72 bytes -> 96 chars)
 PUBLIC_KEY = Field(min_length=88, max_length=88, pattern=r"^[A-Za-z0-9+/]+={0,2}$")
@@ -22,13 +23,13 @@ class CodeRequestIn(BaseModel):
     email: EmailStr
 
 
-class CodeVerifyIn(BaseModel):
+class CodeVerifyIn(AcceptsTerms):
     email: EmailStr
     code: str = Field(pattern=r"^\d{6}$")
     device: DeviceIn
 
 
-class MagicLinkIn(BaseModel):
+class MagicLinkIn(AcceptsTerms):
     token: str = OPAQUE_TOKEN
     device: DeviceIn
 

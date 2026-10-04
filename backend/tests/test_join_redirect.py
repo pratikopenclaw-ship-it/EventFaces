@@ -16,7 +16,7 @@ def _verify_link(mailer: FakeMailer, email: str) -> str:
 
 @pytest.mark.parametrize("dest", ["/join/demo-party-2u6m7p", "/join/demo-party-2u6m7p?code=URPHP25E"])
 def test_join_destination_survives_signup(dest: str, mailer: FakeMailer) -> None:
-    r = new_client().post("/api/auth/signup", json={"email": "qr-guest@example.com", "password": PASSWORD, "next": dest})
+    r = new_client().post("/api/auth/signup", json={"accept_terms": True, "email": "qr-guest@example.com", "password": PASSWORD, "next": dest})
     assert r.status_code == 202, r.text
     link = urlsplit(_verify_link(mailer, "qr-guest@example.com"))
     assert link.path == "/verify-email"
@@ -24,7 +24,7 @@ def test_join_destination_survives_signup(dest: str, mailer: FakeMailer) -> None
 
 
 def test_signup_without_destination_has_plain_link(mailer: FakeMailer) -> None:
-    new_client().post("/api/auth/signup", json={"email": "plain@example.com", "password": PASSWORD})
+    new_client().post("/api/auth/signup", json={"accept_terms": True, "email": "plain@example.com", "password": PASSWORD})
     assert "next=" not in _verify_link(mailer, "plain@example.com")
 
 
@@ -46,5 +46,5 @@ def test_signup_without_destination_has_plain_link(mailer: FakeMailer) -> None:
     ],
 )
 def test_other_destinations_are_rejected(dest: str) -> None:
-    r = new_client().post("/api/auth/signup", json={"email": "attacker@example.com", "password": PASSWORD, "next": dest})
+    r = new_client().post("/api/auth/signup", json={"accept_terms": True, "email": "attacker@example.com", "password": PASSWORD, "next": dest})
     assert r.status_code == 422, (dest, r.status_code)

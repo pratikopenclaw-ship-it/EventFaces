@@ -47,11 +47,16 @@ export function linkIn(mail: { body: string }): string {
 
 /** Log in through the API (cookies land in the page's context). */
 export async function login(page: Page, email: string): Promise<void> {
-  const csrf = await (await page.request.get("/api/auth/csrf")).json();
-  const r = await page.request.post("/api/auth/login", {
-    data: { email, password: PASSWORD },
-    headers: { "X-CSRF-Token": csrf.csrf_token },
-  });
+  // The page's own start-up fetch can replace the CSRF cookie between our token request and
+  // the login (they share the cookie jar): send the value that is in the jar, and if the
+  // server still saw a different one (403), take the fresh cookie and try once more.
+  const attempt = async () => {
+    await page.request.get("/api/auth/csrf");
+    const token = (await page.context().cookies()).find((c) => c.name === "ef_csrf")?.value ?? "";
+    return page.request.post("/api/auth/login", { data: { email, password: PASSWORD }, headers: { "X-CSRF-Token": token } });
+  };
+  let r = await attempt();
+  if (r.status() === 403) r = await attempt();
   expect(r.status()).toBe(200);
 }
 

@@ -43,7 +43,7 @@ from app.core.redis import get_redis
 from app.core.security import hash_password, utcnow
 from app.main import app
 from app.models import Event, EventMember, JoinMode, MemberRole, MemberStatus, ModerationMode, User, UserRole
-from app.services import drive
+from app.services import drive, legal
 from app.services.events import generate_access_code, generate_slug
 from app.workers.celery_app import celery_app
 from tests.helpers import FakeDrive, group_photo_bytes, half_photo, selfie_set, solid_jpeg
@@ -102,7 +102,7 @@ def reset() -> None:
     )
     with SessionLocal() as db:
         for email, role in USERS.items():
-            db.add(User(email=email, password_hash=hash_password(PASSWORD), role=role, email_verified_at=utcnow()))
+            db.add(User(email=email, password_hash=hash_password(PASSWORD), role=role, email_verified_at=utcnow(), terms_version=legal.VERSIONS["terms"], organizer_terms_version=legal.VERSIONS["organizer-terms"]))
         db.commit()
 
 
@@ -114,6 +114,18 @@ def reset_endpoint() -> dict[str, object]:
     release_face_slots()
     reset()
     return {"password": PASSWORD, "users": list(USERS), "folder": FOLDER}
+
+
+@router.post("/legal/reset")
+def reset_legal(email: str) -> dict[str, str]:
+    """Forget a user's acceptance of the Terms and Organizer Terms (tests of the acceptance screens)."""
+    with SessionLocal() as db:
+        user = db.scalar(select(User).where(User.email == email))
+        if user is None:
+            raise HTTPException(404, "no such user")
+        user.terms_version = user.organizer_terms_version = None
+        db.commit()
+    return {"status": "ok"}
 
 
 @router.post("/event")
@@ -161,7 +173,10 @@ def seed_users(event_id: uuid.UUID, n: int = 100) -> dict[str, object]:
     with SessionLocal() as db:
         now = utcnow()
         for email in emails:
-            u = User(email=email, password_hash=pw, role=UserRole.attendee, email_verified_at=now, face_consent_at=now, face_consent_version=FACE_CONSENT_VERSION)
+            u = User(
+                email=email, password_hash=pw, role=UserRole.attendee, email_verified_at=now,
+                face_consent_at=now, face_consent_version=FACE_CONSENT_VERSION, terms_version=legal.VERSIONS["terms"], organizer_terms_version=legal.VERSIONS["organizer-terms"],
+            )
             db.add(u)
             db.flush()
             db.add(EventMember(event_id=event_id, user_id=u.id, role=MemberRole.attendee, status=MemberStatus.approved))
@@ -176,7 +191,7 @@ def seed_organizer(event_id: uuid.UUID, email: str) -> dict[str, str]:
     with SessionLocal() as db:
         user = db.scalar(select(User).where(User.email == email))
         if user is None:
-            user = User(email=email, password_hash=None, role=UserRole.organizer, email_verified_at=utcnow())
+            user = User(email=email, password_hash=None, role=UserRole.organizer, email_verified_at=utcnow(), terms_version=legal.VERSIONS["terms"], organizer_terms_version=legal.VERSIONS["organizer-terms"])
             db.add(user)
             db.flush()
         user.role = UserRole.organizer

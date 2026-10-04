@@ -11,6 +11,7 @@ test("sign up, verify email, join by code", async ({ page, request }) => {
   await page.getByRole("textbox", { name: /^Password/ }).fill("carol-password-1");
   const confirm = page.getByLabel("Confirm password");
   if (await confirm.count()) await confirm.fill("carol-password-1");
+  await page.getByRole("checkbox", { name: /I accept the Terms of Use/ }).check();
   await page.getByRole("button", { name: /sign up|create account/i }).click();
   const mail = await lastMail(request, "carol@example.com");
   await page.goto(linkIn(mail));

@@ -27,7 +27,7 @@ struct SessionTests {
         transport.handler = { req, _ in
             req.path == "/api/mobile/auth/code/verify" ? (200, tokensJSON()) : (404, "{}")
         }
-        let user = try await auth.verify(email: "me@example.com", code: "123456")
+        let user = try await auth.verify(email: "me@example.com", code: "123456", acceptedTerms: true)
         #expect(user.email == "me@example.com")
         #expect(try store.data(for: "refresh-token") == Data("refresh-token-000000000001".utf8))
         #expect(try store.data(for: "device-id") == Data("3f2504e0-4f89-11d3-9a0c-0305e82c3301".utf8))

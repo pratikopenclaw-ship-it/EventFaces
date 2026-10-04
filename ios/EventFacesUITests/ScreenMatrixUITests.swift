@@ -24,11 +24,7 @@ final class ScreenMatrixUITests: XCTestCase {
     func testDarkLargestText() throws { try walk(.dark, largestText: true) }
 
     private func walk(_ appearance: XCUIDevice.Appearance, largestText: Bool) throws {
-        var event = post("__e2e/event")
-        for _ in 0..<10 where event["code"] == nil {  // a freshly booted simulator may refuse the first connection
-            Thread.sleep(forTimeInterval: 1)
-            event = post("__e2e/event")
-        }
+        let event = e2ePost("__e2e/event", expect: "code")
         let accessCode = try XCTUnwrap(event["code"] as? String)
         XCUIDevice.shared.appearance = appearance
         app.launchArguments = ["-ui-testing-reset"]
@@ -46,6 +42,7 @@ final class ScreenMatrixUITests: XCTestCase {
         try check("sign-in", field)
         field.tap()
         field.typeText(email)
+        tickTerms(app)  // Terms + 16+ (required)
         app.buttons["send-code"].tap()
         let codeField = app.textFields["code-field"]
         XCTAssertTrue(codeField.waitForExistence(timeout: 10))
@@ -73,13 +70,6 @@ final class ScreenMatrixUITests: XCTestCase {
         shot.lifetime = .keepAlways
         add(shot)
         try auditScreen(app, line: line)
-    }
-
-    private func post(_ path: String) -> [String: Any] {
-        var r = URLRequest(url: Self.api.appending(path: path))
-        r.httpMethod = "POST"
-        let data = (try? NSURLConnectionLike.send(r)) ?? Data()
-        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
     }
 
     private func code(for email: String) -> String {

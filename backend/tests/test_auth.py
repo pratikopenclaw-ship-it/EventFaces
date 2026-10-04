@@ -8,7 +8,7 @@ EMAIL = "alice@example.com"
 
 
 def _signup(client: TestClient, email: str = EMAIL) -> None:
-    r = client.post("/api/auth/signup", json={"email": email, "password": PASSWORD})
+    r = client.post("/api/auth/signup", json={"accept_terms": True, "email": email, "password": PASSWORD})
     assert r.status_code == 202, r.text
 
 
@@ -40,7 +40,7 @@ def test_login_sets_httponly_cookies(client: TestClient, mailer: FakeMailer) -> 
 
 def test_duplicate_signup_does_not_reveal_account(client: TestClient, mailer: FakeMailer) -> None:
     _signup(client)
-    r = client.post("/api/auth/signup", json={"email": EMAIL, "password": "another-password-1"})
+    r = client.post("/api/auth/signup", json={"accept_terms": True, "email": EMAIL, "password": "another-password-1"})
     assert r.status_code == 202
     assert "already have an account" in mailer.outbox[-1].body
 

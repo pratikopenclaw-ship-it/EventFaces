@@ -34,6 +34,11 @@ class User(Base):
         server_default=ThemePreference.system.value,
     )
 
+    # Current accepted versions of the Terms of Use / Organizer Terms (services/legal.py);
+    # the full history with time and channel is in legal_acceptances.
+    terms_version: Mapped[str | None] = mapped_column(String(20))
+    organizer_terms_version: Mapped[str | None] = mapped_column(String(20))
+
     @property
     def is_verified(self) -> bool:
         return self.email_verified_at is not None
@@ -58,3 +63,20 @@ class AuthToken(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class LegalAcceptance(Base):
+    """Proof of acceptance: who accepted which version of which document, when and where.
+    Append-only; deleted with the account."""
+
+    __tablename__ = "legal_acceptances"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    document: Mapped[str] = mapped_column(String(32), nullable=False)  # terms | organizer-terms
+    version: Mapped[str] = mapped_column(String(20), nullable=False)
+    locale: Mapped[str] = mapped_column(String(5), nullable=False)  # language the text was shown in
+    channel: Mapped[str] = mapped_column(String(8), nullable=False)  # web | ios
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

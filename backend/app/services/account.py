@@ -12,6 +12,7 @@ from app.models import (
     Device,
     EventMember,
     Invite,
+    LegalAcceptance,
     MatchFeedback,
     Photo,
     PhotoReport,
@@ -57,6 +58,7 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
     db.execute(delete(RemovalRequest).where(RemovalRequest.email == user.email))
     db.execute(delete(AuthToken).where(AuthToken.user_id == user.id))
     db.execute(delete(Device).where(Device.user_id == user.id))  # incl. push tokens
+    db.execute(delete(LegalAcceptance).where(LegalAcceptance.user_id == user.id))
     # Keep aggregate counts for security/accountability, without the person.
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
     anonymized = (

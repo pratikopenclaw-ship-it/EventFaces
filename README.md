@@ -124,7 +124,7 @@ Every event-scoped endpoint goes through `get_member_event` / `get_managed_event
 - **Delete my data** (`/account`) hard-deletes the account, memberships, grants, uploads (files + faces) and invites. Audit rows and reports are anonymized.
 - **Removal requests** (`/removal-request?event=<slug>`, link on the Access tab) let anyone who appears in photos, attendee or not, ask for removal, with an optional reference selfie that's matched in memory against that event only. The requester never sees the matches; organizers review them in the Moderation tab. A malicious requester could submit someone else's face, so organizers should check before removing.
 - Extending an event's access after retention ran re-indexes its photos automatically.
-- `/privacy` is a draft notice with `[bracketed]` placeholders. Fill them in and have it reviewed. Face search is special-category (biometric) processing, so plan a **DPIA** (Art. 35 GDPR) and data processing agreements with your hosting, storage and email providers.
+- Legal texts: Terms of Use, Organizer Terms with the data processing agreement, Privacy Notice (with a cookie section) and Impressum, in German (binding) and English, served to web (`/terms`, `/organizer-terms`, `/privacy`, `/imprint`) and app from `backend/app/services/legal.py`. Acceptance is required at sign-up and recorded per version. Set the operator details (`LEGAL_*`) and have counsel review them: **LEGAL_REVIEW.md**. Face search is special-category (biometric) processing, so plan a **DPIA** (Art. 35 GDPR) and data processing agreements with your hosting, storage and email providers.
 
 ## Rate limits
 

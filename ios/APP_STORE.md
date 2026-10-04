@@ -65,7 +65,8 @@ Prepare before submitting:
 - [ ] App Attest (if enabled): attestation succeeds and is verified server-side in report-only mode before enforcing.
 
 **App Store Connect**
-- [ ] App Privacy answers (section 1), privacy policy URL `https://<domain>/privacy`, terms `https://<domain>/terms` (replace the placeholder text).
+- [ ] App Privacy answers (section 1), privacy policy URL `https://<domain>/privacy`, terms `https://<domain>/terms`. The legal texts are server-owned (same text on web and in the app); review them per LEGAL_REVIEW.md and set the `LEGAL_*` operator details first.
+- [ ] License agreement: Apple's standard EULA applies; our Terms of Use are additional platform terms (linked in the description and shown in the app).
 - [ ] Age rating; category Photo & Video.
 - [ ] Screenshots: 6.9" and 6.5" iPhone, 13" iPad; light and dark.
 - [ ] Localizations: English, German (the consent text's German version needs legal review).

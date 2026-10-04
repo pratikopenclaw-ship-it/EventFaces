@@ -47,7 +47,7 @@ from app.models import (
     User,
     UserRole,
 )
-from app.services import drive
+from app.services import drive, legal
 from app.services.events import generate_access_code, generate_slug
 from app.workers.celery_app import celery_app
 
@@ -130,12 +130,16 @@ def client(mailer: FakeMailer) -> TestClient:
 
 @pytest.fixture
 def make_user(db: Session) -> Callable[..., User]:
-    def _make(email: str, role: UserRole = UserRole.attendee, verified: bool = True) -> User:
+    def _make(email: str, role: UserRole = UserRole.attendee, verified: bool = True, terms: bool = True) -> User:
+        """`terms`: has accepted the current Terms of Use and Organizer Terms (like every
+        account created through the apps); False for tests of the acceptance gates."""
         user = User(
             email=email,
             password_hash=hash_password(PASSWORD),
             role=role,
             email_verified_at=utcnow() if verified else None,
+            terms_version=legal.VERSIONS["terms"] if terms else None,
+            organizer_terms_version=legal.VERSIONS["organizer-terms"] if terms else None,
         )
         db.add(user)
         db.commit()

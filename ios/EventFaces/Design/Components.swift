@@ -132,4 +132,14 @@ extension View {
     @ViewBuilder func hardScrollEdges() -> some View {
         if #available(iOS 26, *) { scrollEdgeEffectHidden(true, for: .top) } else { self }
     }
+
+    /// The root of every presented sheet / full-screen flow: hard scroll edges, plus an
+    /// accessibility container whose frame is the sheet's real, visible frame (UI tests use
+    /// it: on iPad a sheet stacked on a sheet reports a taller scroll view than it shows).
+    /// `.contain` keeps the children's own identifiers (unlike an identifier on a plain stack).
+    func sheetContent() -> some View {
+        hardScrollEdges()
+            .accessibilityElement(children: .contain)
+            .accessibilityIdentifier("sheet-root")
+    }
 }

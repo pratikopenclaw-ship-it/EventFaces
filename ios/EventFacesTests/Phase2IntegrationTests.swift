@@ -31,7 +31,7 @@ struct Phase2IntegrationTests {
         try await auth.requestCode(email: email)
         let (mail, _) = try await TestNet.session.data(from: Self.api.appending(path: "__e2e/mail").appending(queryItems: [URLQueryItem(name: "to", value: email)]))
         let subject = try #require((try JSONSerialization.jsonObject(with: mail) as? [String: String])?["subject"])
-        _ = try await auth.verify(email: email, code: String(subject.prefix(6)))
+        _ = try await auth.verify(email: email, code: String(subject.prefix(6)), acceptedTerms: true)
         return (auth, EventService(api: auth.api, session: session, config: config, urlSession: NetworkSession.make()))
     }
 

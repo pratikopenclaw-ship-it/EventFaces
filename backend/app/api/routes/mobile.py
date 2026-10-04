@@ -33,7 +33,7 @@ from app.schemas.mobile import (
     RefreshIn,
 )
 from app.schemas.auth import MessageOut, UserOut
-from app.services import app_attest, mobile_auth
+from app.services import app_attest, legal, mobile_auth
 
 router = APIRouter(prefix="/api/mobile/auth", tags=["mobile"])
 me_router = APIRouter(prefix="/api", tags=["mobile"])
@@ -60,6 +60,10 @@ def _sign_in(db: DB, request: Request, email: str, device: DeviceIn) -> MobileTo
     except mobile_auth.RefreshRejected:
         db.rollback()
         raise INVALID_CODE from None
+    # The sign-in screen requires ticking "I accept the Terms and am at least 16" (the
+    # schema enforces it); record it unless the current version is already on file.
+    if not legal.has_current_terms(user):
+        legal.accept(db, user, "terms", locale=legal.locale_from(request.headers.get("accept-language")), channel="ios")
     try:
         session = mobile_auth.start_device_session(
             db,

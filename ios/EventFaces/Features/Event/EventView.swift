@@ -59,7 +59,7 @@ struct EventView: View {
         }
         .background(Palette.bg.ignoresSafeArea())
         .task { await load() }
-        .sheet(isPresented: $showUpload) { if let event { UploadView(event: event).hardScrollEdges() } }
+        .sheet(isPresented: $showUpload) { if let event { UploadView(event: event).sheetContent() } }
         .onChange(of: model.openResultsFor) { _, id in if id == eventID { showResults = true; model.openResultsFor = nil } }
         .onAppear { if model.openResultsFor == eventID { showResults = true; model.openResultsFor = nil } }
         .fullScreenCover(isPresented: $showResults) {
@@ -69,7 +69,7 @@ struct EventView: View {
             }
             .background(Palette.bg.ignoresSafeArea())
             .environment(\.colorScheme, .dark)
-            .hardScrollEdges()
+            .sheetContent()
         }
         .fullScreenCover(item: $flow) { flow in
             Group {
@@ -83,7 +83,7 @@ struct EventView: View {
                     }
                 }
             }
-            .hardScrollEdges()
+            .sheetContent()
         }
     }
 

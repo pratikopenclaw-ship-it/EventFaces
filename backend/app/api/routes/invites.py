@@ -24,7 +24,7 @@ from app.schemas.community import (
     InviteUploadOut,
 )
 from app.schemas.event import EventPublicOut
-from app.services import invites
+from app.services import invites, legal
 
 router = APIRouter(prefix="/api", tags=["invites"])
 
@@ -151,6 +151,7 @@ def register_from_invite(body: InviteRegisterIn, request: Request, response: Res
     user = User(email=invite.email, password_hash=password_hash, role=UserRole.attendee)
     db.add(user)
     db.flush()
+    legal.accept(db, user, "terms", locale=legal.locale_from(request.headers.get("accept-language")), channel="web")
     invites.accept(db, invite, event, user)  # also marks the email verified
     start_session(db, response, user)
     db.commit()
