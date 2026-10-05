@@ -177,7 +177,7 @@ test.describe("theme switcher", () => {
     await chooseTheme(page, "Light");
     await giveConsent(page);
     await captureThreeShots(page);
-    await expect(page.getByRole("heading", { name: "We found you" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: /^You.re in \d+ photos?$/ })).toBeVisible({ timeout: 60_000 });
     expect(await bodyBg(page)).toBe(BG.light);
     const gallery = page.locator(".theme-dark").first();
     expect(await gallery.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(BG.dark);

@@ -123,3 +123,10 @@ describe("design tokens", () => {
     expect(css).toMatch(/@media \(prefers-reduced-motion: no-preference\)\s*\{\s*html\.theme-switching/);
   });
 });
+
+describe("light island (.theme-light, printed material)", () => {
+  it("repeats the light tokens exactly", () => {
+    const island = cssTokens(/\n\.theme-light\s*\{([^}]*)\}/.exec(css)![1]);
+    expect(island).toEqual(lightCss);
+  });
+});

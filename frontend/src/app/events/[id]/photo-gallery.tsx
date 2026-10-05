@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { Alert, Button } from "@/components/ui";
 import { post, triggerDownload } from "@/lib/api";
@@ -20,10 +20,13 @@ export function PhotoGallery({
   eventId,
   photos: unordered,
   onVerdict,
+  reveal = false,
 }: {
   eventId: string;
   photos: MatchedPhoto[];
   onVerdict: (photoId: string, verdict: Verdict) => void;
+  /** Fresh search results: play the one-time reveal (globals.css, "Results reveal"). */
+  reveal?: boolean;
 }) {
   // Best first, then possible, then own uploads; the lightbox walks this order.
   const photos = SECTIONS.flatMap((s) => unordered.filter((p) => sectionOf(p) === s.key));
@@ -87,6 +90,29 @@ export function PhotoGallery({
   }, [open, photos.length, reporting]);
 
   const current = open === null ? null : photos[open];
+  const dialog = useRef<HTMLDivElement>(null);
+  const strip = useRef<HTMLDivElement>(null);
+  const swipeFrom = useRef<number | null>(null);
+  const isOpen = open !== null;
+
+  // Move focus into the viewer when it opens (keyboard and screen-reader users land in it).
+  useEffect(() => {
+    if (isOpen) dialog.current?.focus();
+  }, [isOpen]);
+
+  // Keep the current photo visible in the filmstrip.
+  useEffect(() => {
+    if (open === null) return;
+    strip.current?.querySelector<HTMLElement>(`[data-index="${open}"]`)?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [open]);
+
+  function swipeEnd(x: number) {
+    if (swipeFrom.current === null || open === null) return;
+    const dx = x - swipeFrom.current;
+    swipeFrom.current = null;
+    if (Math.abs(dx) < 50) return;
+    setOpen(dx < 0 ? Math.min(photos.length - 1, open + 1) : Math.max(0, open - 1));
+  }
 
   return (
     // Photos always sit on a dark background, whatever the theme (the switcher says so).
@@ -119,47 +145,62 @@ export function PhotoGallery({
               <span className="text-sm text-muted">{items.length}</span>
               {section.note && <span className="text-xs text-muted">· {section.note}</span>}
             </div>
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-              {items.map((p) => (
-                <li key={p.id} className="group overflow-hidden rounded-xl bg-paper ring-1 ring-line">
-                  <div className="relative">
-                    <button onClick={() => setOpen(photos.indexOf(p))} className="block aspect-square w-full bg-mist" aria-label="Open photo">
-                      {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
-                      <img
-                        src={`/api/events/${eventId}/photos/${p.id}/thumb`}
-                        alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover transition group-hover:scale-[1.02]"
-                      />
-                    </button>
-                    <label className="absolute left-2 top-2 flex size-7 cursor-pointer items-center justify-center rounded-full bg-paper/90 shadow">
-                      <input
-                        type="checkbox"
-                        aria-label="Select photo"
-                        checked={selected.has(p.id)}
-                        onChange={() => toggle(p.id)}
-                        className="size-4 accent-accent"
-                      />
-                    </label>
-                  </div>
-                  {p.tier && (
-                    <div className="flex items-center justify-between gap-1 px-2 py-1.5 text-xs">
-                      {p.verdict === "me" ? (
-                        <span className="font-medium text-leaf">✓ This is me</span>
-                      ) : (
-                        <>
-                          <button onClick={() => void rate(p.id, "me")} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-leaf/10 hover:text-leaf">
-                            This is me
-                          </button>
-                          <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-muted hover:bg-alarm/10 hover:text-alarm">
-                            Not me
-                          </button>
-                        </>
-                      )}
+            {/* Justified rows: each photo grows by its aspect ratio, so nothing is cropped
+                into a square and rows end flush. The spacer keeps the last row natural. */}
+            <ul className="flex flex-wrap gap-2 after:flex-[10] after:content-['']">
+              {items.map((p) => {
+                const ratio = p.width && p.height ? Math.min(2.5, Math.max(0.5, p.width / p.height)) : 4 / 3;
+                const index = photos.indexOf(p);
+                return (
+                  <li
+                    key={p.id}
+                    className={`group overflow-hidden rounded-xl bg-paper ring-1 ring-line ${reveal ? "reveal-tile" : ""}`}
+                    style={{ flexGrow: ratio, flexBasis: `${Math.round(ratio * 190)}px`, "--i": Math.min(index, 12) } as CSSProperties}
+                  >
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpen(index)}
+                        className="block w-full bg-mist"
+                        style={{ aspectRatio: String(ratio) }}
+                        aria-label="Open photo"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
+                        <img
+                          src={`/api/events/${eventId}/photos/${p.id}/thumb`}
+                          alt=""
+                          loading="lazy"
+                          className="h-full w-full object-cover transition group-hover:scale-[1.02] motion-reduce:transition-none"
+                        />
+                      </button>
+                      <label className="absolute left-2 top-2 flex size-7 cursor-pointer items-center justify-center rounded-full bg-paper/90 shadow">
+                        <input
+                          type="checkbox"
+                          aria-label="Select photo"
+                          checked={selected.has(p.id)}
+                          onChange={() => toggle(p.id)}
+                          className="size-4 accent-accent"
+                        />
+                      </label>
                     </div>
-                  )}
-                </li>
-              ))}
+                    {p.tier && (
+                      <div className="flex items-center justify-between gap-1 px-2 py-1.5 text-xs">
+                        {p.verdict === "me" ? (
+                          <span className="font-medium text-leaf">✓ This is me</span>
+                        ) : (
+                          <>
+                            <button onClick={() => void rate(p.id, "me")} className="rounded-md px-2 py-1 font-medium text-muted hover:bg-leaf/10 hover:text-leaf">
+                              This is me
+                            </button>
+                            <button onClick={() => void rate(p.id, "not_me")} className="rounded-md px-2 py-1 text-muted hover:bg-alarm/10 hover:text-alarm">
+                              Not me
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </section>
         );
@@ -167,9 +208,12 @@ export function PhotoGallery({
 
       {current && open !== null && (
         <div
+          ref={dialog}
           role="dialog"
           aria-modal="true"
-          className="theme-dark fixed inset-0 z-50 flex flex-col bg-canvas/95 p-4"
+          aria-label="Photo viewer"
+          tabIndex={-1}
+          className="theme-dark fixed inset-0 z-50 flex flex-col bg-canvas/95 p-4 outline-none"
           onClick={(e) => e.target === e.currentTarget && setOpen(null)}
         >
           <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink/80">
@@ -203,11 +247,16 @@ export function PhotoGallery({
               </Button>
             </div>
           </div>
-          <div className="flex min-h-0 flex-1 items-center justify-center gap-4 py-4">
+          <div
+            className="flex min-h-0 flex-1 touch-pan-y items-center justify-center gap-4 py-4"
+            onPointerDown={(e) => (swipeFrom.current = e.clientX)}
+            onPointerUp={(e) => swipeEnd(e.clientX)}
+            onPointerCancel={() => (swipeFrom.current = null)}
+          >
             <Button
               variant="ghost"
               aria-label="Previous"
-              className="text-2xl text-ink hover:bg-mist hover:text-ink"
+              className="size-11 shrink-0 rounded-full bg-paper/80 p-0 text-2xl text-ink shadow hover:bg-mist hover:text-ink"
               disabled={open === 0}
               onClick={() => setOpen(open - 1)}
             >
@@ -218,18 +267,36 @@ export function PhotoGallery({
               key={current.id}
               src={`/api/events/${eventId}/photos/${current.id}/preview`}
               alt=""
-              className="max-h-full min-w-0 max-w-full rounded-lg object-contain"
+              draggable={false}
+              className="max-h-full min-w-0 max-w-full select-none rounded-lg object-contain"
             />
             <Button
               variant="ghost"
               aria-label="Next"
-              className="text-2xl text-ink hover:bg-mist hover:text-ink"
+              className="size-11 shrink-0 rounded-full bg-paper/80 p-0 text-2xl text-ink shadow hover:bg-mist hover:text-ink"
               disabled={open === photos.length - 1}
               onClick={() => setOpen(open + 1)}
             >
               ›
             </Button>
           </div>
+          {photos.length > 1 && (
+            <div ref={strip} className="flex shrink-0 justify-center-safe gap-2 overflow-x-auto pb-1" aria-label="All photos">
+              {photos.map((p, i) => (
+                <button
+                  key={p.id}
+                  data-index={i}
+                  onClick={() => setOpen(i)}
+                  aria-label={`Photo ${i + 1}`}
+                  aria-current={i === open ? "true" : undefined}
+                  className="size-14 shrink-0 overflow-hidden rounded-md opacity-60 ring-2 ring-transparent transition hover:opacity-100 aria-[current=true]:opacity-100 aria-[current=true]:ring-accent focus-visible:outline-2 focus-visible:outline-accent"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image */}
+                  <img src={`/api/events/${eventId}/photos/${p.id}/thumb`} alt="" loading="lazy" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
           {reporting && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/60 p-4">
               <ReportDialog eventId={eventId} photoId={reporting} onClose={() => setReporting(null)} />

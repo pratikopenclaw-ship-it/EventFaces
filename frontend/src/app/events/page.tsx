@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { EventCard } from "@/components/event-cover";
 import { VerifyBanner } from "@/components/verify-banner";
 import { Alert, Badge, Button, Card, Field, Input, PageHeader, formatDate } from "@/components/ui";
 import { parseJoinLink } from "@/lib/links";
@@ -41,26 +41,26 @@ export default function MyEventsPage() {
               You haven&apos;t joined any events yet. Use the link or QR code from the organizer.
             </Card>
           )}
-          {attending.map((event) => (
-            <Link
-              key={event.id}
-              href={`/events/${event.id}`}
-              className="block rounded-2xl border border-line bg-paper p-5 transition hover:border-ink/30"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <h2 className="font-medium">{event.name}</h2>
-                  {event.date && <p className="text-sm text-muted">{formatDate(event.date)}</p>}
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}
-                  {event.search_state === "done" && <Badge tone="good">Photos ready</Badge>}
-                  {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
-                </div>
-              </div>
-              <p className="mt-3 text-sm font-medium text-accent">Find my photos →</p>
-            </Link>
-          ))}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {attending.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                href={`/events/${event.id}`}
+                meta={event.date ? formatDate(event.date) : undefined}
+                badges={
+                  (event.search_state === "queued" || event.search_state === "done" || event.access_expires_at) && (
+                    <>
+                      {event.search_state === "queued" && <Badge tone="warn">Search queued</Badge>}
+                      {event.search_state === "done" && <Badge tone="good">Photos ready</Badge>}
+                      {event.access_expires_at && <Badge>Access until {formatDate(event.access_expires_at)}</Badge>}
+                    </>
+                  )
+                }
+                action="Find my photos"
+              />
+            ))}
+          </div>
         </div>
         <Card>
           <h2 className="mb-3 font-medium">Join an event</h2>

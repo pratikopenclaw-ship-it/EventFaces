@@ -65,6 +65,7 @@ export interface JoinPreview {
   name: string;
   date: string | null;
   join_mode: JoinMode;
+  accent_color: string | null;
 }
 
 export interface Member {

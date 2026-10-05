@@ -89,7 +89,7 @@ for (const scheme of ["light", "dark"] as const) {
       await audit(page, "capture requirements");
       await captureThreeShots(page);
       await expect(
-        page.getByRole("heading", { name: "We found you" }),
+        page.getByRole("heading", { name: /^You.re in \d+ photos?$/ }),
       ).toBeVisible({ timeout: 60_000 });
       await audit(page, "results");
       await page.getByRole("button", { name: "Open photo" }).first().click();
@@ -129,6 +129,24 @@ for (const scheme of ["light", "dark"] as const) {
       await page.getByRole("link", { name: "Receipt" }).first().click();
       await expect(page.getByRole("heading", { name: "Receipt" })).toBeVisible();
       await audit(page, "receipt");
+    });
+
+    test("axe: event covers, join page and the printable poster", async ({ page, request, browser }) => {
+      await reset(request);
+      const event = await seedEvent(request, { synced: false });
+      await login(page, "alice@e2e.test");
+      for (const path of ["/events", `/join/${event.slug}`, `/events/${event.id}`]) {
+        await page.goto(path);
+        await expect(page.locator("main h1").first()).toBeVisible();
+        await audit(page, path);
+      }
+      const org = await (await browser.newContext({ colorScheme: scheme })).newPage();
+      await login(org, "org@e2e.test");
+      for (const path of ["/admin/events", `/admin/events/${event.id}/poster`]) {
+        await org.goto(path);
+        await expect(org.locator("main h1").first()).toBeVisible();
+        await audit(org, path);
+      }
     });
 
     test("axe: organizer admin tabs", async ({ page, request }) => {

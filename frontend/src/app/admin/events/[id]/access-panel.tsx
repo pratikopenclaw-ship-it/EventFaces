@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Alert, Button, Card } from "@/components/ui";
@@ -91,12 +92,20 @@ export function AccessPanel({ event, onChange }: { event: EventAdmin; onChange: 
             Print it on signs or slides. Scanning it opens the join page with the code filled in. Rotating the code
             invalidates printed QR codes.
           </p>
-          <a
-            href={`/api/events/${event.id}/qr?format=png&v=${event.access_code}`}
-            className="mt-3 inline-flex rounded-lg border border-line px-4 py-2 text-sm font-medium hover:bg-mist"
-          >
-            Download PNG
-          </a>
+          <div className="mt-3 flex flex-wrap justify-center gap-2 md:justify-start">
+            <Link
+              href={`/admin/events/${event.id}/poster`}
+              className="inline-flex rounded-lg bg-accent px-4 py-2 text-sm font-medium text-on-accent hover:bg-accent-hover"
+            >
+              Print poster or table cards
+            </Link>
+            <a
+              href={`/api/events/${event.id}/qr?format=png&v=${event.access_code}`}
+              className="inline-flex rounded-lg border border-line px-4 py-2 text-sm font-medium hover:bg-mist"
+            >
+              Download PNG
+            </a>
+          </div>
         </div>
       </Card>
       {removalCard}

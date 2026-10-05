@@ -856,6 +856,53 @@ Playwright details:
 - **A real bug found by CI in Linux WebKit:** the photo viewer's single download never started after the ZIP download. Downloads were link clicks that navigated and then turned into downloads; the link now carries `download` (same-origin), so it downloads directly. Reproduced and verified in the Linux Playwright image (Chromium, Firefox, WebKit, iPhone 14) and on macOS.
 
 
+## Look and feel: event identity, results reveal, QR poster (web, 2026-10-05)
+
+Owner request: make the app more distinctive. Items 1–3 of the proposal, on the web; the iOS app follows in a later phase.
+
+**What was added:**
+- **Event identity** (`components/event-cover.tsx`): every event page, the join page and the event lists now open with a cover band in the event's accent colour. The band is topped by a "contact sheet" pattern seeded by the event's id, with the logo on a paper chip.
+  - The title sits on solid accent below the faded pattern, so the tested accent contrast still holds.
+  - The join preview API adds `accent_color` and nothing else; a test pins its exact fields, since it's visible before joining.
+- **Results reveal:**
+  - "You're in N photos" headline; fresh results lift in once with an accent frame (none with reduced motion);
+  - a justified photo layout that keeps aspect ratios, using the stored width and height;
+  - the viewer gains swipe, a filmstrip (`aria-current`), focus moved into the dialog and visible previous/next buttons.
+- **Printable QR material** (`/admin/events/[id]/poster`, organizers only, reached from the Access tab):
+  - an A4 poster or four A6 table cards in the event's colours, printing exactly one A4 page (checked with Chromium's PDF output);
+  - always light, through a new `.theme-light` island that a test keeps equal to the light tokens;
+  - the site header and footer are hidden in print.
+- **Link preview** (`app/opengraph-image.tsx`): a branded 1200×630 image for every page, rendered with `next/og` (part of Next; no new dependency). It never names an event: join links require a login, so crawlers land on `/login`. `SITE_URL` (production compose) makes the image URL absolute.
+
+**Found while building:**
+- With a fixed column count the cover tiles became slabs on desktop. They now have a fixed size, and wider screens get more of them.
+- The pattern's rows spilled under the title on wide screens; the strip now clips.
+- The reveal's final keyframe, with fill-mode `both`, would have permanently replaced the tiles' `ring` (box-shadow); it uses `backwards`.
+- Per-event patterns made the visual baselines differ on every run. They are marked `data-volatile` (the suite's mask convention), and two runs in a row now match.
+
+**Tests:**
+- `event-cover.test.ts`: the pattern is deterministic per event, distinct between events and faint.
+- `e2e/identity.spec.ts`:
+  - covers on the event, list and join pages (all browsers);
+  - the headline count;
+  - viewer focus, filmstrip and swipe;
+  - poster and table cards, and the print view;
+  - the link-preview image.
+- The axe audit covers the lists, join page, event page and poster in both themes.
+- Backend: the exact join-preview fields.
+
+**Final gates (2026-10-05):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,560 passed** |
+| vitest | **110/110** |
+| Build | production build passes |
+| Playwright | all projects pass (after test locators were updated for the filmstrip), plus Firefox (Linux image) **10/10** |
+| Visual baselines | regenerated, inspected, stable over two runs |
+| iOS | `--no-api` **86/86** (schema: `accent_color` on the join preview) |
+| Security scan | **18/18** |
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

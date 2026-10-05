@@ -13,7 +13,7 @@ export function Nav() {
   return (
     // relative z-30: backdrop-blur makes the header a stacking context, so without its own
     // level the theme menu (z-40 inside it) would open underneath positioned page content.
-    <header className="relative z-30 border-b border-line bg-paper/80 backdrop-blur">
+    <header className="relative z-30 border-b border-line bg-paper/80 backdrop-blur print:hidden">
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <Link href="/" className="font-display text-xl tracking-tight text-ink">
           Event<span className="text-accent">Faces</span>

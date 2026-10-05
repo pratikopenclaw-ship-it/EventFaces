@@ -220,7 +220,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-2xl">{results ? "We found you" : "Your photos"}</h2>
+            <h2 className="font-display text-3xl tracking-tight">{results ? foundHeadline(results) : "Your photos"}</h2>
             <div className="flex gap-2">
               <MissingButton eventId={event.id} />
               <Button variant="secondary" onClick={() => setStep("capture")}>
@@ -231,6 +231,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
           <PhotoGallery
             eventId={event.id}
             photos={shown}
+            reveal={results !== null}
             onVerdict={(id, verdict) => {
               const update = (list: MatchedPhoto[]) =>
                 verdict === "not_me" ? list.filter((p) => p.id !== id) : list.map((p) => (p.id === id ? { ...p, verdict } : p));
@@ -267,4 +268,10 @@ function MissingButton({ eventId }: { eventId: string }) {
       {state === "error" ? "Couldn't send, try later" : "Photos of me are missing"}
     </Button>
   );
+}
+
+/** "You're in 12 photos": the matches (not the user's own uploads). */
+function foundHeadline(matches: MatchedPhoto[]): string {
+  const n = matches.filter((p) => p.tier).length;
+  return n === 1 ? "You're in 1 photo" : `You're in ${n} photos`;
 }

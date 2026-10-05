@@ -60,6 +60,7 @@ services:
       SENTRY_DSN: ${WEB_SENTRY_DSN:-}
       APP_VERSION: ${APP_VERSION:-dev}
       ENVIRONMENT: ${ENVIRONMENT:-production}
+      SITE_URL: https://${DOMAIN}  # absolute link-preview image URLs
     mem_limit: 512m
     depends_on:
       api: { condition: service_healthy }

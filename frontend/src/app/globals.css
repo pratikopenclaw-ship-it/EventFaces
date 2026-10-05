@@ -182,3 +182,78 @@ body {
     outline-offset: 2px;
   }
 }
+
+/* --- Results reveal ---------------------------------------------------------------------
+   Fresh search results only (not revisits): each photo lifts in with a brief accent frame,
+   staggered. One moment per search; none with reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-tile {
+    animation: reveal-lift 600ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards; /* not "both": the end frame would replace the ring */
+    animation-delay: calc(var(--i, 0) * 70ms);
+  }
+}
+
+@keyframes reveal-lift {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+    box-shadow: 0 0 0 3px var(--color-accent);
+  }
+  60% {
+    opacity: 1;
+    box-shadow: 0 0 0 3px var(--color-accent);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+/* --- Light island (printed material: the QR poster) -------------------------------------
+   Paper is light whatever the screen theme. Same values as @theme (theme-tokens.test.ts
+   checks they stay equal). Event accents inside use their light variant; the selectors
+   match the specificity of the dark-mode accent rules above and come later, so they win. */
+.theme-light {
+  --color-ink: #10231f;
+  --color-paper: #ffffff;
+  --color-canvas: #f3f7f6;
+  --color-mist: #e7efed;
+  --color-line: #dce6e3;
+  --color-muted: #586b66;
+  --color-accent: #0f766e;
+  --color-accent-hover: #0b5f58;
+  --color-on-accent: #ffffff;
+  --color-accent-soft: #d7efea;
+  --color-highlight: #d9a441;
+  --color-alarm: #b42828;
+  --color-leaf: #256b43;
+  --color-good: #1f5c39;
+  --color-bad: #9b2020;
+  --color-warn: #7a4b00;
+  --color-warn-tint: #fbefd5;
+  color-scheme: light;
+  color: var(--color-ink);
+}
+:root .theme-light .event-accent,
+:root .theme-light.event-accent {
+  --color-accent: var(--ev-accent-light, #0f766e);
+  --color-accent-hover: var(--ev-accent-light, #0b5f58);
+  --color-on-accent: var(--ev-on-accent-light, #ffffff);
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  html,
+  body {
+    background: #ffffff;
+  }
+  /* Backgrounds (the accent band, the pattern) are the design: print them. */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

@@ -58,6 +58,15 @@ def test_unverified_user_cannot_access_events(make_user, login_as, make_event, a
     assert c.post("/api/join", json={"slug": event.slug, "code": event.access_code}).status_code == 403
 
 
+def test_join_preview_shows_only_what_the_join_page_needs(make_user, login_as, make_event) -> None:
+    """Before joining: name, date, how to join and the colour (for the event's cover). Never
+    the code, the logo (that needs membership) or anything else."""
+    event = make_event(accent_color="#7c3aed", description="Members only")
+    preview = login_as(make_user("peek@example.com")).get(f"/api/join/{event.slug}").json()
+    assert set(preview) == {"slug", "name", "date", "join_mode", "accent_color"}
+    assert preview["accent_color"] == "#7c3aed"
+
+
 def test_join_by_code(make_user, login_as, make_event) -> None:
     event = make_event()
     c = login_as(make_user("att@example.com"))
