@@ -70,11 +70,12 @@ Production refuses to start while these are empty (`Settings` validator). Set th
 12. Photos deleted **at the latest 30 days** after contract end, and removed from **backups within a further 30 days** (DPA section 9): align with the backup schedule.
 13. DPAs signed with every processor (hosting, storage, email). Transfers to the US rely on the EU-US Data Privacy Framework or SCCs (Apple, Google, Cloudflare).
 14. **Error reports (new, 2026-10-04):** a self-hosted GlitchTip on the same server stores crash reports for **30 days**. Each report holds the error type, a redacted message and stack, the page path and the user's opaque id: no names, emails, IP addresses, cookies, selfies or request bodies. Please decide whether the Privacy Notice's server-log section should name this (same legal basis as server logs, Art. 6(1)(f)); the texts were not changed.
-15. **No cookie banner:** the site sets only strictly necessary first-party cookies (`ef_access`, `ef_refresh`, `ef_csrf`, `ef_theme`; § 25(2) no. 2 TDDDG). A test fails if the code ever sets a cookie the notice doesn't list. Adding analytics, ads or third-party embeds would require consent and a banner.
+15. **Contact form and landing page (new, 2026-10-05):** the contact form collects name, email, topic and message, emails them to the operator (Reply-To: the sender) and stores nothing. The Privacy Notice doesn't mention it yet; please add a short paragraph (legal basis Art. 6(1)(b)/(f), deleted when the matter is settled). Please also confirm the landing page's statements ("hosted in the EU", "no trackers, no ads", "selfies are never stored", "deleted on schedule"); each matches how the system works, but they are public promises.
+16. **No cookie banner:** the site sets only strictly necessary first-party cookies (`ef_access`, `ef_refresh`, `ef_csrf`, `ef_theme`; § 25(2) no. 2 TDDDG). A test fails if the code ever sets a cookie the notice doesn't list. Adding analytics, ads or third-party embeds would require consent and a banner.
 
 **App Store**
 
-16. Apple's standard EULA applies unless a custom EULA is uploaded. Ours are platform terms, which Apple permits alongside it. Link the Terms and the Privacy Notice in App Store Connect (`ios/APP_STORE.md`).
+17. Apple's standard EULA applies unless a custom EULA is uploaded. Ours are platform terms, which Apple permits alongside it. Link the Terms and the Privacy Notice in App Store Connect (`ios/APP_STORE.md`).
 
 ## 3. How to change a text
 

@@ -795,6 +795,63 @@ Owner decisions: per-event plans plus a monthly subscription; a successful check
   - a secret-looking literal in a test fixture (gitleaks), now built at run time.
 
 
+## UAT phase 3: one-page landing page and contact form (2026-10-05)
+
+**What was added:**
+- **Landing page** (`/`), one scrolling page:
+  - hero with a "contact sheet" of abstract photo tiles (theme colours, no people, no images), where one load-time animation dims the crowd and outlines "your" frames; with reduced motion only the end state shows;
+  - how it works, for attendees and for organizers (numbered, because they are sequences);
+  - a dark privacy panel with six concrete promises;
+  - features;
+  - pricing (the same component as `/pricing`);
+  - FAQ (`details`/`summary`);
+  - contact form, and a final call to action.
+
+  A sticky in-page nav uses an IntersectionObserver to mark the section in view (`aria-current`). Smooth scrolling is off with reduced motion. The CSP is unchanged: no inline scripts and no external assets.
+- **Contact form** (`POST /api/contact`):
+  - emailed to `CONTACT_EMAIL` (else `LEGAL_EMAIL`) with Reply-To set to the sender, and never stored;
+  - rate limited per IP and per sender (the Redis key is a SHA-256 of the address);
+  - a filled honeypot field gets a "sent" answer and nothing is sent;
+  - a mail outage answers 503 + Retry-After and logs only the error type.
+
+**Found while building:**
+- **Log assertions in the test suite were vacuous for 10 app loggers.** Alembic's `fileConfig` (migrations run in-process in conftest and the e2e server) disabled every logger that already existed, including `photo_pipeline`, `search_queue` and `main`. So "no selfie or embedding in the logs" (`test_search_abuse.py`) never saw those modules' output. `alembic/env.py` now keeps existing loggers; `tests/test_logging_setup.py` asserts that no app logger is disabled (mutation-checked). The selfie-logging test still passes, now for real.
+- The logged-out header with the new "Pricing" link overflowed at 320 px. The link is hidden below 370 px; the landing page's section nav covers it.
+- In dark mode the privacy panel merged with the page background. It now has a border.
+
+**Tests:**
+- `tests/test_contact.py` (12): delivery and Reply-To, nothing persisted (row counts of every table), recipient fallback, header injection (model and form), honeypot, validation, per-sender rate limit, outage without details.
+- Authorization matrix and rate-limit contract cover the endpoint.
+- Guards mutation-checked: honeypot, per-sender limit, Reply-To flattening, Reply-To set, error-type-only logging (a first mutant survived because of the disabled logger above).
+- `e2e/landing.spec.ts`: section nav and scroll-spy (all browser projects), FAQ, contact message delivered (captured outbox), pricing → checkout login.
+- The axe audit covers the landing page in both themes; no sideways scroll at 320, 360, 375 or 414 px.
+
+**For counsel (LEGAL_REVIEW.md item 15):** mention the contact form in the Privacy Notice, and confirm the landing page's public promises.
+
+**Also found in the full run:** the theme menu opened *behind* the new hero tiles. The header's `backdrop-blur` makes it a stacking context, so the menu's `z-40` only applied inside it. The header now has `relative z-30`. The existing theme-switcher e2e tests caught it, and now guard it.
+
+**Final gates (2026-10-05):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,559 passed**, 0 failed, with all app loggers live |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest, production build |
+| Playwright | everything except macOS Firefox passes, plus Firefox (Linux image) **9/9** |
+| iOS | `test.sh --no-api` **86/86** on iPhone 17 and iPad Air (API schema: the contact endpoint added) |
+
+Playwright details:
+- After the header fix, the theme and landing specs passed **18/18** in Chromium and WebKit, and the landing spec in WebKit, Pixel 7 and iPhone 14.
+- The **landing visual baselines** were regenerated (intended: a new page) and inspected in both themes, desktop and phone.
+
+**CI (GitHub Actions) bring-up**, from the first real runs on PR #5. Each problem was fixed and documented:
+- `tsc` needs `next typegen` first (the scan now runs it);
+- the dev web container can't use a bind mount of the runner's checkout (`docker-compose.ci.yml` runs it from its image);
+- the containers can't write caches into the checkout (`chmod -R a+rwX .` in CI);
+- SeaweedFS sized its volumes from free disk space and ran out on the e2e runner (`PutObject InternalError`). The volume count is now fixed (`-volume.max=50`, 256 MB volumes).
+- A backend hang seen once no longer appears; `faulthandler_timeout=300` will name it if it returns.
+
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

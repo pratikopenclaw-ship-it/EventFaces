@@ -38,6 +38,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - run: cp .env.example .env
+      # The containers run as other users than the runner and write caches into the
+      # bind-mounted checkout (ruff, mypy).
+      - run: chmod -R a+rwX .
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build the API image (layer cache, incl. the face model)
         uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
@@ -55,7 +58,7 @@ jobs:
       - run: docker compose exec -T api pytest -q -p no:cacheprovider -o faulthandler_timeout=300
         timeout-minutes: 45
       - if: failure() || cancelled()
-        run: docker compose logs --tail 200 api db s3
+        run: df -h / && docker compose logs --tail 200 api db s3
 
   web:
     runs-on: ubuntu-24.04
@@ -84,6 +87,9 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - run: cp .env.example .env
+      # The containers run as other users than the runner and write caches into the
+      # bind-mounted checkout (ruff, mypy).
+      - run: chmod -R a+rwX .
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build the API and web images
         uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
@@ -121,7 +127,7 @@ jobs:
           path: frontend/test-results/
           retention-days: 7
       - if: failure() || cancelled()
-        run: docker compose logs --tail 200 api web
+        run: df -h / && docker compose logs --tail 200 api web s3
 
   security:
     runs-on: ubuntu-24.04
@@ -132,6 +138,9 @@ jobs:
           persist-credentials: false
           fetch-depth: 0 # gitleaks scans the full history
       - run: cp .env.example .env
+      # The containers run as other users than the runner and write caches into the
+      # bind-mounted checkout (ruff, mypy).
+      - run: chmod -R a+rwX .
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
         with:

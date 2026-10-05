@@ -246,6 +246,7 @@ OPS: list[Op] = [
     Op("POST", "/api/join", "VERIFIED", json={"slug": "{slug_a}", "code": "WRONGCODE"}),
     Op("POST", "/api/join/by-code", "VERIFIED", json={"code": "WRONGCODE"}),
     # --- billing (the fake provider's hosted checkout + webhook) ---
+    Op("POST", "/api/contact", "PUBLIC", json={"name": "Matrix", "email": "matrix@example.com", "topic": "other", "message": "Hello from the matrix test"}),
     Op("GET", "/api/billing/plans", "PUBLIC"),
     # Server to server, authenticated only by its signature: every caller without a valid one gets 400.
     Op("POST", "/api/billing/webhook/fake", "PUBLIC", content=b'{"id":"evt_x"}', headers={"content-type": "application/json", "fake-signature": "t=1,v1=00"}),

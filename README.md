@@ -95,6 +95,10 @@ Backend tests run against a separate `eventfaces_test` database (created on firs
 
 End-to-end tests (Playwright) run against `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web`: `cd frontend && npx playwright test`. Firefox runs from Playwright's Linux image (its macOS build doesn't start on macOS 27): `docker run --rm --network eventfaces_default --ipc=host -v "$PWD:/work" -w /work -e E2E_BASE_URL=http://web:3000 -e E2E_API_URL=http://api:8000 mcr.microsoft.com/playwright:v1.63.0-noble npx playwright test --project=firefox` (from `frontend/`).
 
+## Landing page
+
+`/` is one scrolling page: hero (a contact sheet that picks out "your" photos, animated once and static with reduced motion), how it works, privacy, features, pricing (the same `components/pricing.tsx` as `/pricing`), FAQ and a contact form (emailed to `CONTACT_EMAIL`, not stored). A sticky in-page nav marks the section in view.
+
 ## Pricing and payments
 
 Organizers buy per-event plans (Event S/M/L) or a monthly Pro subscription (5 events a month) at `/pricing`. Prices are example prices incl. 19% VAT, defined once in `backend/app/services/billing/plans.py`. Checkout runs through a provider interface; the only provider so far is a **fake one (TEST MODE)**: its payment page in this app accepts only test cards (4242 4242 4242 4242 succeeds, 4000 0000 0000 0002 is declined) and confirms with a signed webhook, exactly like a real provider would. A paid order creates the event with the plan's attendee and photo limits and makes the buyer its organizer. Orders, receipts and the subscription are under Account › Billing. Attendees never pay, and the iOS app has no purchase screens.

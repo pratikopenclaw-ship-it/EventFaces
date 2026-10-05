@@ -10,7 +10,7 @@ from starlette.responses import Response
 
 from app.api.app_version import AppVersionMiddleware
 from app.api.csrf import CSRFMiddleware
-from app.api.routes import auth, billing, events, invites, join, legal, members, mobile, moderation, photos, privacy, search, uploads
+from app.api.routes import auth, billing, contact, events, invites, join, legal, members, mobile, moderation, photos, privacy, search, uploads
 from app.core.config import get_settings
 from app.core import monitoring
 from app.core.logging import install as redact_access_logs
@@ -93,6 +93,7 @@ def create_app() -> FastAPI:
         mobile.me_router,
         legal.router,
         billing.router,
+        contact.router,
     ):
         app.include_router(router)
 

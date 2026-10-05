@@ -178,6 +178,12 @@ class Settings(BaseSettings):
     payment_attempt_rate_limit: str = "20/3600"  # test-card attempts per user
     webhook_rate_limit: str = "120/60"  # confirmations per IP
 
+    # Contact form (POST /api/contact): delivered by email to CONTACT_EMAIL (default:
+    # LEGAL_EMAIL), never stored.
+    contact_email: str = ""
+    contact_rate_limit: str = "5/3600"  # per IP
+    contact_email_rate_limit: str = "3/3600"  # per sender address
+
     # GlitchTip heartbeat monitor pinged after every successful hourly retention run, so a
     # stalled retention job (a GDPR duty) raises an alert. Empty = off.
     retention_heartbeat_url: str = Field(default="", pattern=r"^(https?://\S+)?$")

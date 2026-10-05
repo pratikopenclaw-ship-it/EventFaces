@@ -139,6 +139,8 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
      (`smtp://user:password@host:587`) and `GLITCHTIP_FROM_EMAIL` for its alert emails
    - `SENTRY_DSN` and `WEB_SENTRY_DSN`: set after GlitchTip's first start (section 6)
    - `RETENTION_HEARTBEAT_URL`, `DISK_HEARTBEAT_URL`: heartbeat check-in URLs (section 8)
+   - `CONTACT_EMAIL`: where the landing page's contact form is sent (defaults to `LEGAL_EMAIL`;
+     messages are emailed with Reply-To set to the sender and never stored)
    - Payments: `PAYMENTS_WEBHOOK_SECRET`, and for **UAT only** `ALLOW_TEST_PAYMENTS=true`. Only the
      fake (TEST MODE) provider exists so far: production refuses to start with it unless this flag
      is set, and every billing page then shows a test-mode banner. Remove the flag when a real
