@@ -127,7 +127,9 @@ export function StackedColumns({
           ))}
         </div>
       )}
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block" role="img" aria-label={ariaLabel}>
+      {/* max-w-full + h-auto: before the first measurement the fallback width would stick out of
+          narrow screens (a sideways scroll for a frame); the viewBox scales it down instead. */}
+      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} className="block h-auto max-w-full" role="img" aria-label={ariaLabel}>
         {ticks.map((t) => (
           <g key={t}>
             <line x1={pad.left} x2={width - pad.right} y1={y(t)} y2={y(t)} style={{ stroke: t === 0 ? INK.axis : INK.grid }} strokeWidth={1} />

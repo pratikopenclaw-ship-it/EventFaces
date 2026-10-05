@@ -28,6 +28,7 @@ os.environ["SELFIE_SIDE_MIN_YAW"] = "3"
 os.environ["SELFIE_MIN_DET_SCORE"] = "0.75"
 
 import json
+import time
 import uuid
 from datetime import timedelta
 
@@ -36,6 +37,7 @@ from alembic import command
 from alembic.config import Config
 from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import create_engine, select, text
+from sqlalchemy.exc import OperationalError
 
 from app.core import storage
 from app.core.config import get_settings
@@ -92,11 +94,16 @@ def migrate_fresh() -> None:
 
 
 def reset() -> None:
-    with owner_engine.begin() as conn:
-        conn.execute(text("ALTER TABLE search_audit DISABLE TRIGGER search_audit_guard"))
-        tables = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'alembic_version'")).scalars()
-        conn.execute(text("TRUNCATE " + ", ".join(f'"{t}"' for t in tables) + " CASCADE"))
-        conn.execute(text("ALTER TABLE search_audit ENABLE TRIGGER search_audit_guard"))
+    # A search from the previous test may still be finishing (writing its audit row) while
+    # TRUNCATE takes its locks: Postgres resolves that as a deadlock. Try again.
+    for attempt in range(5):
+        try:
+            _truncate_all()
+            break
+        except OperationalError as e:
+            if "deadlock" not in str(e) or attempt == 4:
+                raise
+            time.sleep(0.5)
     get_redis().flushdb()
     storage.delete_prefix("events/")
     outbox.mails.clear()
@@ -108,6 +115,14 @@ def reset() -> None:
         for email, role in USERS.items():
             db.add(User(email=email, password_hash=hash_password(PASSWORD), role=role, email_verified_at=utcnow(), terms_version=legal.VERSIONS["terms"], organizer_terms_version=legal.VERSIONS["organizer-terms"]))
         db.commit()
+
+
+def _truncate_all() -> None:
+    with owner_engine.begin() as conn:
+        conn.execute(text("ALTER TABLE search_audit DISABLE TRIGGER search_audit_guard"))
+        tables = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'alembic_version'")).scalars()
+        conn.execute(text("TRUNCATE " + ", ".join(f'"{t}"' for t in tables) + " CASCADE"))
+        conn.execute(text("ALTER TABLE search_audit ENABLE TRIGGER search_audit_guard"))
 
 
 router = APIRouter(prefix="/__e2e")

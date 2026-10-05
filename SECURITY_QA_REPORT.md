@@ -851,6 +851,8 @@ Playwright details:
 - SeaweedFS sized its volumes from free disk space and ran out on the e2e runner (`PutObject InternalError`). The volume count is now fixed (`-volume.max=50`, 256 MB volumes).
 - A backend hang seen once no longer appears; `faulthandler_timeout=300` will name it if it returns.
 - **The runner ran out of disk** (trivy: "16 MB free"; also the likely cause of the SeaweedFS errors). Docker-heavy jobs first delete the runner's unused preinstalled SDKs (~25 GB).
+- **Charts drew wider than the screen for one frame** (fallback width before measuring): phones briefly scrolled sideways, which the ux spec caught on CI's mobile projects. The SVG is now capped at its container (`max-w-full`); both mobile projects passed 18/18 twice in the Linux image.
+- **The e2e reset could deadlock** with a search still finishing from the previous test (TRUNCATE vs. its audit insert). It now retries on deadlock (test server only). Capture steps get 60 s to appear on CI's slower CPUs (a wait, not a weaker check).
 - **A real bug found by CI in Linux WebKit:** the photo viewer's single download never started after the ZIP download. Downloads were link clicks that navigated and then turned into downloads; the link now carries `download` (same-origin), so it downloads directly. Reproduced and verified in the Linux Playwright image (Chromium, Firefox, WebKit, iPhone 14) and on macOS.
 
 
