@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
 
+import { ErrorReporter } from "@/components/error-reporter";
 import { Nav } from "@/components/nav";
 import { SessionProvider } from "@/components/session";
 import { ThemeProvider } from "@/components/theme";
@@ -57,6 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col font-sans">
+        <ErrorReporter />
         <SessionProvider>
           <ThemeProvider initial={pref}>
             <Nav />

@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { buildCsp, newNonce } from "@/lib/csp";
 
-const PROTECTED = ["/events", "/admin", "/join", "/account"];
+const PROTECTED = ["/events", "/admin", "/join", "/account", "/checkout"];
 const STORAGE_ORIGIN = process.env.STORAGE_PUBLIC_ORIGIN ?? "http://localhost:8333";
 
 export function proxy(request: NextRequest) {

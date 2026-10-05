@@ -94,7 +94,8 @@ def _clean() -> Iterator[None]:
         conn.execute(
             text(
                 "TRUNCATE users, auth_tokens, events, event_members, photos, faces, "
-                "drive_sync_runs, search_grants, search_audit, invites, photo_reports, removal_requests CASCADE"
+                "drive_sync_runs, search_grants, search_audit, invites, photo_reports, removal_requests, "
+                "orders, subscriptions, webhook_events CASCADE"
             )
         )
         conn.execute(text("ALTER TABLE search_audit ENABLE TRIGGER search_audit_guard"))

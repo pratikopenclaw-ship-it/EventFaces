@@ -1,0 +1,6 @@
+# CI only (.github/workflows/ci.yml, e2e job), on top of docker-compose.e2e.yml: the dev web
+# container runs from the source baked into its image instead of a bind mount of the
+# checkout (owned by the runner's user, which the container's `node` user can't write).
+services:
+  web:
+    volumes: !reset []

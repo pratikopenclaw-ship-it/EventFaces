@@ -26,6 +26,11 @@ ALL_OPTIONAL = {
 
 # Every endpoint that enforces a rate limit (see `rate_limit.enforce` call sites).
 RATE_LIMITED = {
+    ("POST", "/api/contact"),
+    ("POST", "/api/billing/checkout"),
+    ("POST", "/api/billing/test-checkout/fcs_not-a-session/pay"),
+    ("POST", "/api/billing/subscription/events"),
+    ("POST", "/api/billing/webhook/fake"),
     ("POST", "/api/auth/signup"),
     ("POST", "/api/auth/login"),
     ("POST", "/api/auth/resend-verification"),

@@ -17,7 +17,7 @@ from app.schemas.event import (
     EventUpdate,
 )
 from app.services import imaging, search_queue
-from app.services.events import generate_access_code, generate_slug, list_events_for, photo_counts
+from app.services.events import generate_access_code, list_events_for, new_event, photo_counts
 from app.services.retention import reopen_event
 from app.workers.tasks import delete_event_objects, index_photo
 
@@ -27,14 +27,7 @@ router = APIRouter(prefix="/api/events", tags=["events"])
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=EventAdminOut)
 def create_event(body: EventCreate, user: SuperAdmin, db: DB) -> Event:
     data = body.model_dump(exclude={"drive_folder"})
-    event = Event(
-        **data,
-        slug=generate_slug(body.name),
-        access_code=generate_access_code(),
-        drive_folder_id=body.drive_folder,
-        created_by=user.id,
-    )
-    db.add(event)
+    event = new_event(db, **data, drive_folder_id=body.drive_folder, created_by=user.id)
     db.commit()
     return event
 

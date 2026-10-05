@@ -8,6 +8,7 @@ from app.core.config import get_settings
 from app.core.security import constant_time_equals, utcnow
 from app.models import Event, EventMember, JoinMode, MemberRole, MemberStatus
 from app.schemas.event import CodeOnlyJoinIn, EventPublicOut, JoinIn, JoinPreviewOut
+from app.services.billing import limits
 from app.services.events import normalize_code
 
 router = APIRouter(prefix="/api/join", tags=["join"])
@@ -64,6 +65,7 @@ def _admit(db: DB, event: Event, user: VerifiedUser) -> Event:
     if event.access_expires_at is not None and event.access_expires_at <= utcnow():
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Access to this event has ended")
 
+    limits.ensure_attendee_room(db, event, user)  # plan limit (paid events)
     # Insert-if-absent atomically (a double-clicked join must not hit the primary key),
     # then lock whatever row exists and apply the rules to it.
     db.execute(

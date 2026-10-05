@@ -23,6 +23,7 @@ from app.models import (
     User,
     UserRole,
 )
+from app.services.billing import orders as billing_orders
 from app.services import search_queue
 from app.services.feedback import anonymize_feedback
 from app.services.photo_pipeline import retire_photo
@@ -65,6 +66,7 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
         affected(db.execute(update(SearchAudit).where(SearchAudit.user_id == user.id).values(user_id=None)))
     )
     db.execute(update(PhotoReport).where(PhotoReport.reporter_id == user.id).values(reporter_id=None))
+    billing_orders.forget_user(db, user)  # orders stay (invoices), subscription ends now
 
     user_id = user.id
     db.delete(user)

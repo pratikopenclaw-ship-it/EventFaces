@@ -9,7 +9,10 @@ from app.core.db import Base
 
 config = context.config
 if config.config_file_name is not None:
-    fileConfig(config.config_file_name)
+    # Keep loggers that already exist (migrations also run in-process: tests, the e2e
+    # server). The default would silence the app's loggers, and with them every log-content
+    # assertion, e.g. "no selfie bytes in the logs".
+    fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 # Tests pass their own URL via config attributes; otherwise use DATABASE_URL.
 # Migrations run as the schema owner; the app itself connects with a DML-only role.

@@ -96,3 +96,20 @@ class ThemePreference(str, enum.Enum):
     system = "system"  # follow the OS (prefers-color-scheme)
     light = "light"
     dark = "dark"
+
+
+class OrderKind(str, enum.Enum):
+    one_off = "one_off"  # a per-event plan
+    subscription = "subscription"  # starts (or renews) a subscription
+    allowance = "allowance"  # an event created from a subscription's monthly allowance (no charge)
+
+
+class OrderStatus(str, enum.Enum):
+    pending = "pending"  # checkout started, no confirmed payment yet
+    paid = "paid"
+    canceled = "canceled"  # abandoned checkout (expired) or refused confirmation
+
+
+class SubscriptionStatus(str, enum.Enum):
+    active = "active"  # also while canceled-at-period-end, until the period ends
+    expired = "expired"

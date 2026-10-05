@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Enum, ForeignKey, String, Text, func
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -44,6 +44,15 @@ class Event(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     retention_completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Paid plan (services/billing/plans.py) and its limits. NULL = no limit (events created
+    # by a super admin). Enforced on joining, invite acceptance, guest uploads and Drive import.
+    plan: Mapped[str | None] = mapped_column(String(20))
+    max_attendees: Mapped[int | None] = mapped_column(Integer)
+    max_photos: Mapped[int | None] = mapped_column(Integer)
+    # Set when the event came out of a subscription's monthly allowance.
+    subscription_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("subscriptions.id", ondelete="SET NULL"), index=True
+    )
 
     @property
     def has_logo(self) -> bool:

@@ -8,15 +8,18 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 # The app's pre-login endpoints: they read and set no cookies, so there is nothing for a
 # cross-site request to ride on (their abuse limits are rate limits and lockouts).
 MOBILE_AUTH_PREFIX = "/api/mobile/auth/"
+# Payment-provider webhooks: server to server, no cookies, authenticated by their signature.
+WEBHOOK_PREFIX = "/api/billing/webhook/"
 
 
 def cookieless_app_request(request: Request) -> bool:
     """A request the CSRF check doesn't apply to: it carries no auth cookie and either an
     Authorization header (which a cross-site page can't add: CORS is not enabled) or it
-    targets the cookie-free mobile sign-in endpoints."""
+    targets the cookie-free mobile sign-in endpoints or a payment webhook."""
     if ACCESS_COOKIE in request.cookies or REFRESH_COOKIE in request.cookies:
         return False
-    return "authorization" in request.headers or request.url.path.startswith(MOBILE_AUTH_PREFIX)
+    path = request.url.path
+    return "authorization" in request.headers or path.startswith((MOBILE_AUTH_PREFIX, WEBHOOK_PREFIX))
 
 
 class CSRFMiddleware(BaseHTTPMiddleware):

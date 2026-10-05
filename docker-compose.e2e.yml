@@ -7,6 +7,7 @@ services:
   api:
     command: python -m tests.e2e_server
     environment:
+      CONTACT_EMAIL: hello@eventfaces.example  # contact form messages land in the captured outbox
       FRONTEND_URL: http://localhost:3000
       S3_PUBLIC_ENDPOINT_URL: http://localhost:8333
   web:
@@ -14,3 +15,6 @@ services:
       # Test-only app ids so the Universal Links file is served (e2e/mobile-links.spec.ts).
       APPLE_TEAM_ID: TEST000000
       IOS_BUNDLE_ID: app.eventfaces.test
+      # Error reports go to the e2e API's fake GlitchTip (e2e/monitoring.spec.ts).
+      SENTRY_DSN: http://e2e@api:8000/__e2e/glitchtip/1
+      APP_VERSION: e2e

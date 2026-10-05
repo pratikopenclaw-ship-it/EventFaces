@@ -656,6 +656,206 @@ Owner request: real terms on web and app, plus a cookie section. The owner decid
 
 **Not legal advice:** the texts are engineering drafts tailored to the service. LEGAL_REVIEW.md lists what counsel must decide. The biggest open point is the legal basis for face templates of everyone in event photos (Art. 9).
 
+## UAT foundations, phase 1: CI, error reporting, releases (2026-10-04)
+
+Owner request before UAT (treated as production): automated checks on every change, error
+reporting with alerts, and a release/deploy/rollback procedure. Owner decision: self-hosted
+GlitchTip (no third-party error service).
+
+**What was added:**
+- **Error reporting (GlitchTip, Sentry protocol, same server):**
+  - Backend: `sentry-sdk[fastapi,celery]` (approved dependency), off unless `SENTRY_DSN` is set. The SDK never collects bodies, PII or local variables, and `core/monitoring.scrub` filters every event (request reduced to method, path and safe headers; user reduced to the opaque id; messages, exceptions and breadcrumbs redacted for tokens, emails and bearer tokens).
+  - Web: **no SDK** (SDKs record clicks, console and URLs on pages that hold selfies). Browsers post a few string fields to the same-origin `/monitoring` route, which redacts them and builds the event itself for a server-only DSN. It never forwards client-built envelopes (no open relay or SSRF), accepts only same-origin posts and caps size and rate. Server errors go through `instrumentation.ts`. The CSP is unchanged (`connect-src 'self'`).
+  - iOS: no SDK; Apple's crash reports are used.
+  - Production guard: `SENTRY_DSN` required (https, or plain http only to the internal `glitchtip` host); GlitchTip's secret key and DB password are checked for strength.
+  - GlitchTip runs hardened: read-only root, all capabilities dropped, no-new-privileges, digest-pinned, memory limit, its own DB role and database with no access to the app database, no Valkey (the app's Redis is untouched), sign-up off, 30-day retention.
+- **Alerts:** new or regressed issues by email; uptime monitors; heartbeats from the retention job (only after a successful run), the backup and `scripts/disk-check.sh` (checks in only while healthy).
+- **Releases:** `/api/health` reports the build version. `scripts/release.sh` (clean `main`, CI green on the commit, annotated tag, notes from merged PRs) and `scripts/deploy.sh`. The deploy does a pre-deploy dump (mode 600, newest 3 kept, older ones shredded), builds, starts, runs `scripts/release_check.sh`, and **rolls back automatically**: alembic downgrade first, restore from the dump if that fails. `scripts/rollback.sh` refuses to guess after a rollback.
+- **CI** (`.github/workflows/ci.yml`): backend, web, e2e (all browser projects), security scan; iOS on demand (`ios/scripts/test.sh --no-api`). Actions are pinned by commit SHA, `permissions: contents: read`, no secrets, no credential persistence. actionlint is clean.
+
+**Tests and checks:**
+- `tests/test_monitoring.py`:
+  - a real crash during a selfie search reports no email, token, selfie header or cookie value, with request keys limited to method, path and headers;
+  - SDK options;
+  - the scrubber;
+  - the retention heartbeat only after success;
+  - a heartbeat sends no data and never raises.
+- `tests/test_infra_config.py`: nine new production-guard cases.
+- `src/lib/error-report.test.ts` (14): redaction, stack parsing, DSN parsing, field allow-list, envelope, tunnel refusals, rate limit.
+- `e2e/monitoring.spec.ts` against a fake GlitchTip in `e2e_server.py`: in every browser project an uncaught error arrives redacted; rejections are de-duplicated; cross-site posts are refused.
+- **Mutation-checked:** 10 backend and 11 web guards. Each removal fails a test. Two survivors in the first round (breadcrumb data, SDK body size) got new tests.
+- **Against a real GlitchTip 6.2.6**, in the same hardened configuration:
+  - events from API, worker and web are stored with nothing personal;
+  - a heartbeat check-in is recorded;
+  - Caddy routes `errors.<domain>` over TLS.
+- **Production-stack rehearsal** (`docker-compose.prod.yml`, production mode, random secrets, throwaway clone; local test data only):
+
+  | Scenario | Result |
+  |---|---|
+  | First deploy | Release check 27/27 |
+  | Failed deploy (bad health and a new migration) | Automatic downgrade and rollback; earlier data intact |
+  | Good deploy, then `rollback.sh` | Back to the previous version and schema |
+  | Failed deploy whose downgrade also fails | Restored from the pre-deploy dump; database grants re-applied (app may connect, GlitchTip may not) |
+
+**Found while building:**
+- The backend scrubber left an **email address** in exception messages: caught against the real GlitchTip, now redacted, and covered by a test.
+- Error reports include source context lines, so leak tests build their secrets at run time.
+- The browser reporter registered after hydration, so early errors were lost. It now installs on module load.
+- `Sec-Fetch-Site` is missing on plain-http origins (Firefox in the Linux e2e container). The tunnel now falls back to comparing `Origin` with `Host`.
+- Stack-parsing regex flagged by eslint-plugin-security: rewritten without overlapping quantifiers, input bounded (an adversarial line takes about 0 ms).
+- `deploy.sh`: the compose file fixes `.env.prod` by name; the web proxy needed a moment after the API container was replaced (health is retried for up to 60 s); bash 3.2 compatibility; a curl fallback that printed `000000`.
+
+**Final gates (2026-10-04):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,311 passed**, 0 failed (136 skipped: authorization-matrix cells that don't apply to a transport) |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest **103/103**, production build |
+| Playwright | **81 passed** (Chromium, WebKit, Pixel 7, iPhone 14), plus Firefox (Linux image) **8/8** |
+| iOS | API schema unchanged (no regeneration needed); `ios/scripts/test.sh --no-api` **86/86** on iPhone 17 and iPad Air |
+| Workflow | actionlint clean; shellcheck clean on every new script |
+
+- The first full backend run had one failure: the new retention-heartbeat test called `.delay().get()`, which Celery refuses once an earlier test has left a task context behind (test order). The test now calls the task body directly, as the worker does. Both mutants (no check-in, check-in before the run) still fail it.
+- The first scan run found two things in new test code, both fixed in code rather than suppressed:
+  - gitleaks: a random-looking literal password in a test fixture, now derived from the shared test constant;
+  - semgrep: a Firefox-style stack line (`fn@http://host/...`) matched the "credentials in URL" rule, so the fixture is now built from a host variable.
+- CI itself runs once the branch is pushed (not yet: needs the owner's go-ahead).
+
+
+## UAT phase 2: pricing and test-mode payments (2026-10-05)
+
+Owner decisions: per-event plans plus a monthly subscription; a successful checkout creates the event (self-service); a dummy payment integration until a real provider is chosen.
+
+**What was added:**
+- **Price list** (`services/billing/plans.py`, the only source):
+
+  | Plan | Price | Attendees | Photos |
+  |---|---|---|---|
+  | Event S | €49 | 100 | 500 |
+  | Event M | €149 | 500 | 3,000 |
+  | Event L | €349 | 2,000 | 10,000 |
+  | Pro | €199 a month | 5 events a month, Event M limits each | |
+
+  Prices include 19% VAT and are marked as example prices.
+- **Provider interface** with a `FakeProvider` that behaves like Stripe Checkout:
+  - a hosted payment page (in this app, TEST MODE banner);
+  - test cards only (4242… succeeds; 4000…0002 and 4000…9995 fail);
+  - a server-to-server confirmation signed with HMAC-SHA256 over `timestamp.body`, valid for ±300 s.
+- **Orders:**
+  - only a verified confirmation pays an order;
+  - each provider event applies once (`webhook_events`), and only a pending order is fulfilled;
+  - a confirmation whose amount or currency differs from the order never fulfils.
+- **Fulfilment:** the event is created with the plan's limits, the buyer becomes its organizer (attendee → organizer), and the existing Organizer Terms + DPA gate still applies before managing.
+- **Subscriptions:**
+  - 30-day periods; the allowance is counted from orders, so deleting an event doesn't give the slot back;
+  - canceling keeps the subscription until the period ends;
+  - hourly maintenance renews or ends subscriptions and cancels checkouts unpaid after 24 h.
+- **Plan limits**, with the event row locked against races:
+  - attendees on join (slug and code) and on invite acceptance;
+  - photos on guest uploads and Drive import (Drive skips the excess and reports it on the sync run);
+  - admin-made events stay unlimited.
+- **Web:** pricing page, checkout, test payment page (card fields with autofill off), Account › Billing (orders, receipts, subscription, new event from the allowance), plan usage on the event's admin page.
+- **iOS:** no purchase UI (App Store rules); the API schema only grows.
+- **Account deletion:** orders are kept (invoice retention) but unlinked, and a running subscription ends immediately.
+- **Production guard:** the fake provider is refused unless `ALLOW_TEST_PAYMENTS=true` (UAT); `PAYMENTS_WEBHOOK_SECRET` must be strong.
+
+**Found while building:**
+- **FastAPI echoed rejected input in every 422 response**, e.g. a too-short password at sign-up (and it would have echoed card numbers). A global handler now returns only `type`, `loc` and `msg`, with a regression test.
+- Postgres `now()` is the transaction start, so an event created in the same transaction as the subscription looked older than the period. Usage is now counted from orders, using the app clock on both sides.
+- The webhook table's `event_id` column (the provider's event id) tripped the GDPR test that checks every `event_id` column after an event is deleted. It is renamed to `provider_event_id`.
+- The checkout summary had a text line directly inside a `<dl>` (axe: serious). It now sits outside the list.
+- `webhook_events` has no foreign key, so the per-test cleanup didn't empty it, and an id from one test leaked into the next. It is now truncated explicitly.
+
+**Tests:**
+- `tests/test_billing.py` (27): purchase, Organizer Terms gate, declined card, non-test cards refused and never echoed, own-orders-only, signed webhook applied once, forged/stale/future/unsigned/tampered confirmations refused, wrong amount, CSRF scope, oversized body, subscription allowance and cancellation, maintenance, attendee/invite/upload/Drive limits, unlimited admin events, account deletion.
+- Authorization matrix: 10 new operations, both transports. Rate-limit contract: 4 new endpoints.
+- **16 guards mutation-checked:** signature, timestamp, test cards only, amount, fulfil once, allowance, one subscription, cancellation ends, deletion ends the subscription, own orders, attendee limit, upload limit, Drive limit, CSRF cookie scope, 422 no-echo, production guard.
+- Playwright `billing.spec.ts`: buy Event S (real card refused, declined card, then success) → event admin with plan usage → billing → receipt. The axe audit covers pricing, checkout, test payment, billing and receipt in both themes.
+
+**For counsel (LEGAL_REVIEW.md item 6):**
+- the right of withdrawal for an immediately starting service (checkbox wording needed);
+- invoice retention and billing details;
+- the example prices.
+
+**Final gates (2026-10-05):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,525 passed**, 0 failed (no new warnings) |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest **106/106**, production build |
+| Playwright | **81 passed** (Chromium, WebKit, Pixel 7, iPhone 14), plus Firefox (Linux image) **8/8** |
+| iOS | regenerated API client builds; `test.sh --no-api` **86/86** on iPhone 17 and iPad Air |
+
+- **Visual baselines:** the "settings" baselines were regenerated after the intended change (the new Billing card on the account page) and inspected in both themes, desktop and phone.
+- **One transient failure in the full Playwright run:** the dark-theme "delta pass" axe test, a screen this phase didn't touch. It passed 9 of 9 reruns.
+- **The first scan run found two things in new code**, both fixed in code:
+  - the three new forms lacked `method="post"` (`forms.test.ts`): before hydration, a submit would have put the fields, including a card number, into the URL;
+  - a secret-looking literal in a test fixture (gitleaks), now built at run time.
+
+
+## UAT phase 3: one-page landing page and contact form (2026-10-05)
+
+**What was added:**
+- **Landing page** (`/`), one scrolling page:
+  - hero with a "contact sheet" of abstract photo tiles (theme colours, no people, no images), where one load-time animation dims the crowd and outlines "your" frames; with reduced motion only the end state shows;
+  - how it works, for attendees and for organizers (numbered, because they are sequences);
+  - a dark privacy panel with six concrete promises;
+  - features;
+  - pricing (the same component as `/pricing`);
+  - FAQ (`details`/`summary`);
+  - contact form, and a final call to action.
+
+  A sticky in-page nav uses an IntersectionObserver to mark the section in view (`aria-current`). Smooth scrolling is off with reduced motion. The CSP is unchanged: no inline scripts and no external assets.
+- **Contact form** (`POST /api/contact`):
+  - emailed to `CONTACT_EMAIL` (else `LEGAL_EMAIL`) with Reply-To set to the sender, and never stored;
+  - rate limited per IP and per sender (the Redis key is a SHA-256 of the address);
+  - a filled honeypot field gets a "sent" answer and nothing is sent;
+  - a mail outage answers 503 + Retry-After and logs only the error type.
+
+**Found while building:**
+- **Log assertions in the test suite were vacuous for 10 app loggers.** Alembic's `fileConfig` (migrations run in-process in conftest and the e2e server) disabled every logger that already existed, including `photo_pipeline`, `search_queue` and `main`. So "no selfie or embedding in the logs" (`test_search_abuse.py`) never saw those modules' output. `alembic/env.py` now keeps existing loggers; `tests/test_logging_setup.py` asserts that no app logger is disabled (mutation-checked). The selfie-logging test still passes, now for real.
+- The logged-out header with the new "Pricing" link overflowed at 320 px. The link is hidden below 370 px; the landing page's section nav covers it.
+- In dark mode the privacy panel merged with the page background. It now has a border.
+
+**Tests:**
+- `tests/test_contact.py` (12): delivery and Reply-To, nothing persisted (row counts of every table), recipient fallback, header injection (model and form), honeypot, validation, per-sender rate limit, outage without details.
+- Authorization matrix and rate-limit contract cover the endpoint.
+- Guards mutation-checked: honeypot, per-sender limit, Reply-To flattening, Reply-To set, error-type-only logging (a first mutant survived because of the disabled logger above).
+- `e2e/landing.spec.ts`: section nav and scroll-spy (all browser projects), FAQ, contact message delivered (captured outbox), pricing → checkout login.
+- The axe audit covers the landing page in both themes; no sideways scroll at 320, 360, 375 or 414 px.
+
+**For counsel (LEGAL_REVIEW.md item 15):** mention the contact form in the Privacy Notice, and confirm the landing page's public promises.
+
+**Also found in the full run:** the theme menu opened *behind* the new hero tiles. The header's `backdrop-blur` makes it a stacking context, so the menu's `z-40` only applied inside it. The header now has `relative z-30`. The existing theme-switcher e2e tests caught it, and now guard it.
+
+**Final gates (2026-10-05):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,559 passed**, 0 failed, with all app loggers live |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest, production build |
+| Playwright | everything except macOS Firefox passes, plus Firefox (Linux image) **9/9** |
+| iOS | `test.sh --no-api` **86/86** on iPhone 17 and iPad Air (API schema: the contact endpoint added) |
+
+Playwright details:
+- After the header fix, the theme and landing specs passed **18/18** in Chromium and WebKit, and the landing spec in WebKit, Pixel 7 and iPhone 14.
+- The **landing visual baselines** were regenerated (intended: a new page) and inspected in both themes, desktop and phone.
+
+**CI (GitHub Actions) bring-up**, from the first real runs on PR #5. Each problem was fixed and documented:
+- `tsc` needs `next typegen` first (the scan now runs it);
+- the dev web container can't use a bind mount of the runner's checkout (`docker-compose.ci.yml` runs it from its image);
+- the containers can't write caches into the checkout (`chmod -R a+rwX .` in CI);
+- SeaweedFS sized its volumes from free disk space and ran out on the e2e runner (`PutObject InternalError`). The volume count is now fixed (`-volume.max=50`, 256 MB volumes).
+- A backend hang seen once no longer appears; `faulthandler_timeout=300` will name it if it returns.
+- **The runner ran out of disk** (trivy: "16 MB free"; also the likely cause of the SeaweedFS errors). Docker-heavy jobs first delete the runner's unused preinstalled SDKs (~25 GB).
+- **Charts drew wider than the screen for one frame** (fallback width before measuring): phones briefly scrolled sideways, which the ux spec caught on CI's mobile projects. The SVG is now capped at its container (`max-w-full`); both mobile projects passed 18/18 twice in the Linux image.
+- **The e2e reset could deadlock** with a search still finishing from the previous test (TRUNCATE vs. its audit insert). It now retries on deadlock (test server only). Capture steps get 60 s to appear on CI's slower CPUs (a wait, not a weaker check).
+- **A real bug found by CI in Linux WebKit:** the photo viewer's single download never started after the ZIP download. Downloads were link clicks that navigated and then turned into downloads; the link now carries `download` (same-origin), so it downloads directly. Reproduced and verified in the Linux Playwright image (Chromium, Firefox, WebKit, iPhone 14) and on macOS.
+
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

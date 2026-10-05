@@ -4,7 +4,8 @@ Runs the real FastAPI app against the *test* database, Redis DB and bucket, with
 - Celery tasks inline (eager), so Drive sync and indexing happen within the request;
 - a fake Google Drive (the brief: "mocked Drive API") holding group-photo fixtures;
 - a captured mailbox instead of SMTP;
-- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event).
+- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event);
+- a fake GlitchTip envelope endpoint, so error reports from the web app can be inspected.
 
     docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web
 """
@@ -26,14 +27,17 @@ os.environ["SELFIE_FRONT_MAX_YAW"] = "15"
 os.environ["SELFIE_SIDE_MIN_YAW"] = "3"
 os.environ["SELFIE_MIN_DET_SCORE"] = "0.75"
 
+import json
+import time
 import uuid
 from datetime import timedelta
 
 import uvicorn
 from alembic import command
 from alembic.config import Config
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import create_engine, select, text
+from sqlalchemy.exc import OperationalError
 
 from app.core import storage
 from app.core.config import get_settings
@@ -73,6 +77,7 @@ class Outbox:
 
 
 outbox = Outbox()
+glitchtip_events: list[dict[str, object]] = []  # error reports the web app sent
 set_mailer(outbox)
 owner_engine = create_engine(OWNER_URL, pool_pre_ping=True)
 
@@ -89,14 +94,20 @@ def migrate_fresh() -> None:
 
 
 def reset() -> None:
-    with owner_engine.begin() as conn:
-        conn.execute(text("ALTER TABLE search_audit DISABLE TRIGGER search_audit_guard"))
-        tables = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'alembic_version'")).scalars()
-        conn.execute(text("TRUNCATE " + ", ".join(f'"{t}"' for t in tables) + " CASCADE"))
-        conn.execute(text("ALTER TABLE search_audit ENABLE TRIGGER search_audit_guard"))
+    # A search from the previous test may still be finishing (writing its audit row) while
+    # TRUNCATE takes its locks: Postgres resolves that as a deadlock. Try again.
+    for attempt in range(5):
+        try:
+            _truncate_all()
+            break
+        except OperationalError as e:
+            if "deadlock" not in str(e) or attempt == 4:
+                raise
+            time.sleep(0.5)
     get_redis().flushdb()
     storage.delete_prefix("events/")
     outbox.mails.clear()
+    glitchtip_events.clear()
     drive.set_drive_client(
         FakeDrive({FOLDER: {"left": ("left.jpg", half_photo("left")), "right": ("right.jpg", half_photo("right")), "group": ("group.jpg", group_photo_bytes())}})
     )
@@ -104,6 +115,14 @@ def reset() -> None:
         for email, role in USERS.items():
             db.add(User(email=email, password_hash=hash_password(PASSWORD), role=role, email_verified_at=utcnow(), terms_version=legal.VERSIONS["terms"], organizer_terms_version=legal.VERSIONS["organizer-terms"]))
         db.commit()
+
+
+def _truncate_all() -> None:
+    with owner_engine.begin() as conn:
+        conn.execute(text("ALTER TABLE search_audit DISABLE TRIGGER search_audit_guard"))
+        tables = conn.execute(text("SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename <> 'alembic_version'")).scalars()
+        conn.execute(text("TRUNCATE " + ", ".join(f'"{t}"' for t in tables) + " CASCADE"))
+        conn.execute(text("ALTER TABLE search_audit ENABLE TRIGGER search_audit_guard"))
 
 
 router = APIRouter(prefix="/__e2e")
@@ -277,6 +296,21 @@ def selfie(shot: str) -> Response:
         if not data:
             raise HTTPException(404)
     return Response(data, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+@router.post("/glitchtip/api/{project}/envelope/")
+async def glitchtip_envelope(project: int, request: Request) -> Response:
+    """Stands in for GlitchTip's envelope endpoint (the web container's SENTRY_DSN points here)."""
+    lines = (await request.body()).decode().split("\n")
+    for item, payload in zip(lines[1::2], lines[2::2], strict=False):
+        if json.loads(item).get("type") == "event":
+            glitchtip_events.append({"auth": request.headers.get("x-sentry-auth", ""), "event": json.loads(payload)})
+    return Response(status_code=200)
+
+
+@router.get("/glitchtip/events")
+def glitchtip_received() -> list[dict[str, object]]:
+    return glitchtip_events
 
 
 @router.get("/guest-photo.jpg")

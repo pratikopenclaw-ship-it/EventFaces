@@ -108,6 +108,7 @@ class DriveSyncRun(Base):
     files_listed: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     files_new: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     files_retried: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    files_over_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=0)  # skipped: plan's photo limit
     error: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()

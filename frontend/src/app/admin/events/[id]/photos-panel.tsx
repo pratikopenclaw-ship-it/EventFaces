@@ -154,7 +154,9 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
             {run.status === "failed" ? (
               <span className="text-alarm">{run.error}</span>
             ) : run.status === "completed" ? (
-              `${run.files_listed} files found, ${run.files_new} new${run.files_retried ? `, ${run.files_retried} retried` : ""}`
+              `${run.files_listed} files found, ${run.files_new} new${run.files_retried ? `, ${run.files_retried} retried` : ""}${
+                run.files_over_limit ? `, ${run.files_over_limit} not imported (plan photo limit reached)` : ""
+              }`
             ) : (
               "listing folder…"
             )}

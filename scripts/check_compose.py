@@ -3,7 +3,7 @@
 Fails if: an image is not pinned by digest; Postgres/Redis publish any port; a dev port is
 bound to all interfaces (must be 127.0.0.1); in production anything but the reverse proxy
 publishes ports; Redis has no password; or a production app container lacks
-no-new-privileges / cap_drop ALL / a read-only root filesystem / a memory limit.
+no-new-privileges / cap_drop ALL / a read-only root filesystem / a memory limit (app containers and GlitchTip).
 """
 
 import os
@@ -54,7 +54,7 @@ def check(path: str, prod: bool) -> list[str]:
                 errors.append(f"{path}:{name}: only the reverse proxy may publish ports")
         if name == "redis" and "requirepass" not in " ".join(svc.get("command") or []):
             errors.append(f"{path}:redis: no password")
-        if prod and name in ("api", "worker", "beat", "web"):
+        if prod and name in ("api", "worker", "beat", "web", "glitchtip"):
             if "no-new-privileges:true" not in (svc.get("security_opt") or []):
                 errors.append(f"{path}:{name}: missing no-new-privileges")
             if "ALL" not in (svc.get("cap_drop") or []):

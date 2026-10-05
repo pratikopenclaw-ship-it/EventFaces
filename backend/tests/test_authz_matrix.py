@@ -245,6 +245,18 @@ OPS: list[Op] = [
     Op("GET", "/api/join/{slug_a}", "VERIFIED"),
     Op("POST", "/api/join", "VERIFIED", json={"slug": "{slug_a}", "code": "WRONGCODE"}),
     Op("POST", "/api/join/by-code", "VERIFIED", json={"code": "WRONGCODE"}),
+    # --- billing (the fake provider's hosted checkout + webhook) ---
+    Op("POST", "/api/contact", "PUBLIC", json={"name": "Matrix", "email": "matrix@example.com", "topic": "other", "message": "Hello from the matrix test"}),
+    Op("GET", "/api/billing/plans", "PUBLIC"),
+    # Server to server, authenticated only by its signature: every caller without a valid one gets 400.
+    Op("POST", "/api/billing/webhook/fake", "PUBLIC", content=b'{"id":"evt_x"}', headers={"content-type": "application/json", "fake-signature": "t=1,v1=00"}),
+    Op("POST", "/api/billing/checkout", "VERIFIED", json={"plan": "event_s", "event_name": "Matrix party"}),
+    Op("GET", "/api/billing/test-checkout/fcs_not-a-session", "VERIFIED"),
+    Op("POST", "/api/billing/test-checkout/fcs_not-a-session/pay", "VERIFIED", json={"card_number": "4242 4242 4242 4242", "expiry": "12/30", "cvc": "123"}),
+    Op("GET", "/api/billing/overview", "VERIFIED"),
+    Op("GET", "/api/billing/orders/{random_id}", "VERIFIED"),
+    Op("POST", "/api/billing/subscription/cancel", "VERIFIED"),
+    Op("POST", "/api/billing/subscription/events", "VERIFIED", json={"name": "Matrix party"}),
     Op("GET", "/api/drive/service-account", "ORGANIZER"),
     # --- members of event A ---
     Op("GET", f"/api/events/{E}", "MEMBER"),
@@ -263,6 +275,7 @@ OPS: list[Op] = [
     Op("POST", f"/api/events/{E}/uploads/{{random_id}}/complete", "MEMBER"),
     # --- organizers of event A (and super admin) ---
     Op("GET", f"/api/events/{E}/admin", "MANAGER"),
+    Op("GET", f"/api/events/{E}/usage", "MANAGER"),
     Op("PATCH", f"/api/events/{E}", "MANAGER", json={"description": "x"}),
     Op("PUT", f"/api/events/{E}/logo", "MANAGER", content=b"not an image", headers={"content-type": "image/png"}),
     Op("DELETE", f"/api/events/{E}/logo", "MANAGER"),
@@ -350,6 +363,7 @@ def _normalise(path: str) -> str:
     path = path.split("?")[0]
     replacements = [
         (r"/api/me/devices/\{random_id\}", "/api/me/devices/{device_id}"),
+        (r"/api/billing/orders/\{random_id\}", "/api/billing/orders/{order_id}"),
         (r"^/api/legal/(terms|organizer-terms|privacy|imprint)$", "/api/legal/{document}"),
         (r"/api/events/\{event_a\}", "/api/events/{event_id}"),
         (r"\{photo_a\}", "{photo_id}"),
@@ -364,6 +378,7 @@ def _normalise(path: str) -> str:
         (r"/api/removal-requests/not-a-real-token-123", "/api/removal-requests/{token}"),
         (r"/api/downloads/not-a-real-token", "/api/downloads/{token}"),
         (r"/photos/\{photo_id\}/thumb", "/photos/{photo_id}/{variant}"),
+        (r"/api/billing/test-checkout/fcs_not-a-session", "/api/billing/test-checkout/{session_ref}"),
     ]
     for pattern, repl in replacements:
         path = re.sub(pattern, repl, path)

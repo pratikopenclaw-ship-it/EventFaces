@@ -60,6 +60,14 @@ export default function AccountPage() {
         </Card>
 
         <Card>
+          <h2 className="font-medium">Billing</h2>
+          <p className="mt-1 mb-4 text-sm text-muted">Your orders, receipts and subscription.</p>
+          <Link href="/account/billing" className="inline-flex rounded-lg border border-line bg-paper px-4 py-2 text-sm font-medium text-ink hover:bg-mist">
+            Open billing
+          </Link>
+        </Card>
+
+        <Card>
           <h2 className="font-medium">Face-search consent</h2>
           {consent.data?.given ? (
             <>

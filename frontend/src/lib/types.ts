@@ -87,6 +87,7 @@ export interface SyncRun {
   files_listed: number;
   files_new: number;
   files_retried: number;
+  files_over_limit: number;
   error: string | null;
   created_at: string;
   started_at: string | null;
@@ -288,4 +289,83 @@ export interface SearchStatus {
   match_count: number | null;
   message: string | null;
   shot: string | null;
+}
+
+// --- Billing (services/billing on the API) ---
+
+export type PlanKey = "event_s" | "event_m" | "event_l" | "pro";
+
+export interface Plan {
+  key: PlanKey;
+  name: string;
+  kind: "one_off" | "subscription";
+  price_cents: number;
+  max_attendees: number;
+  max_photos: number;
+  events_per_period: number;
+}
+
+export interface PriceList {
+  currency: string;
+  vat_rate: number;
+  vat_included: boolean;
+  example_prices: boolean;
+  test_mode: boolean;
+  plans: Plan[];
+}
+
+export type OrderStatus = "pending" | "paid" | "canceled";
+
+export interface Order {
+  id: string;
+  plan: string;
+  plan_name: string;
+  kind: "one_off" | "subscription" | "allowance";
+  amount_cents: number;
+  vat_cents: number;
+  currency: string;
+  vat_rate: number;
+  status: OrderStatus;
+  failure_code: string | null;
+  event_name: string | null;
+  event_date: string | null;
+  event_id: string | null;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export interface Subscription {
+  id: string;
+  plan: string;
+  plan_name: string;
+  status: "active" | "expired";
+  current_period_start: string;
+  current_period_end: string;
+  canceled_at: string | null;
+  events_included: number;
+  events_used: number;
+}
+
+export interface BillingOverview {
+  subscription: Subscription | null;
+  orders: Order[];
+}
+
+export interface TestCheckout {
+  order: Order;
+  test_cards: string[];
+}
+
+export interface TestPaymentResult {
+  outcome: "paid" | "failed" | "duplicate" | "ignored";
+  order: Order;
+}
+
+export interface EventUsage {
+  plan: string | null;
+  plan_name: string | null;
+  max_attendees: number | null;
+  max_photos: number | null;
+  attendees: number;
+  photos: number;
 }

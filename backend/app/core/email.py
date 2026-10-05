@@ -11,6 +11,7 @@ class Mail:
     to: str
     subject: str
     body: str
+    reply_to: str | None = None  # e.g. the sender of a contact-form message
 
 
 class Mailer(Protocol):
@@ -28,6 +29,8 @@ def build_message(mail: Mail) -> EmailMessage:
     msg["From"] = get_settings().email_from
     msg["To"] = _one_line(mail.to)
     msg["Subject"] = _one_line(mail.subject)
+    if mail.reply_to:
+        msg["Reply-To"] = _one_line(mail.reply_to)
     msg.set_content(mail.body)
     return msg
 

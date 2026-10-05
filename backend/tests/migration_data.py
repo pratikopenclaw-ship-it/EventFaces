@@ -21,6 +21,12 @@ from app.models import (
     IndexStatus,
     Invite,
     LegalAcceptance,
+    Order,
+    OrderKind,
+    OrderStatus,
+    Subscription,
+    SubscriptionStatus,
+    WebhookEvent,
     JoinMode,
     MatchFeedback,
     MemberRole,
@@ -76,6 +82,12 @@ def populate(session: Session) -> None:
     # Proof of acceptance of the Terms of Use (the history table; users.terms_version is a
     # cache that a downgrade below 0013 drops, so it isn't "surviving data").
     session.add(LegalAcceptance(user_id=app_user.id, document="terms", version="2026-10-03", locale="de", channel="ios"))
+    # Billing (0014): a subscription, a paid order and a processed provider event.
+    sub = Subscription(user_id=admin.id, plan="pro", status=SubscriptionStatus.active, current_period_start=now, current_period_end=now)
+    session.add(sub)
+    session.flush()
+    session.add(Order(user_id=admin.id, plan="pro", kind=OrderKind.subscription, amount_cents=19900, currency="EUR", vat_rate=19, status=OrderStatus.paid, provider="fake", provider_ref="drill-session", subscription_id=sub.id, paid_at=now))
+    session.add(WebhookEvent(provider="fake", provider_event_id="evt_drill"))
     session.commit()
 
 

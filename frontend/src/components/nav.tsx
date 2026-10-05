@@ -11,7 +11,9 @@ export function Nav() {
   const isAdmin = user?.role === "super_admin" || user?.role === "organizer";
 
   return (
-    <header className="border-b border-line bg-paper/80 backdrop-blur">
+    // relative z-30: backdrop-blur makes the header a stacking context, so without its own
+    // level the theme menu (z-40 inside it) would open underneath positioned page content.
+    <header className="relative z-30 border-b border-line bg-paper/80 backdrop-blur">
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
         <Link href="/" className="font-display text-xl tracking-tight text-ink">
           Event<span className="text-accent">Faces</span>
@@ -40,6 +42,10 @@ export function Nav() {
             </>
           ) : (
             <>
+              {/* Smallest phones: no room; the landing page's own section nav links to pricing. */}
+              <Link href="/pricing" className="hidden whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink min-[370px]:block sm:px-3">
+                Pricing
+              </Link>
               <Link href="/login" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                 Log in
               </Link>

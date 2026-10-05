@@ -27,6 +27,14 @@ def generate_slug(name: str) -> str:
     return f"{base}-{suffix}"
 
 
+def new_event(db: Session, **fields: object) -> Event:
+    """An event with a fresh slug and access code (added to the session, not committed).
+    Used by admin creation and by checkout fulfilment."""
+    event = Event(slug=generate_slug(str(fields["name"])), access_code=generate_access_code(), **fields)
+    db.add(event)
+    return event
+
+
 def list_events_for(db: Session, user: User) -> list[tuple[Event, EventMember | None, bool]]:
     """Events visible to the user as (event, membership, can_manage), newest first."""
     if user.role == UserRole.super_admin:

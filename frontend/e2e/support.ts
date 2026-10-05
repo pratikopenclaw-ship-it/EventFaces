@@ -114,7 +114,8 @@ export async function captureThreeShots(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Start camera" }).click();
   for (const shot of ["front", "left", "right"]) {
     const step = page.locator(`[data-shot="${shot}"]`);
-    await expect(step).toBeVisible({ timeout: 30_000 });
+    // Generous: on CI's shared CPUs the in-browser face model needs longer between shots.
+    await expect(step).toBeVisible({ timeout: 60_000 });
     const manual = page.getByRole("button", { name: "Take this photo now" });
     await expect
       .poll(
