@@ -35,6 +35,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+      # Docker-heavy job: GitHub's runner image ships ~25 GB of SDKs this project never uses;
+      # without removing them the disk fills up (seen: trivy, SeaweedFS writes).
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost && df -h /
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - run: cp .env.example .env
@@ -84,6 +88,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+      # Docker-heavy job: GitHub's runner image ships ~25 GB of SDKs this project never uses;
+      # without removing them the disk fills up (seen: trivy, SeaweedFS writes).
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost && df -h /
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - run: cp .env.example .env
@@ -133,6 +141,10 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     steps:
+      # Docker-heavy job: GitHub's runner image ships ~25 GB of SDKs this project never uses;
+      # without removing them the disk fills up (seen: trivy, SeaweedFS writes).
+      - name: Free disk space
+        run: sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost && df -h /
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false

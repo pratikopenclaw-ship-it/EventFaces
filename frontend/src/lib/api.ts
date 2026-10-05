@@ -110,6 +110,10 @@ export function triggerDownload(url: string): void {
   const a = document.createElement("a");
   a.href = url;
   a.rel = "noopener";
+  // Same-origin, so honoured: download directly instead of navigating and then turning
+  // the response into a download (Linux WebKit stopped after the first such navigation).
+  // The file name still comes from the server's Content-Disposition.
+  a.download = "";
   document.body.appendChild(a);
   a.click();
   a.remove();

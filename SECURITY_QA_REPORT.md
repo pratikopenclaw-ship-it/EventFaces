@@ -850,6 +850,8 @@ Playwright details:
 - the containers can't write caches into the checkout (`chmod -R a+rwX .` in CI);
 - SeaweedFS sized its volumes from free disk space and ran out on the e2e runner (`PutObject InternalError`). The volume count is now fixed (`-volume.max=50`, 256 MB volumes).
 - A backend hang seen once no longer appears; `faulthandler_timeout=300` will name it if it returns.
+- **The runner ran out of disk** (trivy: "16 MB free"; also the likely cause of the SeaweedFS errors). Docker-heavy jobs first delete the runner's unused preinstalled SDKs (~25 GB).
+- **A real bug found by CI in Linux WebKit:** the photo viewer's single download never started after the ZIP download. Downloads were link clicks that navigated and then turned into downloads; the link now carries `download` (same-origin), so it downloads directly. Reproduced and verified in the Linux Playwright image (Chromium, Firefox, WebKit, iPhone 14) and on macOS.
 
 
 ## Scanner results
