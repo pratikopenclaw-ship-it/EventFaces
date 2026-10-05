@@ -4,7 +4,8 @@ Runs the real FastAPI app against the *test* database, Redis DB and bucket, with
 - Celery tasks inline (eager), so Drive sync and indexing happen within the request;
 - a fake Google Drive (the brief: "mocked Drive API") holding group-photo fixtures;
 - a captured mailbox instead of SMTP;
-- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event).
+- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event);
+- a fake GlitchTip envelope endpoint, so error reports from the web app can be inspected.
 
     docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web
 """
@@ -26,13 +27,14 @@ os.environ["SELFIE_FRONT_MAX_YAW"] = "15"
 os.environ["SELFIE_SIDE_MIN_YAW"] = "3"
 os.environ["SELFIE_MIN_DET_SCORE"] = "0.75"
 
+import json
 import uuid
 from datetime import timedelta
 
 import uvicorn
 from alembic import command
 from alembic.config import Config
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, HTTPException, Request, Response
 from sqlalchemy import create_engine, select, text
 
 from app.core import storage
@@ -73,6 +75,7 @@ class Outbox:
 
 
 outbox = Outbox()
+glitchtip_events: list[dict[str, object]] = []  # error reports the web app sent
 set_mailer(outbox)
 owner_engine = create_engine(OWNER_URL, pool_pre_ping=True)
 
@@ -97,6 +100,7 @@ def reset() -> None:
     get_redis().flushdb()
     storage.delete_prefix("events/")
     outbox.mails.clear()
+    glitchtip_events.clear()
     drive.set_drive_client(
         FakeDrive({FOLDER: {"left": ("left.jpg", half_photo("left")), "right": ("right.jpg", half_photo("right")), "group": ("group.jpg", group_photo_bytes())}})
     )
@@ -277,6 +281,21 @@ def selfie(shot: str) -> Response:
         if not data:
             raise HTTPException(404)
     return Response(data, media_type="image/jpeg", headers={"Cache-Control": "no-store"})
+
+
+@router.post("/glitchtip/api/{project}/envelope/")
+async def glitchtip_envelope(project: int, request: Request) -> Response:
+    """Stands in for GlitchTip's envelope endpoint (the web container's SENTRY_DSN points here)."""
+    lines = (await request.body()).decode().split("\n")
+    for item, payload in zip(lines[1::2], lines[2::2], strict=False):
+        if json.loads(item).get("type") == "event":
+            glitchtip_events.append({"auth": request.headers.get("x-sentry-auth", ""), "event": json.loads(payload)})
+    return Response(status_code=200)
+
+
+@router.get("/glitchtip/events")
+def glitchtip_received() -> list[dict[str, object]]:
+    return glitchtip_events
 
 
 @router.get("/guest-photo.jpg")

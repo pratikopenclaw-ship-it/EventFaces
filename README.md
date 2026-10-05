@@ -89,6 +89,8 @@ docker compose exec api pytest tests/test_membership.py -k lockout  # one test
 cd frontend && npm run lint && npx next typegen && npx tsc --noEmit # frontend checks
 ```
 
+CI (`.github/workflows/ci.yml`) runs the backend tests, web checks, Playwright (all projects except `@visual`, whose baselines are macOS renders) and the security scan on every pull request; iOS unit tests on demand.
+
 Backend tests run against a separate `eventfaces_test` database (created on first Postgres start) and Redis DB 15.
 
 End-to-end tests (Playwright) run against `docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web`: `cd frontend && npx playwright test`. Firefox runs from Playwright's Linux image (its macOS build doesn't start on macOS 27): `docker run --rm --network eventfaces_default --ipc=host -v "$PWD:/work" -w /work -e E2E_BASE_URL=http://web:3000 -e E2E_API_URL=http://api:8000 mcr.microsoft.com/playwright:v1.63.0-noble npx playwright test --project=firefox` (from `frontend/`).
@@ -145,7 +147,7 @@ Every event-scoped endpoint goes through `get_member_event` / `get_managed_event
 
 **Step-by-step EU deployment (Hetzner + Cloudflare R2), email authentication, backups, monitoring, secrets and the go/no-go checklist: see [DEPLOYMENT.md](DEPLOYMENT.md).** The summary below is kept for orientation.
 
-`docker-compose.prod.yml` runs Caddy (TLS), Next.js (standalone build), FastAPI (2 workers), a Celery worker, **one** Celery beat, Postgres + pgvector and Redis. Object storage (R2/S3) and SMTP are external.
+`docker-compose.prod.yml` runs Caddy (TLS), Next.js (standalone build), FastAPI (2 workers), a Celery worker, **one** Celery beat, Postgres + pgvector, Redis and GlitchTip (error reports, uptime and heartbeat alerts on `errors.<DOMAIN>`). Object storage (R2/S3) and SMTP are external.
 
 1. **Server**: 4 vCPU / 8 GB RAM is comfortable. Each API/worker process loads the face model (~0.5 GB). Indexing runs at roughly 1 photo/s per worker process on CPU; add worker replicas for big imports.
 2. **DNS**: point `DOMAIN` at the server (ports 80/443 open); Caddy fetches certificates.
@@ -160,8 +162,8 @@ Every event-scoped endpoint goes through `get_member_event` / `get_managed_event
    - `GOOGLE_SERVICE_ACCOUNT_JSON` for Drive import
    - remove `TEST_*` variables
    The API refuses to start with `ENVIRONMENT=production` if any of these still has a development/public value (dev secrets, low-entropy secrets, identical JWT/download secrets, `COOKIE_SECURE=false`, non-https `FRONTEND_URL`, owner role or dev password in `DATABASE_URL`, Redis without a private password, dev S3 key, Mailpit as SMTP host); the error lists every problem.
-5. `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`, then `docker compose -f docker-compose.prod.yml exec api python -m app.cli create-superadmin --email you@yourdomain`.
+5. Release with `scripts/release.sh vX.Y.Z` (laptop) and deploy with `scripts/deploy.sh vX.Y.Z` (server: backup, build, start, `scripts/release_check.sh`, automatic rollback; first deploy: DEPLOYMENT.md section 6), then `docker compose -f docker-compose.prod.yml exec api python -m app.cli create-superadmin --email you@yourdomain`.
 6. **Backups**: nightly `pg_dump` (embeddings are only 2 KB/face) plus bucket versioning or replication. Backups contain biometric data: encrypt them and expire them in line with the retention table.
 7. **Calibrate `FACE_MATCH_THRESHOLD`** with a few real selfie/event photo pairs before launch (see "Tuning the threshold").
-8. **Monitoring**: `/api/health` for liveness; watch Celery queue length (`celery`, `index`) and the retention job's log line.
+8. **Monitoring**: GlitchTip error reports (scrubbed of personal data), uptime monitors on `/api/health`, and heartbeats from the retention job, the backup and `scripts/disk-check.sh` (DEPLOYMENT.md section 8). `/api/health` also reports the deployed version.
 

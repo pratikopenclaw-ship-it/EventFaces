@@ -21,6 +21,8 @@ next-env.d.ts
 .playwright-mcp/
 
 .env.prod
+# scripts/deploy.sh state: release history and pre-deploy database dumps (biometric data)
+.deploy/
 
 # Tool caches & coverage
 .mypy_cache/

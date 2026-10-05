@@ -1,8 +1,10 @@
 from celery import Celery
 
+from app.core import monitoring
 from app.core.config import get_settings
 
 settings = get_settings()
+monitoring.init("worker")
 
 celery_app = Celery(
     "eventfaces",

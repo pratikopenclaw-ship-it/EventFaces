@@ -11,6 +11,7 @@ from app.api.app_version import AppVersionMiddleware
 from app.api.csrf import CSRFMiddleware
 from app.api.routes import auth, events, invites, join, legal, members, mobile, moderation, photos, privacy, search, uploads
 from app.core.config import get_settings
+from app.core import monitoring
 from app.core.logging import install as redact_access_logs
 from app.core.security import HashingBusy
 
@@ -20,6 +21,7 @@ log = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     settings = get_settings()
     redact_access_logs()
+    monitoring.init("api")
     app = FastAPI(
         title="EventFaces API",
         # Readable, stable operation ids for the generated iOS client (Swift method names).
@@ -87,7 +89,7 @@ def create_app() -> FastAPI:
 
     @app.get("/api/health", tags=["health"])
     def health() -> dict[str, str]:
-        return {"status": "ok"}
+        return {"status": "ok", "version": settings.app_version}
 
     return app
 

@@ -1,7 +1,8 @@
 # Deploying EventFaces (EU)
 
 Target: **one Hetzner Cloud server in Germany** running `docker-compose.prod.yml` (Caddy for TLS,
-Next.js, FastAPI, Celery worker and beat, Postgres + pgvector, Redis), with photos in **Cloudflare R2
+Next.js, FastAPI, Celery worker and beat, Postgres + pgvector, Redis, and GlitchTip for error
+reports, uptime and heartbeat alerts on `errors.<domain>`), with photos in **Cloudflare R2
 (EU jurisdiction)** and email through any SMTP relay. All processing and storage stay in the EU.
 
 Read this once end to end before starting. Commands assume Ubuntu 24.04, a domain you control
@@ -62,8 +63,9 @@ Read this once end to end before starting. Commands assume Ubuntu 24.04, a domai
    TLS and replaces `X-Forwarded-For`, which the app trusts with `TRUSTED_PROXY_HOPS=1`. (If you
    later put a proxy or CDN in front, you must configure Caddy's `trusted_proxies` and raise
    `TRUSTED_PROXY_HOPS`, or per-IP rate limits will see only the proxy.)
+   Add the same records for `errors.photos.example.org` (GlitchTip, section 8).
 2. Add a **CAA** record so only Let's Encrypt can issue for the domain:
-   `photos.example.org. CAA 0 issue "letsencrypt.org"`.
+   `photos.example.org. CAA 0 issue "letsencrypt.org"` (it covers the `errors.` subdomain too).
 3. TLS is automatic: Caddy (`infra/caddy/Caddyfile`) obtains and renews certificates on first start.
    After deployment, verify:
    ```bash
@@ -118,7 +120,8 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
    `cp .env.example .env.prod && chmod 600 .env.prod`. `.env.prod` is git-ignored; never commit it.
 2. Generate every secret separately (store them in your password manager or secret store as well):
    ```bash
-   for n in JWT_SECRET DOWNLOAD_TOKEN_SECRET POSTGRES_PASSWORD APP_DB_PASSWORD REDIS_PASSWORD; do
+   for n in JWT_SECRET DOWNLOAD_TOKEN_SECRET POSTGRES_PASSWORD APP_DB_PASSWORD REDIS_PASSWORD \
+            GLITCHTIP_SECRET_KEY GLITCHTIP_DB_PASSWORD; do
      echo "$n=$(openssl rand -base64 48 | tr -d '\n/+=' | cut -c1-48)"; done
    ```
 3. Set in `.env.prod`:
@@ -132,11 +135,16 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
    - `S3_ENDPOINT_URL` and `S3_PUBLIC_ENDPOINT_URL` = the R2 EU endpoint, `S3_REGION=auto`,
      `S3_BUCKET=eventfaces-prod`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`
    - `SMTP_*`, `EMAIL_FROM` (step 4); `GOOGLE_SERVICE_ACCOUNT_JSON` if you use Drive import
+   - `GLITCHTIP_SECRET_KEY`, `GLITCHTIP_DB_PASSWORD`; `GLITCHTIP_EMAIL_URL`
+     (`smtp://user:password@host:587`) and `GLITCHTIP_FROM_EMAIL` for its alert emails
+   - `SENTRY_DSN` and `WEB_SENTRY_DSN`: set after GlitchTip's first start (section 6)
+   - `RETENTION_HEARTBEAT_URL`, `DISK_HEARTBEAT_URL`: heartbeat check-in URLs (section 8)
    - Remove every `TEST_*` variable.
 4. The API **refuses to start** in production if a value is still a development or public default
    (dev or low-entropy secrets, equal JWT and download secrets, insecure cookies, a non-https frontend,
    the owner role or a dev password in `DATABASE_URL`, Redis without a private password, the dev S3
-   key, or Mailpit as SMTP). The error lists every problem.
+   key, Mailpit as SMTP, a missing or plaintext-over-the-internet `SENTRY_DSN`, or weak GlitchTip
+   secrets). The error lists every problem.
 5. **Rotation** (at least yearly, and immediately after a suspected leak or a staff change):
 
    | Secret | How | Effect |
@@ -146,18 +154,32 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
    | `APP_DB_PASSWORD` | `ALTER ROLE eventfaces_app PASSWORD '…'` as the owner, update `.env.prod`, restart `api`, `worker`, `beat` | None |
    | `POSTGRES_PASSWORD` | `ALTER ROLE eventfaces PASSWORD '…'`, update `.env.prod` | Used only by migrations |
    | `REDIS_PASSWORD` | Update `.env.prod`, restart `redis`, `api`, `worker`, `beat` | Rate-limit counters and queued-search statuses reset |
+   | `GLITCHTIP_DB_PASSWORD` | Update `.env.prod`, run `scripts/glitchtip-db.sh`, restart `glitchtip` | None |
+   | `GLITCHTIP_SECRET_KEY` | Update `.env.prod`, restart `glitchtip` | GlitchTip users are logged out |
+   | GlitchTip DSN keys | Create a new key on the project, update `SENTRY_DSN`/`WEB_SENTRY_DSN`, redeploy, then delete the old key | None |
    | R2 / SMTP / Google keys | Create a new key at the provider, update `.env.prod`, restart, then revoke the old key | None |
 
 ## 6. Deploy
 
-**(server)**, from the repository directory:
+Releases are tags made with `scripts/release.sh` (section 9). **First deploy (server)**, from the
+repository directory, in this order (the API refuses to start without a working `SENTRY_DSN`):
 ```bash
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
-docker compose -f docker-compose.prod.yml --env-file .env.prod ps          # all services healthy
-docker compose -f docker-compose.prod.yml --env-file .env.prod exec api python -m app.cli create-superadmin --email you@example.org
+C="docker compose -f docker-compose.prod.yml --env-file .env.prod"
+git fetch --tags && git checkout v1.0.0-rc.1
+$C up -d db && scripts/glitchtip-db.sh                 # GlitchTip's own role and database
+$C up -d glitchtip caddy                                 # errors.photos.example.org
+$C exec glitchtip ./manage.py createsuperuser            # your GlitchTip login (sign-up is off)
 ```
-The API runs database migrations and storage checks on start. Then smoke test: log in, create an
-event, upload a photo as a guest, search with your own face, download it, and delete the test event.
+In GlitchTip (`https://errors.photos.example.org`): create the organization, then two projects,
+`api` (Python) and `web` (JavaScript). Put their DSNs in `.env.prod` **with the internal host**
+so keys never leave the server: `SENTRY_DSN=http://<api key>@glitchtip:8000/<api project id>`,
+`WEB_SENTRY_DSN=http://<web key>@glitchtip:8000/<web project id>`. Then:
+```bash
+scripts/deploy.sh v1.0.0-rc.1                            # backup, build, start, release check
+$C exec api python -m app.cli create-superadmin --email you@example.org
+```
+Then smoke test: log in, create an event, upload a photo as a guest, search with your own face,
+download it, and delete the test event.
 
 **Tuning**, in `.env.prod`, then restart `api`:
 - `SEARCH_MAX_CONCURRENT` (default 6 per API process): searches admitted at once. Size it as
@@ -198,6 +220,8 @@ cd /home/deploy/EventFaces
 docker compose -f docker-compose.prod.yml --env-file .env.prod exec -T db pg_dump -U eventfaces -Fc eventfaces \
   | restic backup --stdin --stdin-filename eventfaces.dump --tag db
 restic forget --tag db --keep-daily 30 --prune
+# Check in with the "backup" heartbeat monitor (section 8); only reached when everything above succeeded.
+curl -fsS -m 10 -X POST -o /dev/null "https://errors.photos.example.org/api/0/organizations/<org>/heartbeat_check/<id>/"
 EOF
 chmod 700 /etc/cron.daily/eventfaces-db-backup
 ```
@@ -217,38 +241,91 @@ verification part locally):
 
 ## 8. Monitoring and alerting
 
-- **Uptime:** an external check (EU-hosted, e.g. a self-hosted Uptime Kuma on another host) on
-  `https://photos.example.org/api/health` every minute, alerting after 2 failures.
-  Also alert on TLS certificate expiry below 14 days.
-- **Container health:** `docker compose … ps` shows healthchecks. Alert if any service restarts
-  repeatedly (for example a cron job running `docker compose ps --format json`, or node-exporter
-  plus cAdvisor with Prometheus and Grafana).
-- **Application signals** to alert on (from the API logs, `docker compose … logs api`):
-  - 5xx rate > 1% over 5 minutes.
-  - **503 rate** (search busy, queue full, hashing busy or pool busy). This is the capacity signal:
-    sustained 503s mean it's time to add processes or a bigger server.
-  - `Refusing to start in production` (a configuration error on deploy).
-  - A missing hourly `Retention run` log line from `beat`/`worker` (retention is a GDPR duty).
-  - Celery backlog: `docker compose … exec redis redis-cli -a "$REDIS_PASSWORD" LLEN celery` and
-    `LLEN index` > 500 for 30 minutes.
-- **Host:** disk > 80%, memory > 90%, load. Hetzner Cloud's monitoring graphs cover the basics.
-- **Backups:** alert if the nightly backup hasn't run in 36 hours (`restic snapshots --latest 1`).
+Self-hosted **GlitchTip** (Sentry protocol, `errors.photos.example.org`, same server, so no new
+processor) receives error reports and runs uptime and heartbeat monitors.
+
+**What is reported, and what never is.** API and Celery errors (`app/core/monitoring.py`), web
+server errors (`src/instrumentation.ts`) and browser errors (through the same-origin tunnel
+`/monitoring`, so the CSP stays first-party). Reports carry the error type, a redacted message
+and stack, the page path and the opaque user id. They never carry request bodies (selfies),
+cookies, auth headers, query strings, local variables, emails or tokens in URLs; tests and a
+mutation check enforce this (`tests/test_monitoring.py`, `src/lib/error-report.test.ts`,
+`e2e/monitoring.spec.ts`). GlitchTip keeps reports for **30 days**. The iOS app has no SDK: use
+App Store Connect / Xcode Organizer crash reports (symbolicated, opt-in by users).
+
+**Set up once in GlitchTip** (organization settings):
+1. **Alerts:** on both projects, an alert rule "new or regressed issue" that emails the ops address
+   (set `GLITCHTIP_EMAIL_URL` / `GLITCHTIP_FROM_EMAIL`).
+2. **Uptime monitors** (every 60 s, alert after 2 failures): `https://photos.example.org/api/health`
+   (expects 200), and `https://photos.example.org/` (expects 200). GlitchTip runs on the same
+   server, so also add one external check (for example a free EU uptime service, or Uptime Kuma
+   on another host) on `/api/health`: it is the only alert that fires if the whole server is down.
+   Alert on TLS certificate expiry below 14 days there too.
+3. **Heartbeat monitors** (GlitchTip alerts when check-ins stop):
+
+   | Monitor | Expected every | Pinged by | Setting |
+   |---|---|---|---|
+   | retention | 65 min | the hourly retention job, after a successful run (a GDPR duty) | `RETENTION_HEARTBEAT_URL` in `.env.prod`, restart `worker` |
+   | backup | 25 h | the nightly backup script, after `restic` succeeds | `curl -fsS -m 10 -X POST <url>` as its last line (section 7) |
+   | disk | 15 min | `scripts/disk-check.sh` from cron, only while disk < 80% and memory < 90% | `DISK_HEARTBEAT_URL` in `.env.prod` |
+
+   For the containers, use the internal URL (`http://glitchtip:8000/api/0/organizations/<org>/heartbeat_check/<id>/`);
+   for host cron jobs, the public one on `errors.photos.example.org`. The disk check:
+   `echo "*/10 * * * * deploy /home/deploy/EventFaces/scripts/disk-check.sh" | sudo tee /etc/cron.d/eventfaces-disk`.
+4. **Test every alert once** before go-live and note the date: stop `api` for 3 minutes (uptime);
+   `docker compose … exec api python -c "import sentry_sdk; from app.core import monitoring; monitoring.init('api'); sentry_sdk.capture_message('alert test'); sentry_sdk.flush()"`
+   (new issue); stop `beat` for 70 minutes (retention); `DISK_MAX_PERCENT=1 scripts/disk-check.sh` for 20 minutes (disk);
+   skip one backup night or point the backup heartbeat at a fresh monitor (backup).
+
+**Still from logs / the host** (`docker compose … logs api`):
+- **503 rate** (search busy, queue full, hashing busy or pool busy) is the capacity signal: sustained
+  503s mean it's time to add processes or a bigger server.
+- `Refusing to start in production` (a configuration error on deploy; `deploy.sh` rolls back).
+- Celery backlog: `docker compose … exec redis redis-cli -a "$REDIS_PASSWORD" LLEN celery` and
+  `LLEN index` > 500 for 30 minutes.
 - **Logs:** Docker keeps 5 × 50 MB per container (step 1). If you ship logs elsewhere, keep them
   for 30–90 days: they contain IP addresses and user IDs (never selfies or embeddings). Keep Caddy
   access logging off, or apply the same token redaction as `app/core/logging.RedactTokens`.
 
-## 9. Updating and rolling back
+## 9. Releases, deploys and rollbacks
 
-1. Take a fresh database backup (run the cron script by hand).
-2. `git fetch --tags && git checkout <new-tag>`, then
-   `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build`. Migrations run
-   automatically.
-3. Watch the logs and `/api/health`, then smoke test (step 6).
-4. **Rollback:** `git checkout <previous-tag>` and redeploy. If the new release added a migration,
-   first run `docker compose … exec api alembic downgrade <previous-revision>` (downgrades are tested
-   on populated data), or restore the backup from step 1.
-5. Run `scripts/security-scan.sh` in CI on every release, and rebuild images at least monthly to
-   pick up base-image security fixes.
+**CI** (`.github/workflows/ci.yml`) runs on every pull request and push to `main`: backend tests,
+web lint/types/unit tests/build, Playwright in all five browser projects, and the security scan.
+iOS unit tests run on demand (Actions → CI → Run workflow → "iOS"); the full iOS gate
+(`ios/scripts/test.sh`, needs the e2e API) and the visual baselines (`e2e/visual.spec.ts`, macOS
+fonts) stay local release checks. Protect `main` so pull requests need the CI checks to pass.
+
+**Release** (laptop, on an up-to-date `main` whose CI passed):
+```bash
+scripts/release.sh v1.0.0-rc.1      # UAT builds: -rc.N (GitHub pre-release); production: v1.0.0
+```
+It refuses unless `main` is clean and equal to `origin/main` and CI passed on that commit, then
+creates an annotated tag with notes from the merged pull requests, pushes it and creates the
+GitHub release.
+
+**Deploy** (server): `scripts/deploy.sh v1.0.0-rc.1`. It
+1. checks the tag and a clean checkout;
+2. dumps the database to `.deploy/predeploy-<time>-<previous tag>.dump` (mode 600; the newest 3
+   are kept, older ones are shredded: they contain face embeddings);
+3. checks out the tag, builds the images with `APP_VERSION=<tag>`, starts them (the API migrates
+   on start) and waits until every service is healthy;
+4. runs `scripts/release_check.sh` (health and version, TLS and certificate expiry, HTTP→HTTPS,
+   CSP/HSTS/frame headers, cookie flags, the legal pages without placeholders, API docs off, the
+   error tunnel, the Universal Links file, GlitchTip up).
+
+**On any failure it rolls back by itself** to the previous release: a schema change is undone
+with `alembic downgrade` using the new release's migrations (keeps data written since the
+deploy); if that fails, the database is restored from step 2's dump (anything written during the
+deploy is lost). Then the previous tag is built, started and checked again. History is in
+`.deploy/history`.
+
+**Manual rollback** (for example a bug found an hour later): `scripts/rollback.sh` (to the release
+before the current one) or `scripts/rollback.sh v1.0.0-rc.1`. After a rollback it asks for an
+explicit tag rather than guessing. Rebuild images at least monthly to pick up base-image fixes.
+
+The whole cycle (first deploy, failed deploy with auto-rollback, good deploy, manual rollback,
+failed downgrade with restore) was rehearsed on the production compose file locally (see
+SECURITY_QA_REPORT.md).
 
 ## 9a. iOS app (backend side)
 
@@ -284,7 +361,9 @@ Launch only when every box is ticked.
 - [ ] The erasure-request log exists (for re-applying erasures after a restore)
 
 **Operations**
-- [ ] Uptime, 5xx, 503, retention-job, backup and disk alerts are configured and were tested once (trigger each alert deliberately)
+- [ ] GlitchTip running on `errors.<domain>`; `SENTRY_DSN`/`WEB_SENTRY_DSN` use the internal host; alert emails arrive
+- [ ] Uptime (GlitchTip + one external), new-issue, retention, backup and disk alerts configured and each triggered once (section 8)
+- [ ] CI is green on the release commit and `main` is protected; the release was cut with `scripts/release.sh` and deployed with `scripts/deploy.sh` (release check passed)
 - [ ] Capacity sized for the biggest expected event (searches per second × processes); `SEARCH_MAX_CONCURRENT` reviewed
 - [ ] `scripts/security-scan.sh` passes on the release tag; the full test suite passes from a clean checkout
 - [ ] A super admin exists; organizers briefed (Drive folder sharing, moderation, removal requests)
@@ -294,7 +373,7 @@ Launch only when every box is ticked.
 
 **Launch-day notes**
 - [ ] Users will be asked to **consent again once** (the consent text changed), and all sessions are logged out once by migration 0008
-- [ ] Rollback plan agreed: previous tag + backup from right before the deploy
+- [ ] Rollback plan agreed: `scripts/rollback.sh` (automatic on a failed deploy); the pre-deploy dump is in `.deploy/`
 
 **No-go** if any of these is not ticked: DPIA/DPAs, EU storage, the production guard passing, a successful
 test restore, TLS A grade, or DMARC-aligned email.

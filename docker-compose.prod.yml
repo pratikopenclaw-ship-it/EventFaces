@@ -1,4 +1,5 @@
-# Production stack: Caddy (TLS) → Next.js → FastAPI; Celery worker + beat; Postgres; Redis.
+# Production stack: Caddy (TLS) → Next.js → FastAPI; Celery worker + beat; Postgres; Redis;
+# GlitchTip (error reports and uptime/heartbeat monitors) on errors.$DOMAIN.
 # Object storage (R2/S3) and SMTP are external services configured via .env.prod.
 #   docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 # Hardening: pinned images, only Caddy publishes ports, non-root app containers with
@@ -13,7 +14,10 @@ x-hardened: &hardened
 
 x-backend: &backend
   <<: *hardened
-  build: ./backend
+  build:
+    context: ./backend
+    args:
+      APP_VERSION: ${APP_VERSION:-dev}  # set by scripts/deploy.sh to the release tag
   env_file: .env.prod
   read_only: true
   tmpfs: ["/tmp:size=512m"]
@@ -36,7 +40,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
     mem_limit: 256m
-    depends_on: [web]
+    depends_on: [web, glitchtip]
 
   web:
     <<: *hardened
@@ -52,6 +56,10 @@ services:
       # iOS Universal Links (/.well-known/apple-app-site-association); unset = no app links.
       APPLE_TEAM_ID: ${APPLE_TEAM_ID:-}
       IOS_BUNDLE_ID: ${IOS_BUNDLE_ID:-}
+      # Browser and server errors of the web app (its own GlitchTip project; never sent to browsers).
+      SENTRY_DSN: ${WEB_SENTRY_DSN:-}
+      APP_VERSION: ${APP_VERSION:-dev}
+      ENVIRONMENT: ${ENVIRONMENT:-production}
     mem_limit: 512m
     depends_on:
       api: { condition: service_healthy }
@@ -77,6 +85,41 @@ services:
     # Exactly ONE beat instance: it schedules retention and cleanup jobs.
     command: celery -A app.workers.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
     mem_limit: 256m
+
+  # Self-hosted error tracking (Sentry protocol). All in one container: web, task worker and
+  # scheduler, with its queue in Postgres (no Valkey: our Redis is `noeviction` and sized for
+  # the app). Own role and database on the shared Postgres (scripts/glitchtip-db.sh).
+  # Runs its migrations on start. Sign-up is off: create the admin with
+  #   docker compose … exec glitchtip ./manage.py createsuperuser
+  glitchtip:
+    <<: *hardened
+    image: glitchtip/glitchtip:6.2.6@sha256:a3d8eb1b36c1e1603d55ab32711ea3dd8115874742a781a57391a62a16e0dff6
+    read_only: true
+    tmpfs: ["/tmp:size=128m"]
+    environment:
+      SERVER_ROLE: all_in_one
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?set GLITCHTIP_SECRET_KEY in .env.prod}
+      DATABASE_URL: postgres://glitchtip:${GLITCHTIP_DB_PASSWORD:?set GLITCHTIP_DB_PASSWORD in .env.prod}@db:5432/glitchtip
+      VALKEY_URL: ""
+      GLITCHTIP_DOMAIN: https://errors.${DOMAIN}
+      CSRF_TRUSTED_ORIGINS: https://errors.${DOMAIN}
+      EMAIL_URL: ${GLITCHTIP_EMAIL_URL:-consolemail://}
+      DEFAULT_FROM_EMAIL: ${GLITCHTIP_FROM_EMAIL:-}
+      ENABLE_USER_REGISTRATION: "false"
+      ENABLE_ORGANIZATION_CREATION: "false"
+      GLITCHTIP_RETENTION_DAYS: "30"  # reports carry opaque user ids; keep them no longer than backups
+      GLITCHTIP_ENABLE_UPTIME: "true"
+      GRANIAN_WORKERS: "1"
+    volumes:
+      - glitchtip_uploads:/code/uploads
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD", "python3", "/code/healthcheck.py"]
+      interval: 30s
+      start_period: 120s
+      retries: 5
+    depends_on:
+      db: { condition: service_healthy }
 
   db:
     image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
@@ -116,3 +159,4 @@ volumes:
   redisdata:
   caddy_data:
   caddy_config:
+  glitchtip_uploads:

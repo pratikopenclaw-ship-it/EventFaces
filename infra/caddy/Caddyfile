@@ -8,3 +8,15 @@
 	}
 	reverse_proxy web:3000
 }
+
+# Error tracking (GlitchTip). The app reports over the internal network; this site is for
+# the operator UI, the alert links and the uptime/heartbeat check-in URLs. Without access
+# logs, like the main site.
+errors.{$DOMAIN} {
+	encode zstd gzip
+	request_body {
+		max_size 20MB
+	}
+	header Strict-Transport-Security "max-age=31536000"
+	reverse_proxy glitchtip:8000
+}

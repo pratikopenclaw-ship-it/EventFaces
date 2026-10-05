@@ -1,0 +1,162 @@
+# Every check that gates a merge, on GitHub's Linux runners, against the same Docker Compose
+# stacks used locally (test data only; no secrets are needed or used).
+#   backend   pytest (incl. ruff/mypy/bandit/authz-matrix/contract tests) in the dev API image
+#   web       eslint, next typegen, tsc, vitest, production build
+#   e2e       Playwright on the e2e stack: Chromium, Firefox, WebKit, Pixel 7, iPhone 14
+#   security  scripts/security-scan.sh (pip-audit, npm audit, semgrep, gitleaks, trivy, ...)
+#   ios       manual only (workflow_dispatch): derived files + unit tests on a macOS runner
+# Visual baselines are rendered on macOS (fonts differ on Linux), so @visual stays part of
+# the local release gate (README "Tests"), not CI.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ios:
+        description: Also run the iOS unit tests (macOS runner, ~10x the minutes)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  COMPOSE_PROJECT_NAME: eventfaces
+
+jobs:
+  backend:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - run: cp .env.example .env
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the API image (layer cache, incl. the face model)
+        uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
+        with:
+          files: docker-compose.yml
+          targets: api
+          load: true
+          # Tagged as compose names them, so `up --no-build` uses these images.
+          set: |
+            api.tags=eventfaces-api
+            api.cache-from=type=gha,scope=api
+            api.cache-to=type=gha,scope=api,mode=max
+      - run: docker compose up -d --no-build --wait --wait-timeout 300 api
+      - run: docker compose exec -T api pytest -q -p no:cacheprovider
+      - if: failure()
+        run: docker compose logs --tail 200 api db s3
+
+  web:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run: { working-directory: frontend }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx next typegen
+      - run: npx tsc --noEmit
+      - run: npx vitest run
+      - run: npm run build
+
+  e2e:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - run: cp .env.example .env
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - name: Build the API and web images
+        uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
+        with:
+          files: docker-compose.yml
+          targets: api,web
+          load: true
+          set: |
+            api.tags=eventfaces-api
+            web.tags=eventfaces-web
+            api.cache-from=type=gha,scope=api
+            web.cache-from=type=gha,scope=web
+            web.cache-to=type=gha,scope=web,mode=max
+      - name: Start the e2e stack
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --no-build --wait --wait-timeout 600 api web
+          for _ in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && exit 0; sleep 5; done
+          echo "web did not start"; exit 1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium firefox webkit
+      - working-directory: frontend
+        run: npx playwright test --grep-invert @visual
+      - if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-results
+          path: frontend/test-results/
+          retention-days: 7
+      - if: failure()
+        run: docker compose logs --tail 200 api web
+
+  security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # gitleaks scans the full history
+      - run: cp .env.example .env
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/bake-action@018cb6412ab401ebaa809aa5f85966b74628600f # v7.4.0
+        with:
+          files: docker-compose.yml
+          targets: api
+          load: true
+          set: |
+            api.tags=eventfaces-api
+            api.cache-from=type=gha,scope=api
+      - run: docker compose up -d --no-build --wait --wait-timeout 300 api
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      # Advisory databases and rule registries are fetched over the network and occasionally
+      # time out; one retry. A real finding fails both runs.
+      - run: scripts/security-scan.sh || { echo "::warning::security scan failed once; retrying"; scripts/security-scan.sh; }
+
+  ios:
+    if: github.event_name == 'workflow_dispatch' && inputs.ios
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - run: xcodebuild -version && brew install xcodegen
+      # No Docker on macOS runners, so no e2e API: integration and UI tests stay in the local gate.
+      - run: ios/scripts/test.sh --no-api

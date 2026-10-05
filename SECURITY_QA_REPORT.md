@@ -656,6 +656,73 @@ Owner request: real terms on web and app, plus a cookie section. The owner decid
 
 **Not legal advice:** the texts are engineering drafts tailored to the service. LEGAL_REVIEW.md lists what counsel must decide. The biggest open point is the legal basis for face templates of everyone in event photos (Art. 9).
 
+## UAT foundations, phase 1: CI, error reporting, releases (2026-10-04)
+
+Owner request before UAT (treated as production): automated checks on every change, error
+reporting with alerts, and a release/deploy/rollback procedure. Owner decision: self-hosted
+GlitchTip (no third-party error service).
+
+**What was added:**
+- **Error reporting (GlitchTip, Sentry protocol, same server):**
+  - Backend: `sentry-sdk[fastapi,celery]` (approved dependency), off unless `SENTRY_DSN` is set. The SDK never collects bodies, PII or local variables, and `core/monitoring.scrub` filters every event (request reduced to method, path and safe headers; user reduced to the opaque id; messages, exceptions and breadcrumbs redacted for tokens, emails and bearer tokens).
+  - Web: **no SDK** (SDKs record clicks, console and URLs on pages that hold selfies). Browsers post a few string fields to the same-origin `/monitoring` route, which redacts them and builds the event itself for a server-only DSN. It never forwards client-built envelopes (no open relay or SSRF), accepts only same-origin posts and caps size and rate. Server errors go through `instrumentation.ts`. The CSP is unchanged (`connect-src 'self'`).
+  - iOS: no SDK; Apple's crash reports are used.
+  - Production guard: `SENTRY_DSN` required (https, or plain http only to the internal `glitchtip` host); GlitchTip's secret key and DB password are checked for strength.
+  - GlitchTip runs hardened: read-only root, all capabilities dropped, no-new-privileges, digest-pinned, memory limit, its own DB role and database with no access to the app database, no Valkey (the app's Redis is untouched), sign-up off, 30-day retention.
+- **Alerts:** new or regressed issues by email; uptime monitors; heartbeats from the retention job (only after a successful run), the backup and `scripts/disk-check.sh` (checks in only while healthy).
+- **Releases:** `/api/health` reports the build version. `scripts/release.sh` (clean `main`, CI green on the commit, annotated tag, notes from merged PRs) and `scripts/deploy.sh`. The deploy does a pre-deploy dump (mode 600, newest 3 kept, older ones shredded), builds, starts, runs `scripts/release_check.sh`, and **rolls back automatically**: alembic downgrade first, restore from the dump if that fails. `scripts/rollback.sh` refuses to guess after a rollback.
+- **CI** (`.github/workflows/ci.yml`): backend, web, e2e (all browser projects), security scan; iOS on demand (`ios/scripts/test.sh --no-api`). Actions are pinned by commit SHA, `permissions: contents: read`, no secrets, no credential persistence. actionlint is clean.
+
+**Tests and checks:**
+- `tests/test_monitoring.py`:
+  - a real crash during a selfie search reports no email, token, selfie header or cookie value, with request keys limited to method, path and headers;
+  - SDK options;
+  - the scrubber;
+  - the retention heartbeat only after success;
+  - a heartbeat sends no data and never raises.
+- `tests/test_infra_config.py`: nine new production-guard cases.
+- `src/lib/error-report.test.ts` (14): redaction, stack parsing, DSN parsing, field allow-list, envelope, tunnel refusals, rate limit.
+- `e2e/monitoring.spec.ts` against a fake GlitchTip in `e2e_server.py`: in every browser project an uncaught error arrives redacted; rejections are de-duplicated; cross-site posts are refused.
+- **Mutation-checked:** 10 backend and 11 web guards. Each removal fails a test. Two survivors in the first round (breadcrumb data, SDK body size) got new tests.
+- **Against a real GlitchTip 6.2.6**, in the same hardened configuration:
+  - events from API, worker and web are stored with nothing personal;
+  - a heartbeat check-in is recorded;
+  - Caddy routes `errors.<domain>` over TLS.
+- **Production-stack rehearsal** (`docker-compose.prod.yml`, production mode, random secrets, throwaway clone; local test data only):
+
+  | Scenario | Result |
+  |---|---|
+  | First deploy | Release check 27/27 |
+  | Failed deploy (bad health and a new migration) | Automatic downgrade and rollback; earlier data intact |
+  | Good deploy, then `rollback.sh` | Back to the previous version and schema |
+  | Failed deploy whose downgrade also fails | Restored from the pre-deploy dump; database grants re-applied (app may connect, GlitchTip may not) |
+
+**Found while building:**
+- The backend scrubber left an **email address** in exception messages: caught against the real GlitchTip, now redacted, and covered by a test.
+- Error reports include source context lines, so leak tests build their secrets at run time.
+- The browser reporter registered after hydration, so early errors were lost. It now installs on module load.
+- `Sec-Fetch-Site` is missing on plain-http origins (Firefox in the Linux e2e container). The tunnel now falls back to comparing `Origin` with `Host`.
+- Stack-parsing regex flagged by eslint-plugin-security: rewritten without overlapping quantifiers, input bounded (an adversarial line takes about 0 ms).
+- `deploy.sh`: the compose file fixes `.env.prod` by name; the web proxy needed a moment after the API container was replaced (health is retried for up to 60 s); bash 3.2 compatibility; a curl fallback that printed `000000`.
+
+**Final gates (2026-10-04):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,311 passed**, 0 failed (136 skipped: authorization-matrix cells that don't apply to a transport) |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest **103/103**, production build |
+| Playwright | **81 passed** (Chromium, WebKit, Pixel 7, iPhone 14), plus Firefox (Linux image) **8/8** |
+| iOS | API schema unchanged (no regeneration needed); `ios/scripts/test.sh --no-api` **86/86** on iPhone 17 and iPad Air |
+| Workflow | actionlint clean; shellcheck clean on every new script |
+
+- The first full backend run had one failure: the new retention-heartbeat test called `.delay().get()`, which Celery refuses once an earlier test has left a task context behind (test order). The test now calls the task body directly, as the worker does. Both mutants (no check-in, check-in before the run) still fail it.
+- The first scan run found two things in new test code, both fixed in code rather than suppressed:
+  - gitleaks: a random-looking literal password in a test fixture, now derived from the shared test constant;
+  - semgrep: a Firefox-style stack line (`fn@http://host/...`) matched the "credentials in URL" rule, so the fixture is now built from a host variable.
+- CI itself runs once the branch is pushed (not yet: needs the owner's go-ahead).
+
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

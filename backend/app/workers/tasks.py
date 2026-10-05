@@ -1,7 +1,8 @@
 import logging
 import uuid
 
-from app.core import storage
+from app.core import monitoring, storage
+from app.core.config import get_settings
 from app.core.db import SessionLocal
 from app.services import photo_pipeline
 from app.workers.celery_app import celery_app
@@ -85,7 +86,10 @@ def run_retention() -> dict[str, int]:
     from app.services.retention import run_retention as _run
 
     with SessionLocal() as db:
-        return asdict(_run(db))
+        result = asdict(_run(db))
+    # Only after a run that completed: a crashing run stops the check-ins and GlitchTip alerts.
+    monitoring.heartbeat(get_settings().retention_heartbeat_url)
+    return result
 
 
 @celery_app.task(name="storage.delete_event_objects")

@@ -23,6 +23,8 @@ cd frontend && npm run lint && npx next typegen && npx tsc --noEmit && npm run b
 scripts/security-scan.sh                             # all scanners; must stay 18/18 PASS (see SECURITY_QA_REPORT.md)
 docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web && (cd frontend && npx playwright test)   # e2e; `docker compose up -d api` to switch back
 scripts/backup_restore_drill.sh                      # pg_dump/pg_restore drill
+scripts/release.sh vX.Y.Z                            # tag a release (main, clean, CI green); deploy on the server: scripts/deploy.sh vX.Y.Z (auto-rollback), scripts/rollback.sh
+scripts/release_check.sh http://localhost:3000       # post-deploy smoke check (dev fails legal/docs checks by design)
 ios/scripts/bootstrap.sh                             # iOS: colours from design/tokens.json, API schema copy, Xcode project (XcodeGen)
 ios/scripts/test.sh                                  # iOS: derived-file checks + unit/integration/UI tests on iPhone + iPad (needs the e2e API)
 ```
@@ -77,6 +79,8 @@ Mailpit (dev email) UI: http://localhost:8025 — also has a JSON API at `/api/v
 - Consent text is server-owned (`services/consent_text.py`, en + de, chosen by Accept-Language) and returned with `/api/me/face-consent`; web and app render it. Changing any word requires bumping `FACE_CONSENT_VERSION` (`tests/test_consent_text.py` pins a hash per version).
 - `POST /api/join/by-code` (code only, the app's typed-code path) shares `_admit` with the slug join; its lockout is global per user and per IP because one endpoint covers every event.
 - Theme: no inline script and no CSP change. The root layout renders `<html data-theme>` from the `ef_theme` cookie (only system|light|dark, via `lib/theme.parseThemePref`; System = no attribute + CSS media query). `users.theme` is an enum; login/refresh/`PATCH /api/me/preferences` set the cookie. Per-event `accent_color` lands in a style attribute: keep it `#rrggbb`-only (schema validator + DB CHECK + `accentStyle`). `tests/test_theme.py`, `e2e/theme.spec.ts`.
+- Error reports (GlitchTip, Sentry protocol): backend `core/monitoring.scrub` is the only filter (no bodies, cookies, auth headers, query strings, local vars, emails, tokens; user = opaque id); the SDK is also configured never to collect bodies/PII/locals. Web has **no SDK**: browsers post a few string fields to the same-origin `/monitoring` route, which redacts (`lib/error-report.ts`) and builds the event itself for the server-only DSN (never forwards client envelopes; same-origin check + size + rate limits); server errors via `src/instrumentation.ts`. CSP stays `connect-src 'self'`. Tests: `test_monitoring.py`, `error-report.test.ts`, `e2e/monitoring.spec.ts` (fake GlitchTip in `e2e_server.py`); all guards mutation-checked. Production requires `SENTRY_DSN` (https, or http only to the internal `glitchtip` host).
+- `CI` (`.github/workflows/ci.yml`): actions pinned by SHA, `permissions: contents: read`, no secrets. `@visual` is excluded there (macOS baselines) and stays a local gate.
 - Indexes created in migrations must also be declared on the models (`tests/test_migrations.py` compares schema and metadata).
 
 ## iOS app (`ios/`, see ios/README.md)

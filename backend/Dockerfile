@@ -53,5 +53,9 @@ COPY . .
 RUN useradd --create-home --uid 10001 app && chown -R app /app
 USER app
 
+# The deployed build, shown by /api/health and attached to error reports (release).
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
+
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

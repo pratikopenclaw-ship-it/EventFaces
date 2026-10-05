@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
+from app.core import monitoring
 from app.core.db import get_db
 from app.core.security import ACCESS_COOKIE, decode_access_token
 from app.models import Event, User, UserRole
@@ -56,6 +57,7 @@ def get_current_user(request: Request, db: DB) -> User:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
     request.state.transport = transport
     request.state.session_id = payload["sid"]
+    monitoring.set_user(user.id)  # opaque id only, for error reports
     return user
 
 

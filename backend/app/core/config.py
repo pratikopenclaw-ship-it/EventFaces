@@ -162,6 +162,20 @@ class Settings(BaseSettings):
     app_attest_app_id: str = Field(default="", pattern=r"^([A-Z0-9]{10}\.[A-Za-z0-9.-]+)?$")
     app_attest_env: Literal["development", "production"] = "development"
 
+    # Error reporting (self-hosted GlitchTip, Sentry protocol): off unless SENTRY_DSN is
+    # set. core/monitoring.py scrubs every event (no bodies, cookies, tokens, emails).
+    sentry_dsn: str = ""
+    sentry_traces_sample_rate: float = Field(default=0.05, ge=0, le=1)
+    # The deployed build (git sha / tag), set at image build time; shown by /api/health.
+    app_version: str = Field(default="dev", pattern=r"^[A-Za-z0-9._+-]{1,40}$")
+    # GlitchTip heartbeat monitor pinged after every successful hourly retention run, so a
+    # stalled retention job (a GDPR duty) raises an alert. Empty = off.
+    retention_heartbeat_url: str = Field(default="", pattern=r"^(https?://\S+)?$")
+    # GlitchTip's own secrets (read by the glitchtip container from .env.prod); checked here
+    # so every production secret is in one guard.
+    glitchtip_secret_key: str = ""
+    glitchtip_db_password: str = ""
+
     # Operator identity for the legal documents (services/legal.py: Impressum, Terms,
     # Privacy Notice). Empty fields show as visible placeholders; production refuses to
     # start while a required one is empty. LEGAL_OPERATOR_ADDRESS may use "\n" for lines.
@@ -225,13 +239,29 @@ class Settings(BaseSettings):
             problems.append("legal identity incomplete (Impressum, Terms, Privacy Notice): set " + ", ".join(missing))
         if self.app_attest_app_id and self.app_attest_env != "production":
             problems.append("APP_ATTEST_ENV must be production")  # development keys are never accepted in production
+        if not _valid_production_dsn(self.sentry_dsn):
+            problems.append("SENTRY_DSN must be set: https://<key>@errors.<domain>/<project> or http://<key>@glitchtip:8000/<project>")
+        if self.glitchtip_secret_key.startswith("change-me") or _entropy_bits(self.glitchtip_secret_key) < 100:
+            problems.append("GLITCHTIP_SECRET_KEY must be a random secret")
+        if len(self.glitchtip_db_password) < 16 or self.glitchtip_db_password in _PUBLIC_PASSWORDS:
+            problems.append("GLITCHTIP_DB_PASSWORD must be a private password")
         if problems:
             raise ValueError("Refusing to start in production: " + "; ".join(problems))
         return self
 
 
 # Development values published in .env.example / docker-compose.yml.
-_PUBLIC_PASSWORDS = {"eventfaces", "eventfaces_app_dev", "eventfaces_redis_dev", "eventfaces-dev-secret", "eventfaces-dev"}
+_PUBLIC_PASSWORDS = {"eventfaces", "eventfaces_app_dev", "eventfaces_redis_dev", "eventfaces-dev-secret", "eventfaces-dev", "glitchtip_dev_password"}
+
+
+def _valid_production_dsn(dsn: str) -> bool:
+    """A key, a numeric project, and https, or plain http only to the GlitchTip container
+    on the internal compose network (the key never crosses the internet unencrypted)."""
+    u = urlsplit(dsn)
+    project = u.path.rstrip("/").rsplit("/", 1)[-1]
+    if not u.username or not u.hostname or not project.isdigit():
+        return False
+    return u.scheme == "https" or (u.scheme == "http" and u.hostname == "glitchtip")
 
 
 def _entropy_bits(value: str) -> float:
