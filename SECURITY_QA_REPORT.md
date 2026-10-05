@@ -723,6 +723,78 @@ GlitchTip (no third-party error service).
 - CI itself runs once the branch is pushed (not yet: needs the owner's go-ahead).
 
 
+## UAT phase 2: pricing and test-mode payments (2026-10-05)
+
+Owner decisions: per-event plans plus a monthly subscription; a successful checkout creates the event (self-service); a dummy payment integration until a real provider is chosen.
+
+**What was added:**
+- **Price list** (`services/billing/plans.py`, the only source):
+
+  | Plan | Price | Attendees | Photos |
+  |---|---|---|---|
+  | Event S | €49 | 100 | 500 |
+  | Event M | €149 | 500 | 3,000 |
+  | Event L | €349 | 2,000 | 10,000 |
+  | Pro | €199 a month | 5 events a month, Event M limits each | |
+
+  Prices include 19% VAT and are marked as example prices.
+- **Provider interface** with a `FakeProvider` that behaves like Stripe Checkout:
+  - a hosted payment page (in this app, TEST MODE banner);
+  - test cards only (4242… succeeds; 4000…0002 and 4000…9995 fail);
+  - a server-to-server confirmation signed with HMAC-SHA256 over `timestamp.body`, valid for ±300 s.
+- **Orders:**
+  - only a verified confirmation pays an order;
+  - each provider event applies once (`webhook_events`), and only a pending order is fulfilled;
+  - a confirmation whose amount or currency differs from the order never fulfils.
+- **Fulfilment:** the event is created with the plan's limits, the buyer becomes its organizer (attendee → organizer), and the existing Organizer Terms + DPA gate still applies before managing.
+- **Subscriptions:**
+  - 30-day periods; the allowance is counted from orders, so deleting an event doesn't give the slot back;
+  - canceling keeps the subscription until the period ends;
+  - hourly maintenance renews or ends subscriptions and cancels checkouts unpaid after 24 h.
+- **Plan limits**, with the event row locked against races:
+  - attendees on join (slug and code) and on invite acceptance;
+  - photos on guest uploads and Drive import (Drive skips the excess and reports it on the sync run);
+  - admin-made events stay unlimited.
+- **Web:** pricing page, checkout, test payment page (card fields with autofill off), Account › Billing (orders, receipts, subscription, new event from the allowance), plan usage on the event's admin page.
+- **iOS:** no purchase UI (App Store rules); the API schema only grows.
+- **Account deletion:** orders are kept (invoice retention) but unlinked, and a running subscription ends immediately.
+- **Production guard:** the fake provider is refused unless `ALLOW_TEST_PAYMENTS=true` (UAT); `PAYMENTS_WEBHOOK_SECRET` must be strong.
+
+**Found while building:**
+- **FastAPI echoed rejected input in every 422 response**, e.g. a too-short password at sign-up (and it would have echoed card numbers). A global handler now returns only `type`, `loc` and `msg`, with a regression test.
+- Postgres `now()` is the transaction start, so an event created in the same transaction as the subscription looked older than the period. Usage is now counted from orders, using the app clock on both sides.
+- The webhook table's `event_id` column (the provider's event id) tripped the GDPR test that checks every `event_id` column after an event is deleted. It is renamed to `provider_event_id`.
+- The checkout summary had a text line directly inside a `<dl>` (axe: serious). It now sits outside the list.
+- `webhook_events` has no foreign key, so the per-test cleanup didn't empty it, and an id from one test leaked into the next. It is now truncated explicitly.
+
+**Tests:**
+- `tests/test_billing.py` (27): purchase, Organizer Terms gate, declined card, non-test cards refused and never echoed, own-orders-only, signed webhook applied once, forged/stale/future/unsigned/tampered confirmations refused, wrong amount, CSRF scope, oversized body, subscription allowance and cancellation, maintenance, attendee/invite/upload/Drive limits, unlimited admin events, account deletion.
+- Authorization matrix: 10 new operations, both transports. Rate-limit contract: 4 new endpoints.
+- **16 guards mutation-checked:** signature, timestamp, test cards only, amount, fulfil once, allowance, one subscription, cancellation ends, deletion ends the subscription, own orders, attendee limit, upload limit, Drive limit, CSRF cookie scope, 422 no-echo, production guard.
+- Playwright `billing.spec.ts`: buy Event S (real card refused, declined card, then success) → event admin with plan usage → billing → receipt. The axe audit covers pricing, checkout, test payment, billing and receipt in both themes.
+
+**For counsel (LEGAL_REVIEW.md item 6):**
+- the right of withdrawal for an immediately starting service (checkbox wording needed);
+- invoice retention and billing details;
+- the example prices.
+
+**Final gates (2026-10-05):**
+
+| Gate | Result |
+|---|---|
+| Backend | **2,525 passed**, 0 failed (no new warnings) |
+| `scripts/security-scan.sh` | **18/18** |
+| Frontend | lint clean (no new warnings), `tsc`, vitest **106/106**, production build |
+| Playwright | **81 passed** (Chromium, WebKit, Pixel 7, iPhone 14), plus Firefox (Linux image) **8/8** |
+| iOS | regenerated API client builds; `test.sh --no-api` **86/86** on iPhone 17 and iPad Air |
+
+- **Visual baselines:** the "settings" baselines were regenerated after the intended change (the new Billing card on the account page) and inspected in both themes, desktop and phone.
+- **One transient failure in the full Playwright run:** the dark-theme "delta pass" axe test, a screen this phase didn't touch. It passed 9 of 9 reruns.
+- **The first scan run found two things in new code**, both fixed in code:
+  - the three new forms lacked `method="post"` (`forms.test.ts`): before hydration, a submit would have put the fields, including a card number, into the URL;
+  - a secret-looking literal in a test fixture (gitleaks), now built at run time.
+
+
 ## Scanner results
 
 | Tool | Scope | Initial | Final | Notes |

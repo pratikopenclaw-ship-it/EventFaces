@@ -92,6 +92,15 @@ def run_retention() -> dict[str, int]:
     return result
 
 
+@celery_app.task(name="billing.maintenance")
+def billing_maintenance() -> dict[str, int]:
+    """Cancel abandoned checkouts; end or renew subscriptions at their period end."""
+    from app.services.billing.orders import run_maintenance
+
+    with SessionLocal() as db:
+        return run_maintenance(db)
+
+
 @celery_app.task(name="storage.delete_event_objects")
 def delete_event_objects(event_id: str) -> int:
     return storage.delete_prefix(storage.event_prefix(event_id))

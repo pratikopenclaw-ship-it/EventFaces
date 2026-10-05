@@ -121,7 +121,7 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
 2. Generate every secret separately (store them in your password manager or secret store as well):
    ```bash
    for n in JWT_SECRET DOWNLOAD_TOKEN_SECRET POSTGRES_PASSWORD APP_DB_PASSWORD REDIS_PASSWORD \
-            GLITCHTIP_SECRET_KEY GLITCHTIP_DB_PASSWORD; do
+            GLITCHTIP_SECRET_KEY GLITCHTIP_DB_PASSWORD PAYMENTS_WEBHOOK_SECRET; do
      echo "$n=$(openssl rand -base64 48 | tr -d '\n/+=' | cut -c1-48)"; done
    ```
 3. Set in `.env.prod`:
@@ -139,12 +139,17 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
      (`smtp://user:password@host:587`) and `GLITCHTIP_FROM_EMAIL` for its alert emails
    - `SENTRY_DSN` and `WEB_SENTRY_DSN`: set after GlitchTip's first start (section 6)
    - `RETENTION_HEARTBEAT_URL`, `DISK_HEARTBEAT_URL`: heartbeat check-in URLs (section 8)
+   - Payments: `PAYMENTS_WEBHOOK_SECRET`, and for **UAT only** `ALLOW_TEST_PAYMENTS=true`. Only the
+     fake (TEST MODE) provider exists so far: production refuses to start with it unless this flag
+     is set, and every billing page then shows a test-mode banner. Remove the flag when a real
+     provider is configured.
    - Remove every `TEST_*` variable.
 4. The API **refuses to start** in production if a value is still a development or public default
    (dev or low-entropy secrets, equal JWT and download secrets, insecure cookies, a non-https frontend,
    the owner role or a dev password in `DATABASE_URL`, Redis without a private password, the dev S3
-   key, Mailpit as SMTP, a missing or plaintext-over-the-internet `SENTRY_DSN`, or weak GlitchTip
-   secrets). The error lists every problem.
+   key, Mailpit as SMTP, a missing or plaintext-over-the-internet `SENTRY_DSN`, weak GlitchTip
+   secrets, a weak `PAYMENTS_WEBHOOK_SECRET`, or the test payment provider without
+   `ALLOW_TEST_PAYMENTS=true`). The error lists every problem.
 5. **Rotation** (at least yearly, and immediately after a suspected leak or a staff change):
 
    | Secret | How | Effect |
@@ -154,6 +159,7 @@ Use any transactional SMTP relay with EU data processing. Send from a subdomain 
    | `APP_DB_PASSWORD` | `ALTER ROLE eventfaces_app PASSWORD '…'` as the owner, update `.env.prod`, restart `api`, `worker`, `beat` | None |
    | `POSTGRES_PASSWORD` | `ALTER ROLE eventfaces PASSWORD '…'`, update `.env.prod` | Used only by migrations |
    | `REDIS_PASSWORD` | Update `.env.prod`, restart `redis`, `api`, `worker`, `beat` | Rate-limit counters and queued-search statuses reset |
+   | `PAYMENTS_WEBHOOK_SECRET` | New value, restart `api` (with a real provider: rotate it there too) | Confirmations signed with the old secret are refused (a real provider retries them) |
    | `GLITCHTIP_DB_PASSWORD` | Update `.env.prod`, run `scripts/glitchtip-db.sh`, restart `glitchtip` | None |
    | `GLITCHTIP_SECRET_KEY` | Update `.env.prod`, restart `glitchtip` | GlitchTip users are logged out |
    | GlitchTip DSN keys | Create a new key on the project, update `SENTRY_DSN`/`WEB_SENTRY_DSN`, redeploy, then delete the old key | None |

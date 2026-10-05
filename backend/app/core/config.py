@@ -168,6 +168,16 @@ class Settings(BaseSettings):
     sentry_traces_sample_rate: float = Field(default=0.05, ge=0, le=1)
     # The deployed build (git sha / tag), set at image build time; shown by /api/health.
     app_version: str = Field(default="dev", pattern=r"^[A-Za-z0-9._+-]{1,40}$")
+    # Payments (services/billing). "fake" is a test provider: a TEST MODE checkout page in
+    # this app, test cards only, no real money. Production refuses it unless
+    # ALLOW_TEST_PAYMENTS=true (UAT). The webhook secret signs provider confirmations.
+    payments_provider: Literal["fake"] = "fake"
+    allow_test_payments: bool = False
+    payments_webhook_secret: str = Field(min_length=32)
+    checkout_rate_limit: str = "10/3600"  # checkouts started per user
+    payment_attempt_rate_limit: str = "20/3600"  # test-card attempts per user
+    webhook_rate_limit: str = "120/60"  # confirmations per IP
+
     # GlitchTip heartbeat monitor pinged after every successful hourly retention run, so a
     # stalled retention job (a GDPR duty) raises an alert. Empty = off.
     retention_heartbeat_url: str = Field(default="", pattern=r"^(https?://\S+)?$")
@@ -239,6 +249,10 @@ class Settings(BaseSettings):
             problems.append("legal identity incomplete (Impressum, Terms, Privacy Notice): set " + ", ".join(missing))
         if self.app_attest_app_id and self.app_attest_env != "production":
             problems.append("APP_ATTEST_ENV must be production")  # development keys are never accepted in production
+        if self.payments_provider == "fake" and not self.allow_test_payments:
+            problems.append("PAYMENTS_PROVIDER=fake takes no real payments: set ALLOW_TEST_PAYMENTS=true only for UAT")
+        if self.payments_webhook_secret.startswith("change-me") or _entropy_bits(self.payments_webhook_secret) < 100:
+            problems.append("PAYMENTS_WEBHOOK_SECRET must be a random secret")
         if not _valid_production_dsn(self.sentry_dsn):
             problems.append("SENTRY_DSN must be set: https://<key>@errors.<domain>/<project> or http://<key>@glitchtip:8000/<project>")
         if self.glitchtip_secret_key.startswith("change-me") or _entropy_bits(self.glitchtip_secret_key) < 100:

@@ -15,6 +15,7 @@ class SyncRunOut(BaseModel):
     files_listed: int
     files_new: int
     files_retried: int
+    files_over_limit: int = 0  # not imported: the plan's photo limit
     error: str | None
     created_at: dt.datetime
     started_at: dt.datetime | None

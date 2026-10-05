@@ -139,6 +139,25 @@
         "title": "BandOut",
         "type": "object"
       },
+      "BillingOverviewOut": {
+        "properties": {
+          "orders": {
+            "items": {
+              "$ref": "#/components/schemas/OrderOut"
+            },
+            "title": "Orders",
+            "type": "array"
+          },
+          "subscription": {
+            "$ref": "#/components/schemas/SubscriptionOut"
+          }
+        },
+        "required": [
+          "orders"
+        ],
+        "title": "BillingOverviewOut",
+        "type": "object"
+      },
       "CaptureTokenOut": {
         "properties": {
           "expires_in": {
@@ -155,6 +174,55 @@
           "expires_in"
         ],
         "title": "CaptureTokenOut",
+        "type": "object"
+      },
+      "CheckoutIn": {
+        "properties": {
+          "event_date": {
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
+          },
+          "event_name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Event Name",
+            "type": "string"
+          },
+          "plan": {
+            "enum": [
+              "event_s",
+              "event_m",
+              "event_l",
+              "pro"
+            ],
+            "title": "Plan",
+            "type": "string"
+          }
+        },
+        "required": [
+          "plan"
+        ],
+        "title": "CheckoutIn",
+        "type": "object"
+      },
+      "CheckoutOut": {
+        "properties": {
+          "checkout_url": {
+            "title": "Checkout Url",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "checkout_url"
+        ],
+        "title": "CheckoutOut",
         "type": "object"
       },
       "CodeOnlyJoinIn": {
@@ -323,6 +391,20 @@
           "action"
         ],
         "title": "ConsentTextOut",
+        "type": "object"
+      },
+      "CreatedEventOut": {
+        "properties": {
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id"
+        ],
+        "title": "CreatedEventOut",
         "type": "object"
       },
       "DeleteMeIn": {
@@ -857,6 +939,40 @@
           }
         },
         "title": "EventUpdate",
+        "type": "object"
+      },
+      "EventUsageOut": {
+        "properties": {
+          "attendees": {
+            "title": "Attendees",
+            "type": "integer"
+          },
+          "max_attendees": {
+            "title": "Max Attendees",
+            "type": "integer"
+          },
+          "max_photos": {
+            "title": "Max Photos",
+            "type": "integer"
+          },
+          "photos": {
+            "title": "Photos",
+            "type": "integer"
+          },
+          "plan": {
+            "title": "Plan",
+            "type": "string"
+          },
+          "plan_name": {
+            "title": "Plan Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "attendees",
+          "photos"
+        ],
+        "title": "EventUsageOut",
         "type": "object"
       },
       "FeedbackIn": {
@@ -1730,6 +1846,105 @@
         "title": "MyUploadOut",
         "type": "object"
       },
+      "OrderKind": {
+        "enum": [
+          "one_off",
+          "subscription",
+          "allowance"
+        ],
+        "title": "OrderKind",
+        "type": "string"
+      },
+      "OrderOut": {
+        "properties": {
+          "amount_cents": {
+            "title": "Amount Cents",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "event_date": {
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "event_name": {
+            "title": "Event Name",
+            "type": "string"
+          },
+          "failure_code": {
+            "title": "Failure Code",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/OrderKind"
+          },
+          "paid_at": {
+            "format": "date-time",
+            "title": "Paid At",
+            "type": "string"
+          },
+          "plan": {
+            "title": "Plan",
+            "type": "string"
+          },
+          "plan_name": {
+            "default": "",
+            "title": "Plan Name",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "vat_cents": {
+            "default": 0,
+            "title": "Vat Cents",
+            "type": "integer"
+          },
+          "vat_rate": {
+            "title": "Vat Rate",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "plan",
+          "kind",
+          "amount_cents",
+          "currency",
+          "vat_rate",
+          "status",
+          "created_at"
+        ],
+        "title": "OrderOut",
+        "type": "object"
+      },
+      "OrderStatus": {
+        "enum": [
+          "pending",
+          "paid",
+          "canceled"
+        ],
+        "title": "OrderStatus",
+        "type": "string"
+      },
       "OrganizerAssign": {
         "properties": {
           "email": {
@@ -1869,6 +2084,59 @@
         "title": "PipelineCounts",
         "type": "object"
       },
+      "PlanOut": {
+        "properties": {
+          "events_per_period": {
+            "title": "Events Per Period",
+            "type": "integer"
+          },
+          "key": {
+            "enum": [
+              "event_s",
+              "event_m",
+              "event_l",
+              "pro"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "one_off",
+              "subscription"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "max_attendees": {
+            "title": "Max Attendees",
+            "type": "integer"
+          },
+          "max_photos": {
+            "title": "Max Photos",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "price_cents": {
+            "title": "Price Cents",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "kind",
+          "price_cents",
+          "max_attendees",
+          "max_photos",
+          "events_per_period"
+        ],
+        "title": "PlanOut",
+        "type": "object"
+      },
       "PreferencesIn": {
         "properties": {
           "theme": {
@@ -1879,6 +2147,47 @@
           "theme"
         ],
         "title": "PreferencesIn",
+        "type": "object"
+      },
+      "PriceListOut": {
+        "properties": {
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "example_prices": {
+            "title": "Example Prices",
+            "type": "boolean"
+          },
+          "plans": {
+            "items": {
+              "$ref": "#/components/schemas/PlanOut"
+            },
+            "title": "Plans",
+            "type": "array"
+          },
+          "test_mode": {
+            "title": "Test Mode",
+            "type": "boolean"
+          },
+          "vat_included": {
+            "default": true,
+            "title": "Vat Included",
+            "type": "boolean"
+          },
+          "vat_rate": {
+            "title": "Vat Rate",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "currency",
+          "vat_rate",
+          "example_prices",
+          "test_mode",
+          "plans"
+        ],
+        "title": "PriceListOut",
         "type": "object"
       },
       "PushTokenIn": {
@@ -2446,6 +2755,89 @@
         "title": "SignupIn",
         "type": "object"
       },
+      "SubscriptionEventIn": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SubscriptionEventIn",
+        "type": "object"
+      },
+      "SubscriptionOut": {
+        "properties": {
+          "canceled_at": {
+            "format": "date-time",
+            "title": "Canceled At",
+            "type": "string"
+          },
+          "current_period_end": {
+            "format": "date-time",
+            "title": "Current Period End",
+            "type": "string"
+          },
+          "current_period_start": {
+            "format": "date-time",
+            "title": "Current Period Start",
+            "type": "string"
+          },
+          "events_included": {
+            "default": 0,
+            "title": "Events Included",
+            "type": "integer"
+          },
+          "events_used": {
+            "default": 0,
+            "title": "Events Used",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "plan": {
+            "title": "Plan",
+            "type": "string"
+          },
+          "plan_name": {
+            "default": "",
+            "title": "Plan Name",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/SubscriptionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "plan",
+          "status",
+          "current_period_start",
+          "current_period_end"
+        ],
+        "title": "SubscriptionOut",
+        "type": "object"
+      },
+      "SubscriptionStatus": {
+        "enum": [
+          "active",
+          "expired"
+        ],
+        "title": "SubscriptionStatus",
+        "type": "string"
+      },
       "SyncRunOut": {
         "properties": {
           "created_at": {
@@ -2463,6 +2855,11 @@
           },
           "files_new": {
             "title": "Files New",
+            "type": "integer"
+          },
+          "files_over_limit": {
+            "default": 0,
+            "title": "Files Over Limit",
             "type": "integer"
           },
           "files_retried": {
@@ -2555,6 +2952,81 @@
           "faces"
         ],
         "title": "SyncStatusOut",
+        "type": "object"
+      },
+      "TestCheckoutOut": {
+        "description": "The fake provider's hosted checkout page (TEST MODE).",
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderOut"
+          },
+          "test_cards": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Test Cards",
+            "type": "array"
+          }
+        },
+        "required": [
+          "order",
+          "test_cards"
+        ],
+        "title": "TestCheckoutOut",
+        "type": "object"
+      },
+      "TestPaymentIn": {
+        "properties": {
+          "card_number": {
+            "maxLength": 23,
+            "minLength": 12,
+            "pattern": "^[0-9 ]+$",
+            "title": "Card Number",
+            "type": "string"
+          },
+          "cvc": {
+            "maxLength": 4,
+            "minLength": 3,
+            "pattern": "^[0-9]+$",
+            "title": "Cvc",
+            "type": "string"
+          },
+          "expiry": {
+            "maxLength": 7,
+            "minLength": 4,
+            "title": "Expiry",
+            "type": "string"
+          }
+        },
+        "required": [
+          "card_number",
+          "expiry",
+          "cvc"
+        ],
+        "title": "TestPaymentIn",
+        "type": "object"
+      },
+      "TestPaymentOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/OrderOut"
+          },
+          "outcome": {
+            "enum": [
+              "paid",
+              "failed",
+              "duplicate",
+              "ignored"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "order"
+        ],
+        "title": "TestPaymentOut",
         "type": "object"
       },
       "ThemePreference": {
@@ -2743,6 +3215,25 @@
           "type"
         ],
         "title": "ValidationError",
+        "type": "object"
+      },
+      "WebhookOut": {
+        "properties": {
+          "status": {
+            "enum": [
+              "paid",
+              "failed",
+              "duplicate",
+              "ignored"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "WebhookOut",
         "type": "object"
       }
     }
@@ -3121,6 +3612,333 @@
         "summary": "Verify Email",
         "tags": [
           "auth"
+        ]
+      }
+    },
+    "/api/billing/checkout": {
+      "post": {
+        "operationId": "billing_start_checkout",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Checkout",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/orders/{order_id}": {
+      "get": {
+        "operationId": "billing_get_order",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Order",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/overview": {
+      "get": {
+        "operationId": "billing_overview",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BillingOverviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Overview",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/plans": {
+      "get": {
+        "operationId": "billing_price_list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PriceListOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Price List",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/subscription/cancel": {
+      "post": {
+        "operationId": "billing_cancel_subscription",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Cancel Subscription",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/subscription/events": {
+      "post": {
+        "operationId": "billing_subscription_event",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionEventIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedEventOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Subscription Event",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/test-checkout/{session_ref}": {
+      "get": {
+        "operationId": "billing_test_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestCheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Checkout",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/test-checkout/{session_ref}/pay": {
+      "post": {
+        "description": "The fake provider charging a test card, then confirming like a webhook would.",
+        "operationId": "billing_test_pay",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestPaymentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestPaymentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Test Pay",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/webhook/fake": {
+      "post": {
+        "description": "Server-to-server payment confirmation. No session: authenticated only by its HMAC\nsignature and timestamp (replays and forgeries are refused; each event applies once).\nExempt from CSRF because it carries no cookies (api/csrf.py).",
+        "operationId": "billing_fake_webhook",
+        "parameters": [
+          {
+            "description": "t=<unix time>,v1=<HMAC-SHA256>",
+            "in": "header",
+            "name": "Fake-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "description": "The provider's signed event (JSON). Verified against the raw bytes.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Fake Webhook",
+        "tags": [
+          "billing"
         ]
       }
     },
@@ -5387,6 +6205,49 @@
         "summary": "Complete Upload",
         "tags": [
           "uploads"
+        ]
+      }
+    },
+    "/api/events/{event_id}/usage": {
+      "get": {
+        "operationId": "billing_event_usage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventUsageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Event Usage",
+        "tags": [
+          "billing"
         ]
       }
     },

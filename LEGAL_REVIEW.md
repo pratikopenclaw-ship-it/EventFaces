@@ -45,10 +45,12 @@ Production refuses to start while these are empty (`Settings` validator). Set th
 
 4. **Inclusion of the Terms (§ 305(2) BGB):** every account creation has an unticked checkbox, "I accept the Terms of Use and confirm that I am at least 16". The record kept is document, version, time, language and channel (`legal_acceptances`). Changed Terms are accepted again before further use. Please confirm this is sufficient, and whether the record should be kept after account deletion for evidence (Art. 17(3)(e)). Today it is deleted with the account.
 5. **Liability clauses** (sections 12 Terms / 9 Organizer Terms): standard BGB-compliant structure. Please check them against §§ 307–309 BGB, and check the B2B cap (fees of the last 12 months).
-6. **Paid organizer services:**
-   - The contract is concluded by individual order (offer and acceptance in text form).
-   - Payment and invoicing are not built.
-   - Confirm the order process, price list, invoicing and **retention duties** (HGB/AO, 10 years for invoices).
+6. **Paid organizer services** (self-service checkout added 2026-10-05, test mode only):
+   - Organizers order online: plan → event name → payment page → the event is created. The price list is **example prices incl. 19% VAT** until the operator sets real ones.
+   - Only a test payment provider exists (no real money). A receipt (net, VAT, total) is shown; it says it is **not a tax invoice**. Real invoices come with the real provider.
+   - Orders are kept when an account is deleted, with the link to the person removed (they hold no names, emails or card details). Please confirm the **retention duties** (HGB/AO, 10 years for invoices) and whether the customer's billing name/address must be collected for invoices.
+   - The Pro subscription renews every 30 days until canceled; canceling keeps it to the end of the paid period.
+   - **Consumers' right of withdrawal** for a service that starts immediately (§ 356(4)/(5) BGB): the checkout does not yet ask for the express request to start before the withdrawal period ends, or for the acknowledgement that the right is lost on full performance. Please provide the wording; it is a checkbox on the checkout page.
 7. **Consumer organizers** (private hosts): the withdrawal information (section 11 Organizer Terms) follows the statutory model. Please verify the wording, and add the model withdrawal form (Anlage 2 EGBGB) to order confirmations.
 8. **Minimum age 16** (owner decision): users confirm it at sign-up. There is no age verification beyond that.
 9. **Consumer arbitration (§ 36 VSBG):** the texts state "not willing and not obliged". Please confirm, and also whether the operator is above the 10-employee threshold. The EU ODR platform was discontinued on 20 July 2025, so no ODR link is included.

@@ -59,6 +59,7 @@ for (const scheme of ["light", "dark"] as const) {
         "/organizer-terms",
         "/imprint",
         "/removal-request",
+        "/pricing",
       ]) {
         await page.goto(path);
         await expect(page.locator("main h1, main h2").first()).toBeVisible();
@@ -105,6 +106,29 @@ for (const scheme of ["light", "dark"] as const) {
       await page.getByRole("button", { name: /^Theme: / }).click();
       await expect(page.getByRole("menu", { name: "Theme" })).toBeVisible();
       await audit(page, "theme menu");
+    });
+
+    test("axe: checkout, test payment and billing", async ({ page, request }) => {
+      await reset(request);
+      await login(page, "alice@e2e.test");
+      await page.goto("/checkout?plan=pro");
+      await expect(page.getByRole("heading", { name: "Subscribe to Pro" })).toBeVisible();
+      await audit(page, "/checkout");
+      await page.getByLabel("Your first event (optional)").fill("Monthly meetup");
+      await page.getByRole("button", { name: "Continue to payment" }).click();
+      await expect(page.getByRole("heading", { name: "Payment" })).toBeVisible();
+      await audit(page, "/checkout/test");
+      await page.getByRole("button", { name: /4242 4242 4242 4242/ }).click();
+      await page.getByLabel("Expiry").fill("12/30");
+      await page.getByLabel("CVC").fill("123");
+      await page.getByRole("button", { name: /^Pay / }).click();
+      await expect(page).toHaveURL(/\/admin\/events\//);
+      await page.goto("/account/billing");
+      await expect(page.getByRole("heading", { name: "Pro subscription" })).toBeVisible();
+      await audit(page, "/account/billing");
+      await page.getByRole("link", { name: "Receipt" }).first().click();
+      await expect(page.getByRole("heading", { name: "Receipt" })).toBeVisible();
+      await audit(page, "receipt");
     });
 
     test("axe: organizer admin tabs", async ({ page, request }) => {

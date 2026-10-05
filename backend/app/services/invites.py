@@ -18,6 +18,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.security import hash_token, new_opaque_token, utcnow
 from app.models import Event, EventMember, Invite, InviteStatus, MemberRole, MemberStatus, User
+from app.services.billing import limits
 
 MAX_INVITES_PER_UPLOAD = 2000
 
@@ -143,6 +144,7 @@ def accept(db: Session, invite: Invite, event: Event, user: User) -> None:
         raise HTTPException(status.HTTP_410_GONE, "This invite was already used")
     if user.email_verified_at is None:
         user.email_verified_at = utcnow()  # the link was delivered to this inbox
+    limits.ensure_attendee_room(db, event, user)  # plan limit (paid events); no-op for existing rows
     membership = db.get(EventMember, (event.id, user.id))
     if membership is None:
         db.add(EventMember(event_id=event.id, user_id=user.id, role=MemberRole.attendee, status=MemberStatus.approved))

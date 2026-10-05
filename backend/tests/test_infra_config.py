@@ -32,6 +32,8 @@ PROD_OK = {
     "sentry_dsn": "http://0123abcd@glitchtip:8000/1",
     "glitchtip_secret_key": STRONG + "gt",
     "glitchtip_db_password": STRONG + "gtdb",
+    "allow_test_payments": True,  # UAT: the fake provider is the only one so far
+    "payments_webhook_secret": STRONG + "pay",
 }
 
 
@@ -70,6 +72,9 @@ def test_valid_production_settings_load() -> None:
         ({"glitchtip_secret_key": ""}, "GLITCHTIP_SECRET_KEY"),
         ({"glitchtip_db_password": "glitchtip_dev_password"}, "GLITCHTIP_DB_PASSWORD"),
         ({"glitchtip_db_password": "short"}, "GLITCHTIP_DB_PASSWORD"),
+        ({"allow_test_payments": False}, "ALLOW_TEST_PAYMENTS"),  # no fake payments in production by accident
+        ({"payments_webhook_secret": "change-me-payments-webhook-secret-dev-only"}, "PAYMENTS_WEBHOOK_SECRET"),
+        ({"payments_webhook_secret": "b" * 40}, "PAYMENTS_WEBHOOK_SECRET"),
     ],
 )
 def test_production_refuses_insecure_settings(override: dict[str, object], problem: str | None) -> None:

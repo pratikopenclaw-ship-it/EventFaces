@@ -40,6 +40,9 @@ export function Nav() {
             </>
           ) : (
             <>
+              <Link href="/pricing" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
+                Pricing
+              </Link>
               <Link href="/login" className="whitespace-nowrap rounded-lg px-2 py-2 text-muted hover:bg-mist hover:text-ink sm:px-3">
                 Log in
               </Link>

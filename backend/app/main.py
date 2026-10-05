@@ -1,6 +1,7 @@
 import logging
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from sqlalchemy.exc import DataError
 from sqlalchemy.exc import TimeoutError as PoolTimeout
@@ -9,7 +10,7 @@ from starlette.responses import Response
 
 from app.api.app_version import AppVersionMiddleware
 from app.api.csrf import CSRFMiddleware
-from app.api.routes import auth, events, invites, join, legal, members, mobile, moderation, photos, privacy, search, uploads
+from app.api.routes import auth, billing, events, invites, join, legal, members, mobile, moderation, photos, privacy, search, uploads
 from app.core.config import get_settings
 from app.core import monitoring
 from app.core.logging import install as redact_access_logs
@@ -62,6 +63,13 @@ def create_app() -> FastAPI:
             headers={"Retry-After": "5"},
         )
 
+    @app.exception_handler(RequestValidationError)
+    async def invalid_request(request: Request, exc: RequestValidationError) -> Response:
+        # FastAPI's default echoes each rejected value ("input"): passwords, card numbers,
+        # tokens. Keep where and why it failed, never what was sent.
+        errors = [{k: v for k, v in e.items() if k in ("type", "loc", "msg")} for e in exc.errors()]
+        return JSONResponse({"detail": errors}, status_code=422)
+
     @app.exception_handler(DataError)
     async def invalid_data(request: Request, exc: DataError) -> Response:
         # Input the database can't store (NUL bytes in text, out-of-range numbers) is the
@@ -84,6 +92,7 @@ def create_app() -> FastAPI:
         mobile.router,
         mobile.me_router,
         legal.router,
+        billing.router,
     ):
         app.include_router(router)
 

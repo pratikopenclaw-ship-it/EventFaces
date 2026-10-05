@@ -8,6 +8,7 @@ import io
 import logging
 import uuid
 from collections.abc import Callable
+from typing import Any
 from datetime import datetime, timedelta
 
 from PIL import Image
@@ -30,6 +31,7 @@ from app.models import (
     SyncStatus,
 )
 from app.services import imaging
+from app.services.billing import limits
 from app.services.drive import DriveAccessError, DriveFileTooLarge, get_drive_client
 from app.services.faces import current_model_id, detect_faces
 
@@ -64,6 +66,15 @@ def active_sync_run(db: Session, event_id: uuid.UUID) -> DriveSyncRun | None:
     )
 
 
+def _new_files_only(db: Session, event: Event, page: list[Any]) -> list[Any]:
+    known = set(
+        db.scalars(
+            select(Photo.drive_file_id).where(Photo.event_id == event.id, Photo.drive_file_id.in_([f.id for f in page]))
+        )
+    )
+    return [f for f in page if f.id not in known]
+
+
 def run_drive_sync(db: Session, run_id: uuid.UUID, enqueue_import: Enqueue) -> None:
     run = db.get(DriveSyncRun, run_id)
     if run is None:
@@ -78,8 +89,16 @@ def run_drive_sync(db: Session, run_id: uuid.UUID, enqueue_import: Enqueue) -> N
     new_ids: list[uuid.UUID] = []
     retry_ids: list[uuid.UUID] = []
     try:
-        for page in get_drive_client().list_images(run.folder_id):
-            run.files_listed += len(page)
+        for listed in get_drive_client().list_images(run.folder_id):
+            run.files_listed += len(listed)
+            page = listed
+            room = limits.photo_room(db, event)  # plan limit; None = unlimited
+            if room is not None and len(page) > room:
+                # Files already imported are skipped by the unique constraint below, so a
+                # re-sync can still count them; only files that would be new are cut off.
+                page = _new_files_only(db, event, page)
+                run.files_over_limit += max(0, len(page) - room)
+                page = page[:room]
             if page:
                 inserted = db.scalars(
                     insert(Photo)

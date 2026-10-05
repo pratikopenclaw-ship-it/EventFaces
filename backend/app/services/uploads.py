@@ -16,6 +16,7 @@ from app.core import storage
 from app.core.config import get_settings
 from app.models import Event, IndexStatus, ModerationMode, Photo, PhotoSource, PhotoStatus, User
 from app.services import imaging
+from app.services.billing import limits
 
 ALLOWED_TYPES = {"image/jpeg": "jpeg", "image/png": "png", "image/heic": "heif", "image/heif": "heif"}
 
@@ -42,6 +43,8 @@ def _enforce_quotas(db: Session, event: Event, user: User) -> None:
         raise HTTPException(status.HTTP_409_CONFLICT, "You've reached the upload limit for this event")
     if (db.scalar(live) or 0) >= s.guest_upload_max_per_event:
         raise HTTPException(status.HTTP_409_CONFLICT, "This event has reached its guest upload limit")
+    if limits.photo_room(db, event) == 0:  # the plan's photo limit (all sources)
+        raise limits.PHOTO_LIMIT
 
 
 def start_upload(
