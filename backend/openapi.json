@@ -1718,6 +1718,17 @@
       },
       "JoinPreviewOut": {
         "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
           "date": {
             "anyOf": [
               {

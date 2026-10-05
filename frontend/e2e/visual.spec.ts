@@ -5,7 +5,7 @@ import { captureThreeShots, fakeCamera, giveConsent, login, reset, seedEvent } f
 // Visual regression for the main screens in both themes. Runs on desktop Chromium and
 // the Pixel 7 project (@visual). Baselines live next to this file; after an intended
 // visual change: npx playwright test e2e/visual.spec.ts --update-snapshots
-// Live and per-run content (camera feed, dates, codes) is masked.
+// Live and per-run content (camera feed, dates, codes, the per-event cover pattern) is masked.
 
 const SCHEMES = ["light", "dark"] as const;
 // A fixed event name (the default seed adds a random suffix), so names are compared, not masked.
@@ -65,12 +65,12 @@ test.describe("visual @visual", () => {
     await expect(page.getByRole("button", { name: "Start camera" })).toBeVisible();
     await snap(page, "capture");
     await captureThreeShots(page);
-    await expect(page.getByRole("heading", { name: "We found you" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("heading", { name: /^You.re in \d+ photos?$/ })).toBeVisible({ timeout: 60_000 });
     await expect(page.locator("main img").first()).toBeVisible();
     await page.waitForFunction(() => [...document.querySelectorAll("main img")].every((i) => (i as HTMLImageElement).complete));
     await snap(page, "results");
     await page.getByRole("button", { name: "Open photo" }).first().click();
-    await expect(page.getByRole("dialog").locator("img")).toBeVisible();
+    await expect(page.getByRole("dialog").locator("img").first()).toBeVisible();
     await page.waitForFunction(() => (document.querySelector('[role="dialog"] img') as HTMLImageElement | null)?.complete === true);
     await snap(page, "viewer");
   });

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { EventCard } from "@/components/event-cover";
 import { useSession } from "@/components/session";
 import { Alert, Badge, Card, PageHeader, formatDate } from "@/components/ui";
 import type { EventListItem } from "@/lib/types";
@@ -33,24 +34,17 @@ export default function AdminEventsPage() {
       {loading && <p className="text-sm text-muted">Loading…</p>}
       {error && <Alert>{error.message}</Alert>}
       {!loading && managed.length === 0 && <Card className="text-center text-sm text-muted">No events yet.</Card>}
-      <div className="overflow-hidden rounded-2xl border border-line bg-paper">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {managed.map((event) => {
           const expired = event.access_expires_at && new Date(event.access_expires_at) < new Date();
           return (
-            <Link
+            <EventCard
               key={event.id}
+              event={event}
               href={`/admin/events/${event.id}`}
-              className="flex items-center justify-between gap-4 border-b border-line px-5 py-4 last:border-0 hover:bg-mist/60"
-            >
-              <div>
-                <p className="font-medium">{event.name}</p>
-                <p className="text-sm text-muted">
-                  {event.date && `${formatDate(event.date)} · `}{event.photo_count.toLocaleString()}{" "}
-                  {event.photo_count === 1 ? "photo" : "photos"}
-                </p>
-              </div>
-              {expired ? <Badge tone="bad">Access ended</Badge> : <Badge tone="good">Open</Badge>}
-            </Link>
+              meta={`${event.date ? `${formatDate(event.date)} · ` : ""}${event.photo_count.toLocaleString()} ${event.photo_count === 1 ? "photo" : "photos"}`}
+              badges={expired ? <Badge tone="bad">Access ended</Badge> : <Badge tone="good">Open</Badge>}
+            />
           );
         })}
       </div>

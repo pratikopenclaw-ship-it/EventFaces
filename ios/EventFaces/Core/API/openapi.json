@@ -1377,6 +1377,10 @@
       },
       "JoinPreviewOut": {
         "properties": {
+          "accent_color": {
+            "title": "Accent Color",
+            "type": "string"
+          },
           "date": {
             "format": "date",
             "title": "Date",

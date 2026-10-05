@@ -113,6 +113,9 @@ class JoinPreviewOut(BaseModel):
     name: str
     date: dt.date | None
     join_mode: JoinMode
+    # The event's colour, so the join page already looks like the event (no logo: that
+    # needs membership).
+    accent_color: str | None = None
 
 
 class JoinIn(BaseModel):

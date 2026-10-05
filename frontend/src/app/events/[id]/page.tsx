@@ -2,7 +2,8 @@
 
 import { notFound, useParams } from "next/navigation";
 
-import { Alert, PageHeader, formatDate } from "@/components/ui";
+import { EventCover } from "@/components/event-cover";
+import { Alert, formatDate } from "@/components/ui";
 import { accentStyle } from "@/lib/accent";
 import { isUuid } from "@/lib/safe";
 import type { EventPublic } from "@/lib/types";
@@ -24,12 +25,8 @@ export default function EventPage() {
 
   return (
     <div className={event.accent_color ? "event-accent" : undefined} style={accentStyle(event.accent_color)}>
-      {event.has_logo && (
-        // eslint-disable-next-line @next/next/no-img-element -- authenticated API image
-        <img src={`/api/events/${event.id}/logo`} alt={`${event.name} logo`} className="mb-4 h-14 w-auto" />
-      )}
-      <PageHeader title={event.name} subtitle={event.date ? formatDate(event.date) : undefined} />
-      {event.description && <p className="-mt-4 mb-8 max-w-2xl whitespace-pre-line text-muted">{event.description}</p>}
+      <EventCover event={event} subtitle={event.date ? formatDate(event.date) : undefined} />
+      {event.description && <p className="-mt-2 mb-8 max-w-2xl whitespace-pre-line text-muted">{event.description}</p>}
       <div className="space-y-10">
         <FindPhotos event={event} />
         {/* Uploading doesn't need face-search consent: that consent covers the user's own selfie. */}

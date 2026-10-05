@@ -26,6 +26,8 @@ const geistMono = Geist_Mono({
 const fraunces = Fraunces({ variable: "--font-fraunces", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  // Absolute URLs for link previews (opengraph-image.tsx). SITE_URL is set in production.
+  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: "EventFaces",
   description: "Find your photos from an event with a selfie.",
 };
@@ -62,10 +64,10 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <SessionProvider>
           <ThemeProvider initial={pref}>
             <Nav />
-            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 print:max-w-none print:p-0">
               {children}
             </main>
-            <footer className="border-t border-line">
+            <footer className="border-t border-line print:hidden">
               <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-xs text-muted">
                 <Link href="/privacy" className="hover:text-ink">
                   Privacy
