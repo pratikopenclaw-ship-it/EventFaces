@@ -33,7 +33,7 @@ env:
 jobs:
   backend:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
@@ -51,8 +51,10 @@ jobs:
             api.cache-from=type=gha,scope=api
             api.cache-to=type=gha,scope=api,mode=max
       - run: docker compose up -d --no-build --wait --wait-timeout 300 api
-      - run: docker compose exec -T api pytest -q -p no:cacheprovider
-      - if: failure()
+      # A test running over 5 minutes dumps every thread's stack (and so names itself).
+      - run: docker compose exec -T api pytest -q -p no:cacheprovider -o faulthandler_timeout=300
+        timeout-minutes: 45
+      - if: failure() || cancelled()
         run: docker compose logs --tail 200 api db s3
 
   web:
@@ -96,10 +98,11 @@ jobs:
             web.cache-from=type=gha,scope=web
             web.cache-to=type=gha,scope=web,mode=max
       - name: Start the e2e stack
+        timeout-minutes: 15
         run: |
-          docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --no-build --wait --wait-timeout 600 api web
-          for _ in $(seq 1 60); do curl -sf -o /dev/null http://localhost:3000/ && exit 0; sleep 5; done
-          echo "web did not start"; exit 1
+          docker compose -f docker-compose.yml -f docker-compose.e2e.yml -f docker-compose.ci.yml up -d --no-build api web
+          for _ in $(seq 1 120); do curl -sf -o /dev/null http://localhost:3000/ && exit 0; sleep 5; done
+          echo "web did not start"; docker compose logs --tail 100 web; exit 1
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
@@ -117,7 +120,7 @@ jobs:
           name: playwright-results
           path: frontend/test-results/
           retention-days: 7
-      - if: failure()
+      - if: failure() || cancelled()
         run: docker compose logs --tail 200 api web
 
   security:

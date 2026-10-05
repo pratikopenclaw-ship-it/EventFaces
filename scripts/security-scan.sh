@@ -32,7 +32,8 @@ step "bandit (Python SAST)" api bandit -q -r app
 # --- Frontend ---------------------------------------------------------------------------
 step "npm audit (production deps, high+)" bash -c "cd frontend && npm audit --omit=dev --audit-level=high"
 step "eslint (incl. eslint-plugin-security)" bash -c "cd frontend && npx eslint ."
-step "tsc --noEmit" bash -c "cd frontend && npx tsc --noEmit"
+# Route types (PageProps, LayoutProps) are generated: a fresh checkout has none.
+step "tsc --noEmit" bash -c "cd frontend && npx next typegen >/dev/null && npx tsc --noEmit"
 step "vitest (redirect/CSP/form/key-safety unit tests)" bash -c "cd frontend && npx vitest run"
 
 # --- Repository-wide --------------------------------------------------------------------
