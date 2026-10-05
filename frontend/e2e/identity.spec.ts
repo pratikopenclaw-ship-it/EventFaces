@@ -52,8 +52,12 @@ test("fresh results say how many photos you're in; the viewer has focus, a films
   await expect(strip).toHaveCount(count);
   await expect(strip.first()).toHaveAttribute("aria-current", "true");
 
-  // Swipe left with the pointer: next photo.
-  const box = (await viewer.locator("img").first().boundingBox())!;
+  // Swipe left with the pointer: next photo. Measure the photo once it has loaded (before
+  // that it is 0 px wide and the "swipe" would not move at all).
+  const photo = viewer.locator("img").first();
+  await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0), { timeout: 20_000 }).toBe(true);
+  const box = (await photo.boundingBox())!;
+  expect(box.width).toBeGreaterThan(100);
   await page.mouse.move(box.x + box.width * 0.75, box.y + box.height / 2);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width * 0.2, box.y + box.height / 2, { steps: 5 });
