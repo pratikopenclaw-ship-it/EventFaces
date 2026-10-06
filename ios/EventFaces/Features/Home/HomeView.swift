@@ -45,7 +45,7 @@ struct HomeView: View {
                     Text("My events").font(.headline).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader).padding(.top, 8)
                     ForEach(model.myEvents, id: \.id) { event in
                         Button { model.openEvent(event.id) } label: {
-                            Card {
+                            EventCard(seed: event.id, accentHex: event.accentColor) {
                                 Text(event.name).font(.headline).foregroundStyle(Palette.text)
                                 HStack {
                                     Text("\(event.photoCount ?? 0) photos").foregroundStyle(Palette.textMuted)

@@ -56,6 +56,7 @@ final class Phase2UITests: XCTestCase {
             print("P2 SCREEN: \(path)")
             XCTFail("no event screen after joining")
         }
+        XCTAssertTrue(app.descendants(matching: .any)["event-cover"].exists, "the event's identity cover")
         app.buttons["find-my-photos"].tap()
         let checkbox = app.descendants(matching: .any).matching(identifier: "consent-checkbox").firstMatch
         XCTAssertTrue(checkbox.waitForExistence(timeout: 10))
@@ -83,7 +84,8 @@ final class Phase2UITests: XCTestCase {
         try consentAndCapture()
         // The fake camera shows front, left, right as the steps ask; guidance captures each.
         XCTAssertTrue(app.staticTexts["results-title"].waitForExistence(timeout: 90))
-        XCTAssertEqual(app.staticTexts["results-title"].label, "We found you")
+        let headline = app.staticTexts["results-title"].label
+        XCTAssertTrue(headline.range(of: #"^You're in \d+ photos?$"#, options: .regularExpression) != nil, headline)
         try resultsGalleryViewerAndDownloads()
     }
 
@@ -99,6 +101,15 @@ final class Phase2UITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["viewer"].waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["viewer-close"].exists)
         assertTapTarget(app.buttons["viewer-close"])
+        if before > 1 {
+            // The filmstrip: tap the second photo to jump there.
+            let strip = app.scrollViews["filmstrip"]
+            XCTAssertTrue(strip.waitForExistence(timeout: 5))
+            let second = strip.buttons["Photo 2"]
+            assertTapTarget(second)
+            second.tap()
+            XCTAssertTrue(second.isSelected)
+        }
         try audit()
         if app.buttons["verdict-not-me"].waitForExistence(timeout: 5) {
             app.buttons["verdict-not-me"].tap()

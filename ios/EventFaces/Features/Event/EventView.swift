@@ -19,18 +19,11 @@ struct EventView: View {
             VStack(alignment: .leading, spacing: 16) {
                 if let error { Banner(kind: .error, text: Text(error)) }
                 if let event {
-                    if let logo {
-                        Image(uiImage: logo).resizable().scaledToFit().frame(maxHeight: 56)
-                            .accessibilityLabel(Text("\(event.name) logo"))
-                    }
-                    Text(event.name)
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(Palette.text)
-                        .accessibilityAddTraits(.isHeader)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let date = event.date.flatMap(Self.day) {
-                        Text(date, format: .dateTime.day().month(.wide).year()).foregroundStyle(Palette.textMuted)
-                    }
+                    EventCover(
+                        name: event.name, seed: event.id, accentHex: event.accentColor,
+                        subtitle: event.date.flatMap(Self.day).map { Text($0, format: .dateTime.day().month(.wide).year()) },
+                        logo: logo
+                    )
                     if !event.description.isEmpty {
                         Text(event.description).foregroundStyle(Palette.textMuted).fixedSize(horizontal: false, vertical: true)
                     }

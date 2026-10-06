@@ -6,6 +6,8 @@ struct ResultsView: View {
     @Environment(AppModel.self) private var model
     @State private var results: ResultsModel?
     @State private var viewerStart: ViewerStart?
+    @State private var revealed = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     struct ViewerStart: Identifiable { let index: Int; var id: Int { index } }
 
@@ -42,9 +44,12 @@ struct ResultsView: View {
                             if section == .possible {
                                 Text("Less certain. Tell us if these are you.").font(.footnote).foregroundStyle(Palette.textMuted)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 4)], spacing: 4) {
-                                ForEach(items, id: \.id) { photo in
+                            // Justified rows: nothing is cropped to a square, each row fills the width.
+                            JustifiedRows(rowHeight: 120, spacing: 4) {
+                                ForEach(Array(items.enumerated()), id: \.element.id) { i, photo in
                                     tile(photo, results: results)
+                                        .layoutValue(key: AspectRatio.self, value: Self.ratio(photo))
+                                        .modifier(Reveal(index: i, shown: revealed || reduceMotion))
                                 }
                             }
                         }
@@ -63,6 +68,8 @@ struct ResultsView: View {
         // bar's identifiers.
         .accessibilityIdentifier("results")
         .refreshable { await results.load() }
+        // The photos appear once, as a short cascade (skipped with Reduce Motion).
+        .onChange(of: results.loading, initial: true) { _, loading in if !loading { revealed = true } }
         .safeAreaInset(edge: .bottom) {
             if results.selecting { actionBar(results) }
         }
@@ -79,9 +86,10 @@ struct ResultsView: View {
     private func header(_ results: ResultsModel) -> some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(results.photos.isEmpty ? "No photos of you yet" : "We found you")
+                headline(results)
                     .font(.title2.bold()).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("results-title")
+                    .fixedSize(horizontal: false, vertical: true)
                 if !results.photos.isEmpty {
                     Text("\(results.photos.count) photos").foregroundStyle(Palette.textMuted)
                 }
@@ -104,10 +112,9 @@ struct ResultsView: View {
         return Button {
             if results.selecting { results.toggle(photo.id) } else if let i = results.ordered.firstIndex(where: { $0.id == photo.id }) { viewerStart = ViewerStart(index: i) }
         } label: {
-            // A square cell with the photo filling it, clipped: the photo can never spill
-            // over its neighbours or the section headings.
+            // The cell takes the photo's shape (from its row); the photo fills it, clipped, so
+            // it can never spill over its neighbours or the section headings.
             Color.clear
-                .aspectRatio(1, contentMode: .fit)
                 .overlay { CachedPhoto(eventID: eventID, photoID: photo.id, variant: "thumb", maxPixel: 360) }
                 .clipped()
                 .overlay(alignment: .topLeading) {
@@ -152,6 +159,19 @@ struct ResultsView: View {
         .padding(12)
         .background(Palette.surface.ignoresSafeArea(edges: .bottom))
         .overlay(alignment: .top) { Divider().overlay(Palette.border) }
+    }
+
+    /// "You're in N photos": matches only, like the web (own uploads aren't a match).
+    private func headline(_ results: ResultsModel) -> Text {
+        let matches = results.photos.filter { $0.tier != nil }.count
+        if results.photos.isEmpty { return Text("No photos of you yet") }
+        return matches > 0 ? Text("You're in \(matches) photos") : Text("Your photos")
+    }
+
+    /// Width / height, clamped like the web's gallery so panoramas and strips stay usable.
+    static func ratio(_ photo: MyPhoto) -> CGFloat {
+        guard let w = photo.width, let h = photo.height, w > 0, h > 0 else { return 4.0 / 3.0 }
+        return min(2.5, max(0.5, CGFloat(w) / CGFloat(h)))
     }
 
     private func title(_ section: ResultsModel.Section) -> LocalizedStringKey {
@@ -208,4 +228,77 @@ struct ShareSheet: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ vc: UIActivityViewController, context: Context) {}
+}
+
+/// A photo's aspect ratio for `JustifiedRows`.
+struct AspectRatio: LayoutValueKey { static let defaultValue: CGFloat = 1 }
+
+/// Rows of photos at their own aspect ratio: fill each row to the width (like the web's
+/// gallery), the last row keeps the target height instead of stretching.
+struct JustifiedRows: Layout {
+    let rowHeight: CGFloat
+    let spacing: CGFloat
+
+    struct Row { var indices: [Int]; var height: CGFloat }
+
+    static func rows(ratios: [CGFloat], width: CGFloat, rowHeight: CGFloat, spacing: CGFloat) -> [Row] {
+        guard width > 0 else { return [] }
+        var rows: [Row] = []
+        var current: [Int] = []
+        var sum: CGFloat = 0
+        for (i, r) in ratios.enumerated() {
+            current.append(i)
+            sum += r
+            let natural = sum * rowHeight + CGFloat(current.count - 1) * spacing
+            if natural >= width {
+                // Scale the row so it fills the width exactly.
+                let h = (width - CGFloat(current.count - 1) * spacing) / sum
+                rows.append(Row(indices: current, height: h))
+                current = []
+                sum = 0
+            }
+        }
+        if !current.isEmpty {
+            let fit = (width - CGFloat(current.count - 1) * spacing) / sum
+            rows.append(Row(indices: current, height: min(rowHeight, fit)))
+        }
+        return rows
+    }
+
+    private func layout(_ subviews: Subviews, width: CGFloat) -> [Row] {
+        Self.rows(ratios: subviews.map { $0[AspectRatio.self] }, width: width, rowHeight: rowHeight, spacing: spacing)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? 360
+        let rows = layout(subviews, width: width)
+        let height = rows.reduce(0) { $0 + $1.height } + CGFloat(max(0, rows.count - 1)) * spacing
+        return CGSize(width: width, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for row in layout(subviews, width: bounds.width) {
+            var x = bounds.minX
+            for i in row.indices {
+                let w = subviews[i][AspectRatio.self] * row.height
+                subviews[i].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: w, height: row.height))
+                x += w + spacing
+            }
+            y += row.height + spacing
+        }
+    }
+}
+
+/// Fade-and-rise in a short cascade the first time results show.
+struct Reveal: ViewModifier {
+    let index: Int
+    let shown: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(shown ? 1 : 0)
+            .offset(y: shown ? 0 : 12)
+            .animation(.easeOut(duration: 0.35).delay(Double(min(index, 14)) * 0.04), value: shown)
+    }
 }

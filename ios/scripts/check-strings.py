@@ -49,6 +49,14 @@ def keys() -> set[str]:
     return out
 
 
+def translated(loc: dict) -> bool:
+    """A plain translation, or plural variations that are all translated."""
+    if "stringUnit" in loc:
+        return loc["stringUnit"].get("state") == "translated"
+    forms = loc.get("variations", {}).get("plural", {})
+    return bool(forms) and "other" in forms and all(f.get("stringUnit", {}).get("state") == "translated" for f in forms.values())
+
+
 def main() -> int:
     found = keys()
     if "--list" in sys.argv:
@@ -58,10 +66,7 @@ def main() -> int:
     # Interpolations become %@ (strings) or %lld (integers) in catalog keys.
     normalized = {k.replace("%lld", "%@") for k in catalog}
     missing = sorted(k for k in found if k not in catalog and k not in normalized)
-    untranslated = sorted(
-        k for k, v in catalog.items()
-        if v.get("localizations", {}).get("de", {}).get("stringUnit", {}).get("state") != "translated"
-    )
+    untranslated = sorted(k for k, v in catalog.items() if not translated(v.get("localizations", {}).get("de", {})))
     for k in missing:
         print(f"missing from catalog: {k!r}")
     for k in untranslated:

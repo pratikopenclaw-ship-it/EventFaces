@@ -73,7 +73,7 @@ private struct OrganizerShare: View {
             VStack(alignment: .leading, spacing: 16) {
                 if error { Banner(kind: .error, text: Text("You don't have access to this event (any more).")) }
                 if let admin {
-                    Text(admin.name).font(.title2.bold()).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
+                    EventCover(name: admin.name, seed: admin.id, accentHex: admin.accentColor)
                     if admin.joinMode == .code {
                         if let qr {
                             Image(uiImage: qr).interpolation(.none).resizable().scaledToFit()

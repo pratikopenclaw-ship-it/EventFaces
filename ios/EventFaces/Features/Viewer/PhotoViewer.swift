@@ -32,7 +32,7 @@ struct PhotoViewer: View {
             }
         }
         .safeAreaInset(edge: .top) { topBar(photos) }
-        .safeAreaInset(edge: .bottom) { if photos.indices.contains(index) { bottomBar(photos[index]) } }
+        .safeAreaInset(edge: .bottom) { if photos.indices.contains(index) { bottomBar(photos[index], photos: photos) } }
         .environment(\.colorScheme, .dark)
         .onAppear { index = min(startIndex, max(0, photos.count - 1)) }
         .onChange(of: photos.count) { _, count in if count == 0 { dismiss() } else { index = min(index, count - 1) } }
@@ -55,8 +55,9 @@ struct PhotoViewer: View {
         .background(Color.black.opacity(0.6))
     }
 
-    private func bottomBar(_ photo: MyPhoto) -> some View {
+    private func bottomBar(_ photo: MyPhoto, photos: [MyPhoto]) -> some View {
         VStack(spacing: 10) {
+            if photos.count > 1 { filmstrip(photos) }
             if photo.tier != nil && photo.verdict != .me {
                 HStack(spacing: 10) {
                     Button { Task { await results.verdict(photo, isMe: true) } } label: { Label("This is me", systemImage: "hand.thumbsup") }
@@ -81,6 +82,41 @@ struct PhotoViewer: View {
         .labelStyle(.titleAndIcon)
         .padding(12)
         .background(Color.black.opacity(0.7))
+    }
+}
+
+extension PhotoViewer {
+    /// Thumbnails of every photo: tap one to jump there; the current one is outlined.
+    func filmstrip(_ photos: [MyPhoto]) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                LazyHStack(spacing: 6) {
+                    ForEach(Array(photos.enumerated()), id: \.element.id) { i, photo in
+                        Button { index = i } label: {
+                            CachedPhoto(eventID: results.eventID, photoID: photo.id, variant: "thumb", maxPixel: 120)
+                                .frame(width: 48, height: 48)
+                                .clipShape(.rect(cornerRadius: 6))
+                                .overlay {
+                                    RoundedRectangle(cornerRadius: 6).stroke(.white, lineWidth: i == index ? 2 : 0)
+                                }
+                                .opacity(i == index ? 1 : 0.6)
+                                .frame(width: 48, height: 48)
+                                .contentShape(.rect)
+                        }
+                        .buttonStyle(.tapTarget)
+                        .id(i)
+                        .accessibilityLabel(Text("Photo \(i + 1)"))
+                        .accessibilityAddTraits(i == index ? [.isSelected] : [])
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+            .frame(height: 52)
+            .accessibilityIdentifier("filmstrip")
+            .onChange(of: index, initial: true) { _, i in
+                withAnimation(UIAccessibility.isReduceMotionEnabled ? nil : .easeOut(duration: 0.2)) { proxy.scrollTo(i, anchor: .center) }
+            }
+        }
     }
 }
 

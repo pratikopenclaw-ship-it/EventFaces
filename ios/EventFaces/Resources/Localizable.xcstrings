@@ -1341,6 +1341,16 @@
         }
       }
     },
+    "Photo %lld" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto %lld"
+          }
+        }
+      }
+    },
     "Photo %lld of %lld" : {
       "localizations" : {
         "de" : {
@@ -2502,16 +2512,6 @@
         }
       }
     },
-    "We found you" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir haben dich gefunden"
-          }
-        }
-      }
-    },
     "We'll ask for one straight photo and two with your head turned slightly." : {
       "localizations" : {
         "de" : {
@@ -2622,6 +2622,46 @@
         }
       }
     },
+    "You're in %lld photos" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Du bist auf 1 Foto"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Du bist auf %lld Fotos"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You're in 1 photo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You're in %lld photos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "You're in the queue" : {
       "localizations" : {
         "de" : {
@@ -2688,6 +2728,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dein Gesicht ist nicht gut zu sehen. Nimm Sonnenbrille oder Maske ab und schau ins Licht."
+          }
+        }
+      }
+    },
+    "Your photos" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Fotos"
           }
         }
       }
