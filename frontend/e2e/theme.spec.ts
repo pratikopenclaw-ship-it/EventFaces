@@ -208,7 +208,9 @@ test.describe("theme switcher", () => {
       await page.emulateMedia({ colorScheme: scheme });
       const save = page.getByRole("button", { name: "Save changes" });
       await expect(save).toBeVisible();
-      const ratio = await save.evaluate((el) => {
+      // Buttons fade their colours (Tailwind `transition`, 150 ms): judge the settled colours,
+      // not a frame of the fade. Unreadable settled colours still fail after the timeout.
+      const ratio = () => save.evaluate((el) => {
         const rgb = (css: string) => {
           const c = document.createElement("canvas").getContext("2d")!;
           c.fillStyle = css;
@@ -226,7 +228,7 @@ test.describe("theme switcher", () => {
         const [a, b] = [lum(s.color), lum(s.backgroundColor)];
         return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
       });
-      expect(ratio, scheme).toBeGreaterThanOrEqual(4.5);
+      await expect.poll(ratio, { message: scheme, timeout: 3_000 }).toBeGreaterThanOrEqual(4.5);
     }
   });
 });
