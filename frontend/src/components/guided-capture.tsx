@@ -3,6 +3,7 @@
 import type { FaceLandmarker } from "@mediapipe/tasks-vision";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { FaceIcon, FocusIcon, HeadPoseIcon, NoGlassesIcon, SinglePersonIcon, SunIcon } from "@/components/selfie-icons";
 import { Alert, Button, Card } from "@/components/ui";
 import {
   SHOT_INSTRUCTION,
@@ -98,21 +99,21 @@ async function loadLandmarker(): Promise<FaceLandmarker> {
 
 function Requirements({ onStart }: { onStart: () => void }) {
   const items = [
-    ["☀️", "Good, even light on your face", "Face a window or lamp; avoid bright light behind you."],
-    ["🙂", "Face the camera", "We'll ask for one straight photo and two with your head turned slightly."],
-    ["🕶️", "No sunglasses, mask or hat", "Normal glasses are fine."],
-    ["👤", "Just you", "No other people in the picture."],
-    ["✋", "Hold still", "Photos are taken automatically when everything looks good."],
-  ];
+    [SunIcon, "Good, even light on your face", "Face a window or lamp; avoid bright light behind you."],
+    [FaceIcon, "Face the camera", "We'll ask for one straight photo and two with your head turned slightly."],
+    [NoGlassesIcon, "No sunglasses, mask or hat", "Normal glasses are fine."],
+    [SinglePersonIcon, "Just you", "No other people in the picture."],
+    [FocusIcon, "Hold still", "Photos are taken automatically when everything looks good."],
+  ] as const;
   return (
     <Card className="mx-auto max-w-xl">
       <h2 className="font-display text-2xl">Before you take your selfies</h2>
       <p className="mt-1 text-sm text-muted">Three quick photos help us find you reliably. They&apos;re deleted right after matching.</p>
       <ul className="mt-5 space-y-3">
-        {items.map(([icon, title, text]) => (
+        {items.map(([Icon, title, text]) => (
           <li key={title} className="flex gap-3">
-            <span aria-hidden className="text-xl">
-              {icon}
+            <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+              <Icon className="size-5" />
             </span>
             <span>
               <span className="block text-sm font-medium">{title}</span>
@@ -332,7 +333,14 @@ export function GuidedCapture({
   return (
     <Card className="mx-auto max-w-xl" >
       <div data-shot={submitting ? "done" : shot} className="flex items-center justify-between gap-3">
-        <h2 className="font-display text-2xl">{submitting ? "Finding your photos…" : SHOT_INSTRUCTION[shot]}</h2>
+        <h2 className="flex items-center gap-2 font-display text-2xl">
+          {!submitting && (
+            <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-accent">
+              <HeadPoseIcon direction={shot} className="size-5" />
+            </span>
+          )}
+          {submitting ? "Finding your photos…" : SHOT_INSTRUCTION[shot]}
+        </h2>
         <ol className="flex gap-1.5" aria-label="Progress">
           {SHOTS.map((s) => (
             <li
