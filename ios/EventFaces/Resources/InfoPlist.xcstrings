@@ -1,74 +1,86 @@
 {
-  "sourceLanguage": "en",
-  "version": "1.0",
-  "strings": {
-    "NSCameraUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces uses the camera to scan event QR codes and take the selfies that find your photos. Selfies are deleted right after matching."
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces nutzt die Kamera, um QR-Codes von Events zu scannen und die Selfies aufzunehmen, mit denen wir deine Fotos finden. Selfies werden direkt nach dem Abgleich gelöscht."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces"
           }
         }
       }
     },
-    "CFBundleDisplayName": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces"
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces"
+    "CFBundleName" : {
+      "comment" : "Bundle name",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "EventFaces"
           }
         }
       }
     },
-    "NSPhotoLibraryAddUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces saves the event photos you choose to your photo library. It never reads your library."
+    "NSCameraUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces nutzt die Kamera, um QR-Codes von Events zu scannen und die Selfies aufzunehmen, mit denen wir deine Fotos finden. Selfies werden direkt nach dem Abgleich gelöscht."
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces speichert die Event-Fotos, die du auswählst, in deiner Fotomediathek. Deine Mediathek wird nie gelesen."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces uses the camera to scan event QR codes and take the selfies that find your photos. Selfies are deleted right after matching."
           }
         }
       }
     },
-    "NSFaceIDUsageDescription": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces uses Face ID to unlock the app when you turn on the app lock."
+    "NSFaceIDUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces nutzt Face ID zum Entsperren, wenn du die App-Sperre einschaltest."
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "EventFaces nutzt Face ID zum Entsperren, wenn du die App-Sperre einschaltest."
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces uses Face ID to unlock the app when you turn on the app lock."
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces speichert die Event-Fotos, die du auswählst, in deiner Fotomediathek. Deine Mediathek wird nie gelesen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EventFaces saves the event photos you choose to your photo library. It never reads your library."
           }
         }
       }
     }
-  }
+  },
+  "version" : "1.0"
 }
