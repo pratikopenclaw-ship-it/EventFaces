@@ -13,9 +13,9 @@ export default defineConfig({
   workers: 1, // one shared backend; every test resets it
   // 0 locally (a flake should be investigated, not hidden); 1 in CI, since the shared,
   // single-worker backend means a slow CI runner occasionally trips a generic visibility
-  // timing assertion in an otherwise-unrelated spec rather than any real regression (seen
-  // on legal.spec.ts, which passed on its retry). A persistent, real failure still fails
-  // twice and reports red.
+  // timing assertion in an otherwise-unrelated spec (seen across several different specs,
+  // each a one-off, never the same spec twice) rather than any real regression. A
+  // persistent, real failure still fails twice and reports red.
   retries: process.env.CI ? 1 : 0,
   timeout: 120_000,
   expect: { timeout: 20_000 },
