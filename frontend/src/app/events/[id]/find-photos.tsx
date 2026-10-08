@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 
+import { FaceSearchIcon } from "@/components/empty-icons";
 import { GuidedCapture, type CapturedShot, type SubmitResult } from "@/components/guided-capture";
-import { Alert, Button, Card } from "@/components/ui";
+import { Alert, Button, Card, EmptyState } from "@/components/ui";
 import { ApiError, RawBody, del, get, post } from "@/lib/api";
 import { oneOf } from "@/lib/safe";
 import type { SelfieRequirements, Shot } from "@/lib/face-guidance";
@@ -207,15 +208,18 @@ export function FindPhotos({ event }: { event: EventPublic }) {
           )}
         </>
       ) : shown.length === 0 ? (
-        <Card className="mx-auto max-w-xl text-center">
-          <h2 className="font-display text-2xl">No photos found yet</h2>
-          <p className="mt-2 text-sm text-muted">
-            We couldn&apos;t find you in this event&apos;s photos. More photos may be added later.
-          </p>
-          <div className="mt-5 flex justify-center gap-2">
-            <Button onClick={() => setStep("capture")}>Try again</Button>
-            <MissingButton eventId={event.id} />
-          </div>
+        <Card className="mx-auto max-w-xl">
+          <EmptyState
+            icon={<FaceSearchIcon className="size-6" />}
+            title="No photos found yet"
+            description="We couldn't find you in this event's photos. More photos may be added later."
+            action={
+              <div className="flex justify-center gap-2">
+                <Button onClick={() => setStep("capture")}>Try again</Button>
+                <MissingButton eventId={event.id} />
+              </div>
+            }
+          />
         </Card>
       ) : (
         <>

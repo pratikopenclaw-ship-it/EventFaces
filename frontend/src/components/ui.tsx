@@ -109,6 +109,42 @@ export function Badge({ children, tone = "neutral" }: { children: ReactNode; ton
   return <span className={cx("inline-flex rounded-full px-2 py-0.5 text-xs font-medium", styles)}>{children}</span>;
 }
 
+/** A list, table or search with nothing in it: an icon, a heading, and optional detail/action.
+ * `compact` fits inside a table row (`<td>`); otherwise it reads as a standalone block,
+ * typically inside a Card. */
+export function EmptyState({
+  icon,
+  title,
+  description,
+  action,
+  compact = false,
+}: {
+  icon: ReactNode;
+  title: string;
+  description?: ReactNode;
+  action?: ReactNode;
+  compact?: boolean;
+}) {
+  return (
+    <div className={cx("flex flex-col items-center text-center", compact ? "gap-1.5" : "gap-3 py-2")}>
+      <span
+        className={cx(
+          "flex items-center justify-center rounded-full bg-accent-soft text-accent",
+          compact ? "size-8" : "size-12",
+        )}
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
+      <div className={compact ? "space-y-0.5" : "space-y-1"}>
+        <p className={cx("font-medium text-ink", compact ? "text-sm" : "text-base")}>{title}</p>
+        {description && <p className="text-sm text-muted">{description}</p>}
+      </div>
+      {action && <div className="mt-1">{action}</div>}
+    </div>
+  );
+}
+
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
