@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { Alert, Button, Card } from "@/components/ui";
+import { UndoIcon } from "@/components/empty-icons";
+import { Alert, Button, Card, EmptyState } from "@/components/ui";
 import { post } from "@/lib/api";
 import type { RemovalRequestItem } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -45,7 +46,9 @@ export function RemovalRequests({ eventId }: { eventId: string }) {
       </p>
       {error && <Alert>{error}</Alert>}
       {items.length === 0 ? (
-        <Card className="text-center text-sm text-muted">No open removal requests.</Card>
+        <Card>
+          <EmptyState icon={<UndoIcon className="size-6" />} title="No open removal requests" />
+        </Card>
       ) : (
         <ul className="space-y-3">
           {items.map((req) => {

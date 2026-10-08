@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 
-import { Alert, Badge, Button, Card } from "@/components/ui";
+import { CameraIcon } from "@/components/empty-icons";
+import { Alert, Badge, Button, Card, EmptyState } from "@/components/ui";
 import { del, get, post } from "@/lib/api";
 import type { EventAdmin, IndexStatus, PhotoAdmin, PhotoPage, SyncStatus } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -175,8 +176,12 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
       </div>
 
       {photos.length === 0 ? (
-        <Card className="text-center text-sm text-muted">
-          {failedOnly ? "No failed photos." : "No photos yet. Link a Drive folder and press Sync."}
+        <Card>
+          <EmptyState
+            icon={<CameraIcon className="size-6" />}
+            title={failedOnly ? "No failed photos" : "No photos yet"}
+            description={failedOnly ? undefined : "Link a Drive folder and press Sync."}
+          />
         </Card>
       ) : (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">

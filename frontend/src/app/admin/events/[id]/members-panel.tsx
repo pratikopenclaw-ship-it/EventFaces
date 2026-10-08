@@ -2,8 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 
+import { PeopleIcon, SearchIcon } from "@/components/empty-icons";
 import { useSession } from "@/components/session";
-import { Alert, Badge, Button, Card, Field, Input, formatDate } from "@/components/ui";
+import { Alert, Badge, Button, Card, EmptyState, Field, Input, formatDate } from "@/components/ui";
 import { patch, post } from "@/lib/api";
 import type { Member, MemberStatus, SearchLogRow } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -71,8 +72,8 @@ export function MembersPanel({ eventId }: { eventId: string }) {
           <tbody>
             {members?.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-5 py-6 text-center text-muted">
-                  No members yet.
+                <td colSpan={5} className="px-5 py-6">
+                  <EmptyState compact icon={<PeopleIcon className="size-4" />} title="No members yet" />
                 </td>
               </tr>
             )}
@@ -114,7 +115,9 @@ export function MembersPanel({ eventId }: { eventId: string }) {
           <tbody>
             {(searchLog.data ?? []).length === 0 && (
               <tr>
-                <td className="px-5 py-6 text-center text-muted">No searches yet.</td>
+                <td className="px-5 py-6">
+                  <EmptyState compact icon={<SearchIcon className="size-4" />} title="No searches yet" />
+                </td>
               </tr>
             )}
             {(searchLog.data ?? []).map((row, i) => (

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { Alert, Badge, Button, Card, Field, Textarea } from "@/components/ui";
+import { EnvelopeIcon } from "@/components/empty-icons";
+import { Alert, Badge, Button, Card, EmptyState, Field, Textarea } from "@/components/ui";
 import { del, post } from "@/lib/api";
 import type { Invite, InviteUploadResult } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -104,7 +105,9 @@ export function InvitesPanel({ eventId }: { eventId: string }) {
           <tbody>
             {invites.length === 0 && (
               <tr>
-                <td className="px-5 py-6 text-center text-muted">No invites yet.</td>
+                <td className="px-5 py-6">
+                  <EmptyState compact icon={<EnvelopeIcon className="size-4" />} title="No invites yet" />
+                </td>
               </tr>
             )}
             {invites.map((i) => (
