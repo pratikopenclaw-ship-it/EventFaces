@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 
-import { Alert, Badge, Button, Card } from "@/components/ui";
+import { FlagIcon } from "@/components/empty-icons";
+import { Alert, Badge, Button, Card, EmptyState } from "@/components/ui";
 import { post } from "@/lib/api";
 import type { EventAdmin, ModerationItem, PhotoReport, ReportReason } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -68,7 +69,9 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
           </span>
         </div>
         {items.length === 0 ? (
-          <Card className="text-center text-sm text-muted">Nothing to review.</Card>
+          <Card>
+            <EmptyState icon={<FlagIcon className="size-6" />} title="Nothing to review" />
+          </Card>
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
@@ -112,7 +115,9 @@ export function ModerationPanel({ event }: { event: EventAdmin }) {
           Reports <span className="text-muted">({open.length})</span>
         </h2>
         {open.length === 0 ? (
-          <Card className="text-center text-sm text-muted">No open reports.</Card>
+          <Card>
+            <EmptyState icon={<FlagIcon className="size-6" />} title="No open reports" />
+          </Card>
         ) : (
           <ul className="space-y-3">
             {open.map((r) => (

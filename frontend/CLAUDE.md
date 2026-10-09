@@ -1,1 +1,5 @@
 @AGENTS.md
+
+- Next.js 16: middleware is `src/proxy.ts`; `params`/`searchParams` are Promises (server `page.tsx` awaits them and passes plain props to a client component). Check `frontend/node_modules/next/dist/docs/` before using unfamiliar Next APIs.
+- Event identity: `components/event-cover.tsx` (cover band in the event's accent + a contact-sheet pattern seeded by the event id; `EventCard` for lists). The title always sits on solid accent below the faded pattern (contrast as in `accent.ts`). `.theme-light` is the light island for printed material (the QR poster at `/admin/events/[id]/poster`, A4 via `@media print`); `theme-tokens.test.ts` keeps it equal to `@theme`. Fresh search results play one reveal (`.reveal-tile`, `backwards` fill so rings survive); the site-wide link preview is `app/opengraph-image.tsx` (never names an event: join links redirect crawlers to /login).
+- Frontend camera: `selfie-capture.tsx` uses a generation counter so superseded `getUserMedia` calls stop their own stream (React dev double-mount would otherwise leave the camera on).

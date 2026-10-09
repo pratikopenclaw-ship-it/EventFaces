@@ -3,9 +3,10 @@
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { CalendarIcon } from "@/components/empty-icons";
 import { EventCard } from "@/components/event-cover";
 import { VerifyBanner } from "@/components/verify-banner";
-import { Alert, Badge, Button, Card, Field, Input, PageHeader, formatDate } from "@/components/ui";
+import { Alert, Badge, Button, Card, EmptyState, Field, Input, PageHeader, formatDate } from "@/components/ui";
 import { parseJoinLink } from "@/lib/links";
 import type { EventListItem } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
@@ -37,8 +38,12 @@ export default function MyEventsPage() {
           {loading && <p className="text-sm text-muted">Loading…</p>}
           {error && error.status !== 403 && <Alert>{error.message}</Alert>}
           {!loading && attending.length === 0 && (
-            <Card className="text-center text-sm text-muted">
-              You haven&apos;t joined any events yet. Use the link or QR code from the organizer.
+            <Card>
+              <EmptyState
+                icon={<CalendarIcon className="size-6" />}
+                title="No events yet"
+                description="Use the link or QR code from the organizer."
+              />
             </Card>
           )}
           <div className="grid gap-4 sm:grid-cols-2">
