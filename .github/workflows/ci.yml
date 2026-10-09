@@ -53,10 +53,14 @@ jobs:
           targets: api
           load: true
           # Tagged as compose names them, so `up --no-build` uses these images.
+          # The cache scope includes the branch: the GHA cache backend is a flat,
+          # content-unaware namespace per scope string, so concurrent runs on different
+          # branches/PRs writing to a bare "api" scope race and can serve another branch's
+          # built image under a cache hit that looks valid but isn't.
           set: |
             api.tags=eventfaces-api
-            api.cache-from=type=gha,scope=api
-            api.cache-to=type=gha,scope=api,mode=max
+            api.cache-from=type=gha,scope=api-${{ github.head_ref || github.ref_name }}
+            api.cache-to=type=gha,scope=api-${{ github.head_ref || github.ref_name }},mode=max
       - run: docker compose up -d --no-build --wait --wait-timeout 300 api
       # A test running over 5 minutes dumps every thread's stack (and so names itself).
       - run: docker compose exec -T api pytest -q -p no:cacheprovider -o faulthandler_timeout=300
@@ -105,12 +109,15 @@ jobs:
           files: docker-compose.yml
           targets: api,web
           load: true
+          # Scoped by branch (see the backend job's comment): a bare "web" scope let a
+          # concurrently-running PR's build overwrite/serve this one's cache, so this job
+          # could end up testing another branch's frontend bundle against its own backend.
           set: |
             api.tags=eventfaces-api
             web.tags=eventfaces-web
-            api.cache-from=type=gha,scope=api
-            web.cache-from=type=gha,scope=web
-            web.cache-to=type=gha,scope=web,mode=max
+            api.cache-from=type=gha,scope=api-${{ github.head_ref || github.ref_name }}
+            web.cache-from=type=gha,scope=web-${{ github.head_ref || github.ref_name }}
+            web.cache-to=type=gha,scope=web-${{ github.head_ref || github.ref_name }},mode=max
       - name: Start the e2e stack
         timeout-minutes: 15
         run: |
@@ -161,7 +168,7 @@ jobs:
           load: true
           set: |
             api.tags=eventfaces-api
-            api.cache-from=type=gha,scope=api
+            api.cache-from=type=gha,scope=api-${{ github.head_ref || github.ref_name }}
       - run: docker compose up -d --no-build --wait --wait-timeout 300 api
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
