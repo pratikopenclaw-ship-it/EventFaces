@@ -49,7 +49,7 @@ struct AuthService: Sendable {
     func install() async {
         let publicAPI = self.publicAPI
         await session.setAttestation(attestation)
-        await session.setRefresher { refresh in
+        await session.setRefresher({ refresh in
             let output = try await publicAPI.mobileRefresh(body: .json(.init(
                 assertion: refresh.assertion,
                 deviceId: refresh.deviceID.uuidString.lowercased(),
@@ -64,7 +64,7 @@ struct AuthService: Sendable {
                 if status == 401 { throw SessionEndedError() }
                 throw AppError.server(status: status)
             }
-        }
+        })
     }
 
     func requestCode(email: String) async throws {

@@ -532,6 +532,7 @@
       }
     },
     "Event link received" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -582,6 +583,7 @@
       }
     },
     "Events" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1441,22 +1443,23 @@
         }
       }
     },
+    "Privacy notice" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datenschutzhinweis"
+          }
+        }
+      }
+    },
     "Privacy Notice" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datenschutzerklärung"
-          }
-        }
-      }
-    },
-    "Privacy notice" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutzhinweis"
           }
         }
       }
@@ -1477,6 +1480,108 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Veröffentlicht"
+          }
+        }
+      }
+    },
+    "push.moderation_pending.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gäste haben Fotos zu deinem Event hinzugefügt. Tippe, um sie zu prüfen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guests added photos to your event. Tap to review them."
+          }
+        }
+      }
+    },
+    "push.moderation_pending.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos warten auf Freigabe"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photos waiting for review"
+          }
+        }
+      }
+    },
+    "push.search_ready.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Fotosuche ist fertig. Tippe, um deine Fotos zu sehen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photo search is done. Tap to see your photos."
+          }
+        }
+      }
+    },
+    "push.search_ready.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deine Fotos sind da"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your photos are ready"
+          }
+        }
+      }
+    },
+    "push.search_rejected.body" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe, um es noch einmal zu versuchen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tap to try again."
+          }
+        }
+      }
+    },
+    "push.search_rejected.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wir konnten dein Selfie nicht verwenden"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We couldn't use your selfie"
           }
         }
       }
@@ -1891,7 +1996,8 @@
         }
       }
     },
-    "Terms of Use" : {
+    "Terms of use" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1901,7 +2007,7 @@
         }
       }
     },
-    "Terms of use" : {
+    "Terms of Use" : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1931,16 +2037,6 @@
         }
       }
     },
-    "That QR code isn't an EventFaces event link." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser QR-Code ist kein EventFaces-Event-Link."
-          }
-        }
-      }
-    },
     "That code didn't work. Check it and try again." : {
       "localizations" : {
         "de" : {
@@ -1957,6 +2053,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieser Code hat nicht funktioniert. Prüfe ihn oder fordere einen neuen an."
+          }
+        }
+      }
+    },
+    "That QR code isn't an EventFaces event link." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieser QR-Code ist kein EventFaces-Event-Link."
           }
         }
       }
@@ -2092,22 +2198,22 @@
         }
       }
     },
-    "This event is invite-only. Use the link from your invitation email." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Event ist nur mit Einladung zugänglich. Nutze den Link aus deiner Einladungs-E-Mail."
-          }
-        }
-      }
-    },
     "This event is invite-only: invite people from the web dashboard." : {
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dieses Event ist nur mit Einladung zugänglich: Lade Personen über das Web-Dashboard ein."
+          }
+        }
+      }
+    },
+    "This event is invite-only. Use the link from your invitation email." : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Event ist nur mit Einladung zugänglich. Nutze den Link aus deiner Einladungs-E-Mail."
           }
         }
       }
@@ -2553,6 +2659,7 @@
       }
     },
     "We'll open it here as soon as joining events is available in the app." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2698,108 +2805,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Deine Uploads"
-          }
-        }
-      }
-    },
-    "push.moderation_pending.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gäste haben Fotos zu deinem Event hinzugefügt. Tippe, um sie zu prüfen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guests added photos to your event. Tap to review them."
-          }
-        }
-      }
-    },
-    "push.moderation_pending.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos warten auf Freigabe"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos waiting for review"
-          }
-        }
-      }
-    },
-    "push.search_ready.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotosuche ist fertig. Tippe, um deine Fotos zu sehen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your photo search is done. Tap to see your photos."
-          }
-        }
-      }
-    },
-    "push.search_ready.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotos sind da"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your photos are ready"
-          }
-        }
-      }
-    },
-    "push.search_rejected.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tippe, um es noch einmal zu versuchen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to try again."
-          }
-        }
-      }
-    },
-    "push.search_rejected.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir konnten dein Selfie nicht verwenden"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We couldn't use your selfie"
           }
         }
       }

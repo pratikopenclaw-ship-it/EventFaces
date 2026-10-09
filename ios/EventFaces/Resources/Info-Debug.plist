@@ -4,11 +4,6 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
-	<key>CFBundleLocalizations</key>
-	<array>
-		<string>en</string>
-		<string>de</string>
-	</array>
 	<key>CFBundleDisplayName</key>
 	<string>EventFaces</string>
 	<key>CFBundleExecutable</key>
@@ -17,6 +12,11 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>de</string>
+	</array>
 	<key>CFBundleName</key>
 	<string>$(PRODUCT_NAME)</string>
 	<key>CFBundlePackageType</key>
@@ -29,25 +29,30 @@
 	<string>$(API_BASE_URL)</string>
 	<key>EFAppLinkHost</key>
 	<string>$(APP_LINK_HOST)</string>
-	<key>NSCameraUsageDescription</key>
-	<string>EventFaces uses the camera to scan event QR codes and take the selfies that find your photos. Selfies are deleted right after matching.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>EventFaces saves the event photos you choose to your photo library. It never reads your library.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>EventFaces uses Face ID to unlock the app when you turn on the app lock.</string>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>EventFaces uses the camera to scan event QR codes and take the selfies that find your photos. Selfies are deleted right after matching.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>EventFaces uses Face ID to unlock the app when you turn on the app lock.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>EventFaces saves the event photos you choose to your photo library. It never reads your library.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
@@ -66,12 +71,5 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
-	<!-- Debug only: reach the local docker-compose stack over http://localhost.
-	     Release has no NSAppTransportSecurity key at all (scripts/check-release-plist.sh). -->
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
 </dict>
 </plist>
