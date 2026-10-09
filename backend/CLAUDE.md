@@ -1,0 +1,7 @@
+# Backend tests
+
+- Tests use fixtures in `backend/tests/conftest.py` (`make_user`, `login_as`, `make_event`, `add_member`, `mailer`); tables are truncated, Redis flushed and test-bucket objects deleted after each test. Celery runs eagerly (`task_eager_propagates`), so a task's `self.retry` surfaces as `celery.exceptions.Retry`; test exhausted retries by monkeypatching `app.workers.tasks.MAX_RETRIES`.
+- Upload tests do real presigned PUTs against SeaweedFS (conftest signs for the internal `S3_ENDPOINT_URL`). When writing binary files from `docker compose exec` for manual testing, don't pipe stdout: InsightFace prints load logs to stdout and corrupts the file. Write to a path and `docker compose cp` it out.
+- Selfie tests use `tests/helpers.selfie_set(i)` / `search_as(client, event, i)` (640×480 frames straightened from the group photo). conftest relaxes three selfie limits for these upscaled frames (front yaw 15, side yaw 3, det 0.75); tests of the gate itself set thresholds explicitly.
+- Search tests (`tests/test_search.py`) split InsightFace's group photo into left/right halves (3 different people each) and synthesize selfies with `tests/helpers.selfie_of(i)`.
+- Drive in tests: `drive.set_drive_client(FakeDrive(...))` (`tests/helpers.py`); the real client is tested with googleapiclient's `HttpMockSequence`. Face tests use InsightFace's bundled `t1.jpg` (6 faces) via `tests/helpers.group_photo_bytes()`.
