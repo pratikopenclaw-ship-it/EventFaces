@@ -18,7 +18,7 @@ test("guest upload waits for moderation, then publishes", async ({ page, browser
   await org.goto(`/admin/events/${event.id}`);
   await org.getByRole("tab", { name: "Moderation" }).click();
   await org.getByRole("button", { name: "Approve" }).first().click();
-  await expect(org.getByText("Nothing to review.")).toBeVisible();
+  await expect(org.getByText("Nothing to review")).toBeVisible();
 
   await page.reload();
   await expect(page.getByText("Published")).toBeVisible();
