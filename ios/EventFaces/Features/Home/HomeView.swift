@@ -40,7 +40,6 @@ struct HomeView: View {
                 }
                 .buttonStyle(.primary)
                 .accessibilityIdentifier("join-event")
-                OrganizerSection()
                 if !model.myEvents.isEmpty {
                     Text("My events").font(.headline).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader).padding(.top, 8)
                     ForEach(model.myEvents, id: \.id) { event in
@@ -81,9 +80,6 @@ struct HomeView: View {
             .readableWidth()
         }
         .background(Palette.bg.ignoresSafeArea())
-        .navigationDestination(item: Binding(get: { model.organizerPath }, set: { model.organizerPath = $0 })) { route in
-            OrganizerEventView(eventID: route.eventID)
-        }
     }
 
     @ViewBuilder

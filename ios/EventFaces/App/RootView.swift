@@ -30,7 +30,6 @@ struct MainView: View {
             HomeView()
                 .toolbar(.hidden, for: .navigationBar)
                 .navigationDestination(for: String.self) { id in EventView(eventID: id) }
-                .navigationDestination(for: OrganizerRoute.self) { route in OrganizerEventView(eventID: route.eventID) }
         }
         .sheet(isPresented: $model.showSettings) { SettingsSheet().sheetContent() }
         .sheet(isPresented: $model.showJoin) { JoinView().sheetContent() }
