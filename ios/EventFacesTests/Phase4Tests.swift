@@ -10,7 +10,6 @@ struct PushRouteTests {
     @Test func knownKindsRoute() {
         #expect(PushRoute.parse(["kind": "search_ready", "event_id": event]) == .searchResults(eventID: event.lowercased()))
         #expect(PushRoute.parse(["kind": "search_rejected", "event_id": event]) == .searchRejected(eventID: event.lowercased()))
-        #expect(PushRoute.parse(["kind": "moderation_pending", "event_id": event, "aps": ["alert": ["loc-key": "x"]]]) == .moderation(eventID: event.lowercased()))
     }
 
     @Test func malformedPayloadsAreIgnored() {
@@ -24,6 +23,9 @@ struct PushRouteTests {
             ["kind": "search_ready", "event_id": "3F2504E04F8911D39A0C0305E82C3301"],
             ["kind": "search_ready", "event_id": 42],
             ["kind": ["search_ready"], "event_id": id],
+            // Organizer-only; the iOS app is attendee-only, so the backend may still send
+            // this kind but it must stay unroutable here.
+            ["kind": "moderation_pending", "event_id": id],
         ]
         for payload in payloads { #expect(PushRoute.parse(payload) == nil, "\(payload)") }
     }

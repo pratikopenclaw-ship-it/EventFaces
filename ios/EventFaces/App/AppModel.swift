@@ -47,8 +47,6 @@ final class AppModel {
     let config: AppConfig
     /// Navigation: events opened from the list, a link, a QR code or a code.
     var path: [String] = []
-    /// Set by a "photos waiting for review" notification.
-    var organizerPath: OrganizerRoute?
     private(set) var myEvents: [EventSummary] = []
     var showJoin = false { didSet { if showJoin { notice = nil } } }
     private(set) var linkError: LocalizedStringKey?
@@ -97,8 +95,6 @@ final class AppModel {
         case let .searchResults(id), let .searchRejected(id):
             path = [id]
             if case .searchResults = route { openResultsFor = id }
-        case let .moderation(id):
-            organizerPath = OrganizerRoute(eventID: id)
         }
     }
 

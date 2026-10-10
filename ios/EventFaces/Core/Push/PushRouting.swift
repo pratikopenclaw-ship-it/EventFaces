@@ -5,9 +5,10 @@ import Foundation
 enum PushRoute: Equatable, Sendable {
     case searchResults(eventID: String)
     case searchRejected(eventID: String)
-    case moderation(eventID: String)
 
-    static let kinds: Set<String> = ["search_ready", "search_rejected", "moderation_pending"]
+    // moderation_pending is organizer-only: the iOS app is attendee-only (organizers manage
+    // on the web), so there is no screen for it to open. The backend still sends it for web/email.
+    static let kinds: Set<String> = ["search_ready", "search_rejected"]
 
     static func parse(_ userInfo: [AnyHashable: Any]) -> PushRoute? {
         guard let kind = userInfo["kind"] as? String, kinds.contains(kind),
@@ -16,8 +17,7 @@ enum PushRoute: Equatable, Sendable {
         let id = uuid.uuidString.lowercased()
         switch kind {
         case "search_ready": return .searchResults(eventID: id)
-        case "search_rejected": return .searchRejected(eventID: id)
-        default: return .moderation(eventID: id)
+        default: return .searchRejected(eventID: id)
         }
     }
 }
