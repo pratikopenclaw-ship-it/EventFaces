@@ -8,6 +8,54 @@ typealias ConsentInfo = Components.Schemas.ConsentInfo
 typealias SelfieRequirements = Components.Schemas.SelfieRequirementsOut
 typealias SearchResult = Components.Schemas.SearchOut
 typealias SearchStatus = Components.Schemas.SearchStatusOut
+typealias SyncStatusInfo = Components.Schemas.SyncStatusOut
+typealias Member = Components.Schemas.MemberOut
+typealias SearchLogRow = Components.Schemas.SearchLogRow
+typealias ModerationItem = Components.Schemas.ModerationItem
+typealias ReportItem = Components.Schemas.ReportOut
+typealias RemovalItem = Components.Schemas.RemovalOut
+
+/// At-a-glance numbers for an event someone manages: the same four tiles as the web
+/// dashboard, no management actions. Each tile degrades to nil on its own if that one
+/// call fails (e.g. the Organizer Terms gate, surfaced separately by AuthMiddleware).
+struct OrganizerStats: Sendable, Equatable {
+    var publishedPhotos: Int?
+    var facesFound: Int?
+    var approvedMembers: Int?
+    var pendingMembers: Int?
+    var searchCount: Int?
+    var matchRatePercent: Int?
+    var needsAttention: Int?
+
+    /// Pure aggregation (unit-testable without the network): each argument is nil if its
+    /// own fetch failed, independently of the others.
+    static func aggregate(
+        sync: SyncStatusInfo?, members: [Member]?, searchLog: [SearchLogRow]?,
+        queue: [ModerationItem]?, reports: [ReportItem]?, removals: [RemovalItem]?
+    ) -> OrganizerStats {
+        var stats = OrganizerStats()
+        if let sync {
+            stats.publishedPhotos = sync.publishedPhotos
+            stats.facesFound = sync.faces
+        }
+        if let members {
+            stats.approvedMembers = members.filter { $0.status == .approved }.count
+            stats.pendingMembers = members.filter { $0.status == .pending }.count
+        }
+        if let searchLog {
+            stats.searchCount = searchLog.count
+            let matched = searchLog.filter { $0.matchCount > 0 }.count
+            stats.matchRatePercent = searchLog.isEmpty ? nil : Int((Double(matched) / Double(searchLog.count) * 100).rounded())
+        }
+        var attention = 0
+        var haveAttention = false
+        if let queue { attention += queue.count; haveAttention = true }
+        if let reports { attention += reports.count; haveAttention = true }
+        if let removals { attention += removals.count; haveAttention = true }
+        if haveAttention { stats.needsAttention = attention }
+        return stats
+    }
+}
 
 enum JoinError: Error, Equatable {
     case invalidCode
@@ -197,6 +245,32 @@ struct EventService: Sendable {
         let (status, data) = try await raw(request, body: nil)
         guard status == 200 else { throw status == 403 ? AppError.noAccess : AuthService.error(status) }
         return data
+    }
+
+    // MARK: - Organizer stats (read-only; management stays on the web)
+
+    func organizerStats(_ id: String) async -> OrganizerStats {
+        async let syncOut = try? call({ try await api.photosSyncStatus(path: .init(eventId: id)) })
+        async let membersOut = try? call({ try await api.membersListMembers(path: .init(eventId: id)) })
+        async let searchLogOut = try? call({ try await api.privacySearchLog(path: .init(eventId: id)) })
+        async let queueOut = try? call({ try await api.moderationModerationQueue(path: .init(eventId: id)) })
+        async let reportsOut = try? call({ try await api.moderationListReports(path: .init(eventId: id)) })
+        async let removalsOut = try? call({ try await api.privacyListRemovalRequests(path: .init(eventId: id)) })
+
+        var sync: SyncStatusInfo?
+        if case let .ok(ok) = await syncOut { sync = try? ok.body.json }
+        var members: [Member]?
+        if case let .ok(ok) = await membersOut { members = try? ok.body.json }
+        var searchLog: [SearchLogRow]?
+        if case let .ok(ok) = await searchLogOut { searchLog = try? ok.body.json }
+        var queue: [ModerationItem]?
+        if case let .ok(ok) = await queueOut { queue = try? ok.body.json }
+        var reports: [ReportItem]?
+        if case let .ok(ok) = await reportsOut { reports = try? ok.body.json }
+        var removals: [RemovalItem]?
+        if case let .ok(ok) = await removalsOut { removals = try? ok.body.json }
+
+        return OrganizerStats.aggregate(sync: sync, members: members, searchLog: searchLog, queue: queue, reports: reports, removals: removals)
     }
 
     // MARK: -

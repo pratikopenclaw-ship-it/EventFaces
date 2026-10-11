@@ -11,6 +11,7 @@ struct EventView: View {
     @State private var hasPhotos = false
     @State private var showResults = false
     @State private var showUpload = false
+    @State private var stats: OrganizerStats?
 
     enum Flow: Identifiable { case consent(ConsentInfo), capture; var id: String { switch self { case .consent: "consent"; case .capture: "capture" } } }
 
@@ -50,6 +51,10 @@ struct EventView: View {
                         .buttonStyle(AccentButtonStyle(accent: EventAccent.color(event.accentColor), onAccent: EventAccent.onColor(event.accentColor)))
                         .accessibilityIdentifier("find-my-photos")
                         .padding(.top, 8)
+                    if model.myEvents.first(where: { $0.id == eventID })?.canManage == true {
+                        OrganizerStatsSection(stats: stats)
+                            .padding(.top, 16)
+                    }
                 } else if error == nil {
                     ProgressView().frame(maxWidth: .infinity, minHeight: 200)
                 }
@@ -98,6 +103,9 @@ struct EventView: View {
             event = e
             hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty
             if e.hasLogo == true, let data = try? await model.events.image(path: "/api/events/\(eventID)/logo") { logo = UIImage(data: data) }
+            if model.myEvents.first(where: { $0.id == eventID })?.canManage == true {
+                stats = await model.events.organizerStats(eventID)
+            }
         } catch AppError.noAccess {
             error = "You don't have access to this event (any more)."
         } catch {
@@ -112,6 +120,52 @@ struct EventView: View {
         } catch {
             self.error = "Couldn't load this event. Check your connection and try again."
         }
+    }
+}
+
+/// At-a-glance numbers for organizers (read-only; management stays on the web): the same
+/// four tiles as the web dashboard. Each tile shows "—" if its own fetch failed.
+struct OrganizerStatsSection: View {
+    let stats: OrganizerStats?
+
+    private let columns = [GridItem(.flexible()), GridItem(.flexible())]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("For organizers").font(.subheadline.weight(.semibold)).foregroundStyle(Palette.textMuted)
+            LazyVGrid(columns: columns, spacing: 12) {
+                tile(label: "Photos", value: stats?.publishedPhotos,
+                     description: stats?.facesFound.map { "\($0) faces found" })
+                tile(label: "Members", value: stats?.approvedMembers,
+                     description: (stats?.pendingMembers).flatMap { $0 > 0 ? "\($0) pending" : nil })
+                tile(label: "Searches", value: stats?.searchCount,
+                     description: stats?.matchRatePercent.map { "\($0)% found a match" })
+                tile(label: "Needs attention", value: stats?.needsAttention,
+                     description: (stats?.needsAttention == 0) ? "All clear" : nil,
+                     tone: stats?.needsAttention.map { $0 > 0 ? .warn : .good } ?? .neutral)
+            }
+        }
+        .accessibilityIdentifier("organizer-stats")
+    }
+
+    private enum Tone { case neutral, good, warn }
+
+    @ViewBuilder
+    private func tile(label: String, value: Int?, description: String?, tone: Tone = .neutral) -> some View {
+        let valueColor: Color = switch tone {
+        case .neutral: Palette.text
+        case .good: Palette.successText
+        case .warn: Palette.warningText
+        }
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(.caption).foregroundStyle(Palette.textMuted)
+            Text(value.map(String.init) ?? "—").font(.title2.weight(.semibold)).foregroundStyle(valueColor)
+            if let description { Text(description).font(.caption2).foregroundStyle(Palette.textMuted) }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Palette.surface, in: .rect(cornerRadius: 12))
+        .accessibilityElement(children: .combine)
     }
 }
 
