@@ -20,18 +20,7 @@ struct EventView: View {
             VStack(alignment: .leading, spacing: 16) {
                 if let error { Banner(kind: .error, text: Text(error)) }
                 if let event {
-                    if let logo {
-                        Image(uiImage: logo).resizable().scaledToFit().frame(maxHeight: 56)
-                            .accessibilityLabel(Text("\(event.name) logo"))
-                    }
-                    Text(event.name)
-                        .font(.largeTitle.bold())
-                        .foregroundStyle(Palette.text)
-                        .accessibilityAddTraits(.isHeader)
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let date = event.date.flatMap(Self.day) {
-                        Text(date, format: .dateTime.day().month(.wide).year()).foregroundStyle(Palette.textMuted)
-                    }
+                    cover(event)
                     if !event.description.isEmpty {
                         Text(event.description).foregroundStyle(Palette.textMuted).fixedSize(horizontal: false, vertical: true)
                     }
@@ -120,6 +109,34 @@ struct EventView: View {
         } catch {
             self.error = "Couldn't load this event. Check your connection and try again."
         }
+    }
+
+    /// The accent band with the seeded tile pattern, the organizer's logo and the event's
+    /// name/date on solid accent below it (never over the pattern, for contrast).
+    @ViewBuilder
+    private func cover(_ event: EventDetail) -> some View {
+        let accent = EventAccent.color(event.accentColor) ?? Palette.accent
+        let onAccent = EventAccent.onColor(event.accentColor) ?? Palette.onAccent
+        VStack(alignment: .leading, spacing: 0) {
+            CoverPattern(seed: eventID, rows: 3, tint: onAccent).frame(height: 112)
+            VStack(alignment: .leading, spacing: 6) {
+                if let logo {
+                    Image(uiImage: logo).resizable().scaledToFit().frame(maxHeight: 40)
+                        .accessibilityLabel(Text("\(event.name) logo"))
+                }
+                Text(event.name)
+                    .font(.largeTitle.bold())
+                    .foregroundStyle(onAccent)
+                    .accessibilityAddTraits(.isHeader)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let date = event.date.flatMap(Self.day) {
+                    Text(date, format: .dateTime.day().month(.wide).year()).foregroundStyle(onAccent.opacity(0.85))
+                }
+            }
+            .padding(16)
+        }
+        .background(accent)
+        .clipShape(.rect(cornerRadius: 24))
     }
 }
 

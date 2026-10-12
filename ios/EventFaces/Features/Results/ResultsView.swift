@@ -52,9 +52,10 @@ struct ResultsView: View {
                             if section == .possible {
                                 Text("Less certain. Tell us if these are you.").font(.footnote).foregroundStyle(Palette.textMuted)
                             }
-                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 4)], spacing: 4) {
+                            JustifiedRows(spacing: 4) {
                                 ForEach(items, id: \.id) { photo in
                                     tile(photo, results: results)
+                                        .justifiedAspectRatio(Self.ratio(photo))
                                 }
                             }
                         }
@@ -89,12 +90,9 @@ struct ResultsView: View {
     private func header(_ results: ResultsModel) -> some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                Text(results.photos.isEmpty ? "No photos of you yet" : "We found you")
+                headline(results)
                     .font(.title2.bold()).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
                     .accessibilityIdentifier("results-title")
-                if !results.photos.isEmpty {
-                    Text("\(results.photos.count) photos").foregroundStyle(Palette.textMuted)
-                }
             }
             Spacer()
             if !results.photos.isEmpty {
@@ -109,15 +107,30 @@ struct ResultsView: View {
         }
     }
 
+    @ViewBuilder
+    private func headline(_ results: ResultsModel) -> some View {
+        switch results.matchCount {
+        case 0: Text("No photos of you yet")
+        case 1: Text("You're in 1 photo")
+        default: Text("You're in \(results.matchCount) photos")
+        }
+    }
+
+    /// Own aspect ratio (clamped like the web's grid, so very thin or wide photos don't
+    /// dominate a row); defaults to 4:3 when the server hasn't sent dimensions.
+    static func ratio(_ photo: MyPhoto) -> CGFloat {
+        guard let w = photo.width, let h = photo.height, h > 0 else { return 4.0 / 3.0 }
+        return max(0.5, min(2.5, CGFloat(w) / CGFloat(h)))
+    }
+
     private func tile(_ photo: MyPhoto, results: ResultsModel) -> some View {
         let isSelected = results.selected.contains(photo.id)
         return Button {
             if results.selecting { results.toggle(photo.id) } else if let i = results.ordered.firstIndex(where: { $0.id == photo.id }) { viewerStart = ViewerStart(index: i) }
         } label: {
-            // A square cell with the photo filling it, clipped: the photo can never spill
-            // over its neighbours or the section headings.
+            // Sized to its own aspect ratio by the enclosing JustifiedRows layout; clipped
+            // so a thumbnail that hasn't finished downsampling never spills over.
             Color.clear
-                .aspectRatio(1, contentMode: .fit)
                 .overlay { CachedPhoto(eventID: eventID, photoID: photo.id, variant: "thumb", maxPixel: 360) }
                 .clipped()
                 .overlay(alignment: .topLeading) {

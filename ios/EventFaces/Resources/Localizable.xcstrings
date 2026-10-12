@@ -2880,6 +2880,27 @@
         }
       }
     }
+,
+    "You're in 1 photo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du bist auf 1 Foto"
+          }
+        }
+      }
+    },
+    "You're in %@ photos" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du bist auf %@ Fotos"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

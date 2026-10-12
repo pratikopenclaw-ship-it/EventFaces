@@ -103,4 +103,34 @@ struct ResultsModelTests {
         await m.load()
         #expect(m.noAccess && m.photos.isEmpty)
     }
+
+    @Test func matchCountExcludesOwnUploads() async {
+        // best + possible count toward the headline; the plain upload (tier nil) doesn't.
+        transport.handler = { _, _ in (200, Self.photosJSON) }
+        let m = model()
+        await m.load()
+        #expect(m.matchCount == 2)
+    }
+}
+
+@Suite("Justified grid aspect ratio (same clamp as the web)")
+struct JustifiedRatioTests {
+    func photo(width: Int?, height: Int?) -> MyPhoto {
+        let json = #"{"id":"aaaaaaaa-0000-0000-0000-000000000001","width":\#(width.map(String.init) ?? "null"),"height":\#(height.map(String.init) ?? "null")}"#
+        return try! JSONDecoder.api.decode(MyPhoto.self, from: Data(json.utf8))
+    }
+
+    @Test func usesTheServersWidthAndHeight() {
+        #expect(ResultsView.ratio(photo(width: 16, height: 9)) == CGFloat(16) / CGFloat(9))
+    }
+
+    @Test func clampsExtremeRatios() {
+        #expect(ResultsView.ratio(photo(width: 100, height: 1)) == 2.5)
+        #expect(ResultsView.ratio(photo(width: 1, height: 100)) == 0.5)
+    }
+
+    @Test func defaultsTo4By3WhenDimensionsAreMissing() {
+        #expect(ResultsView.ratio(photo(width: nil, height: nil)) == 4.0 / 3.0)
+        #expect(ResultsView.ratio(photo(width: 10, height: 0)) == 4.0 / 3.0)
+    }
 }
