@@ -2809,6 +2809,77 @@
         }
       }
     }
+,
+    "%@ faces found" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Gesichter gefunden"
+          }
+        }
+      }
+    },
+    "%@ pending" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ausstehend"
+          }
+        }
+      }
+    },
+    "%@% found a match" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ % mit Treffer"
+          }
+        }
+      }
+    },
+    "All clear" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles in Ordnung"
+          }
+        }
+      }
+    },
+    "For organizers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Organisatoren"
+          }
+        }
+      }
+    },
+    "Needs attention" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Braucht Aufmerksamkeit"
+          }
+        }
+      }
+    },
+    "Searches" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        }
+      }
+    }
   },
   "version" : "1.0"
 }

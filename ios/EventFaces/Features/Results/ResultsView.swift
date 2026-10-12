@@ -32,7 +32,17 @@ struct ResultsView: View {
                     Banner(kind: .error, text: Text("You don't have access to this event (any more). Its photos were removed from this device."))
                         .accessibilityIdentifier("results-no-access")
                 } else if !results.loading && results.photos.isEmpty {
-                    Text("New photos may still be added. Try again later.").foregroundStyle(Palette.textMuted)
+                    VStack(spacing: 8) {
+                        Image(systemName: "person.crop.circle.badge.questionmark")
+                            .font(.system(size: 36))
+                            .foregroundStyle(Palette.textMuted)
+                            .accessibilityHidden(true)
+                        Text("New photos may still be added. Try again later.")
+                            .foregroundStyle(Palette.textMuted)
+                            .multilineTextAlignment(.center)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 24)
                 }
                 ForEach(ResultsModel.Section.allCases) { section in
                     let items = results.photos(in: section)
