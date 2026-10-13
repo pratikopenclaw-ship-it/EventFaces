@@ -130,7 +130,9 @@ struct JustifiedRatioTests {
     }
 
     @Test func defaultsTo4By3WhenDimensionsAreMissing() {
-        #expect(ResultsView.ratio(photo(width: nil, height: nil)) == 4.0 / 3.0)
-        #expect(ResultsView.ratio(photo(width: 10, height: 0)) == 4.0 / 3.0)
+        // A bare `4.0 / 3.0` infers as Double, not CGFloat, inside #expect's capture —
+        // equal in value but a different boxed type, so the macro reports a mismatch.
+        #expect(ResultsView.ratio(photo(width: nil, height: nil)) == CGFloat(4.0) / 3.0)
+        #expect(ResultsView.ratio(photo(width: 10, height: 0)) == CGFloat(4.0) / 3.0)
     }
 }
