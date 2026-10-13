@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_token, utcnow
 from app.models import (
+    AddonKind,
+    AddonOrder,
+    AddonOrderStatus,
     Device,
     AuthToken,
     DriveSyncRun,
@@ -94,6 +97,21 @@ def populate(session: Session) -> None:
     session.add(EventVideo(event_id=ev.id, title="Highlights", url="https://youtu.be/dQw4w9WgXcQ"))
     # Photo shortlists (0016): an attendee's personal pick.
     session.add(PhotoShortlist(user_id=guest.id, photo_id=photo.id, event_id=ev.id))
+    # Add-on orders (0020): a pending per-photo purchase.
+    session.add(
+        AddonOrder(
+            buyer_user_id=guest.id,
+            event_id=ev.id,
+            kind=AddonKind.human_edit,
+            photo_ids=[photo.id],
+            amount_cents=999,
+            currency="EUR",
+            vat_rate=19,
+            status=AddonOrderStatus.pending,
+            provider="fake",
+            provider_ref="drill-addon-session",
+        )
+    )
     session.commit()
 
 
