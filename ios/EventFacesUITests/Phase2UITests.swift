@@ -83,7 +83,7 @@ final class Phase2UITests: XCTestCase {
         try consentAndCapture()
         // The fake camera shows front, left, right as the steps ask; guidance captures each.
         XCTAssertTrue(app.staticTexts["results-title"].waitForExistence(timeout: 90))
-        XCTAssertEqual(app.staticTexts["results-title"].label, "We found you")
+        XCTAssertEqual(app.staticTexts["results-title"].label, "You're in 2 photos")
         try resultsGalleryViewerAndDownloads()
     }
 

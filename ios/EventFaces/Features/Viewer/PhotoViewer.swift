@@ -31,7 +31,13 @@ struct PhotoViewer: View {
                 .accessibilityIdentifier("viewer")
             }
         }
-        .safeAreaInset(edge: .top) { topBar(photos) }
+        .safeAreaInset(edge: .top) {
+            VStack(spacing: 8) {
+                topBar(photos)
+                if photos.count > 1 { filmstrip(photos) }
+            }
+            .background(Color.black.opacity(0.6))
+        }
         .safeAreaInset(edge: .bottom) { if photos.indices.contains(index) { bottomBar(photos[index]) } }
         .environment(\.colorScheme, .dark)
         .onAppear { index = min(startIndex, max(0, photos.count - 1)) }
@@ -52,7 +58,35 @@ struct PhotoViewer: View {
             Text(verbatim: "\(min(index + 1, photos.count)) / \(photos.count)").foregroundStyle(.white.opacity(0.85)).monospacedDigit()
         }
         .padding(.horizontal, 16)
-        .background(Color.black.opacity(0.6))
+    }
+
+    /// Tap-to-jump thumbnail strip; auto-scrolls to keep the current photo visible.
+    private func filmstrip(_ photos: [MyPhoto]) -> some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(photos.enumerated()), id: \.element.id) { i, photo in
+                        Button { index = i } label: {
+                            CachedPhoto(eventID: results.eventID, photoID: photo.id, variant: "thumb", maxPixel: 120)
+                                .frame(width: 56, height: 56)
+                                .clipShape(.rect(cornerRadius: 8))
+                                .overlay(RoundedRectangle(cornerRadius: 8).stroke(i == index ? Palette.accent : .clear, lineWidth: 2))
+                                .opacity(i == index ? 1 : 0.6)
+                        }
+                        .buttonStyle(.plain)
+                        .id(i)
+                        .accessibilityLabel(Text("Photo \(i + 1) of \(photos.count)"))
+                        .accessibilityAddTraits(i == index ? [.isSelected] : [])
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+            }
+            .onChange(of: index) { _, newIndex in
+                withAnimation { proxy.scrollTo(newIndex, anchor: .center) }
+            }
+        }
+        .accessibilityIdentifier("viewer-filmstrip")
     }
 
     private func bottomBar(_ photo: MyPhoto) -> some View {

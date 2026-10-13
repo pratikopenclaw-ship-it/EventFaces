@@ -43,6 +43,9 @@ final class ResultsModel {
     /// Viewer order: best, then possible, then own uploads.
     var ordered: [MyPhoto] { Section.allCases.flatMap { photos(in: $0) } }
 
+    /// Matches only (own uploads aren't "found you" results), for the results headline.
+    var matchCount: Int { photos.filter { $0.tier != nil }.count }
+
     func load() async {
         loading = true
         defer { loading = false }

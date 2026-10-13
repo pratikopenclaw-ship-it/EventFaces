@@ -44,15 +44,18 @@ struct HomeView: View {
                     Text("My events").font(.headline).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader).padding(.top, 8)
                     ForEach(model.myEvents, id: \.id) { event in
                         Button { model.openEvent(event.id) } label: {
-                            Card {
-                                Text(event.name).font(.headline).foregroundStyle(Palette.text)
-                                HStack {
-                                    Text("\(event.photoCount ?? 0) photos").foregroundStyle(Palette.textMuted)
-                                    Spacer()
-                                    Text("Find my photos").foregroundStyle(Palette.accent)
-                                    Image(systemName: "chevron.right").foregroundStyle(Palette.accent).accessibilityHidden(true)
+                            VStack(alignment: .leading, spacing: 0) {
+                                eventCoverStrip(event)
+                                Card {
+                                    Text(event.name).font(.headline).foregroundStyle(Palette.text)
+                                    HStack {
+                                        Text("\(event.photoCount ?? 0) photos").foregroundStyle(Palette.textMuted)
+                                        Spacer()
+                                        Text("Find my photos").foregroundStyle(Palette.accent)
+                                        Image(systemName: "chevron.right").foregroundStyle(Palette.accent).accessibilityHidden(true)
+                                    }
+                                    .font(.subheadline)
                                 }
-                                .font(.subheadline)
                             }
                         }
                         .buttonStyle(.plain)
@@ -95,5 +98,16 @@ struct HomeView: View {
         .onTapGesture { model.dismissNotice() }
         .accessibilityAction(named: Text("Dismiss")) { model.dismissNotice() }  // the tap, for VoiceOver
         .accessibilityIdentifier("notice")
+    }
+
+    /// The event's identity strip above its card: the same seeded tile pattern as the full
+    /// event header, at a shorter height.
+    private func eventCoverStrip(_ event: EventSummary) -> some View {
+        let accent = EventAccent.color(event.accentColor) ?? Palette.accent
+        let onAccent = EventAccent.onColor(event.accentColor) ?? Palette.onAccent
+        return CoverPattern(seed: event.id, rows: 2, tint: onAccent)
+            .frame(height: 72)
+            .background(accent)
+            .clipShape(.rect(topLeadingRadius: 16, topTrailingRadius: 16))
     }
 }
