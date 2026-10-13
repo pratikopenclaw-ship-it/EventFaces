@@ -1,4 +1,6 @@
 from app.models.enums import (
+    AddonKind,
+    AddonOrderStatus,
     FeedbackVerdict,
     IndexStatus,
     InviteStatus,
@@ -18,6 +20,7 @@ from app.models.enums import (
     TokenKind,
     UserRole,
 )
+from app.models.addon_order import AddonOrder
 from app.models.billing import Order, Subscription, WebhookEvent
 from app.models.community import Invite, PhotoReport, RemovalRequest
 from app.models.device import Device
@@ -27,6 +30,9 @@ from app.models.search import MatchFeedback, SearchAudit, SearchGrant, SelfieQua
 from app.models.user import AuthToken, LegalAcceptance, User
 
 __all__ = [
+    "AddonKind",
+    "AddonOrder",
+    "AddonOrderStatus",
     "AuthToken",
     "Device",
     "DriveSyncRun",
