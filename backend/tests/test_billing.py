@@ -389,3 +389,15 @@ def test_deleting_an_account_keeps_orders_but_ends_the_subscription(make_user: M
     sub = db.scalars(select(Subscription)).one()
     assert sub.user_id is None and sub.status == SubscriptionStatus.expired
     assert orders.run_maintenance(db)["renewed"] == 0
+
+
+# --- add-on pricing -----------------------------------------------------------------------
+
+
+from app.models import AddonKind
+from app.services.billing.addon_prices import ADDON_PRICES, addon_price_cents
+
+
+def test_addon_price_lookup_matches_the_table():
+    assert addon_price_cents(AddonKind.human_edit) == ADDON_PRICES[AddonKind.human_edit]
+    assert ADDON_PRICES[AddonKind.human_edit] > 0
