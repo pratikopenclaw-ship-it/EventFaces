@@ -113,6 +113,7 @@ struct ResultsModelTests {
     }
 }
 
+@MainActor
 @Suite("Justified grid aspect ratio (same clamp as the web)")
 struct JustifiedRatioTests {
     func photo(width: Int?, height: Int?) -> MyPhoto {
