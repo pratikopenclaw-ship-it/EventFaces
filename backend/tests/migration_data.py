@@ -11,6 +11,9 @@ from sqlalchemy.orm import Session
 
 from app.core.security import hash_token, utcnow
 from app.models import (
+    AddonKind,
+    AddonOrder,
+    AddonOrderStatus,
     Device,
     AuthToken,
     DriveSyncRun,
@@ -88,6 +91,21 @@ def populate(session: Session) -> None:
     session.flush()
     session.add(Order(user_id=admin.id, plan="pro", kind=OrderKind.subscription, amount_cents=19900, currency="EUR", vat_rate=19, status=OrderStatus.paid, provider="fake", provider_ref="drill-session", subscription_id=sub.id, paid_at=now))
     session.add(WebhookEvent(provider="fake", provider_event_id="evt_drill"))
+    # Add-on orders (0015): a pending per-photo purchase.
+    session.add(
+        AddonOrder(
+            buyer_user_id=guest.id,
+            event_id=ev.id,
+            kind=AddonKind.human_edit,
+            photo_ids=[photo.id],
+            amount_cents=999,
+            currency="EUR",
+            vat_rate=19,
+            status=AddonOrderStatus.pending,
+            provider="fake",
+            provider_ref="drill-addon-session",
+        )
+    )
     session.commit()
 
 
