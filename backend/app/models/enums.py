@@ -113,3 +113,13 @@ class OrderStatus(str, enum.Enum):
 class SubscriptionStatus(str, enum.Enum):
     active = "active"  # also while canceled-at-period-end, until the period ends
     expired = "expired"
+
+
+class AddonKind(str, enum.Enum):
+    human_edit = "human_edit"  # ai_enhance, print added when those sub-projects land
+
+
+class AddonOrderStatus(str, enum.Enum):
+    pending = "pending"  # checkout started, no confirmed payment yet
+    paid = "paid"
+    canceled = "canceled"
