@@ -1,6 +1,17 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ faces found" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ Gesichter gefunden"
+          }
+        }
+      }
+    },
     "%@ logo" : {
       "localizations" : {
         "de" : {
@@ -11,12 +22,35 @@
         }
       }
     },
+    "%@ pending" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ausstehend"
+          }
+        }
+      }
+    },
     "%@ will lose access to this event and its photos right away." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ verliert sofort den Zugang zu diesem Event und seinen Fotos."
+          }
+        }
+      }
+    },
+    "%@% found a match" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ % mit Treffer"
           }
         }
       }
@@ -32,6 +66,7 @@
       }
     },
     "%lld published · %lld faces indexed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -102,6 +137,7 @@
       }
     },
     "Active" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -141,6 +177,17 @@
         }
       }
     },
+    "All clear" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles in Ordnung"
+          }
+        }
+      }
+    },
     "Almost there. Please accept the Terms of Use to finish signing in." : {
       "localizations" : {
         "de" : {
@@ -172,6 +219,7 @@
       }
     },
     "Approve" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -192,6 +240,7 @@
       }
     },
     "Attendee" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -472,6 +521,7 @@
       }
     },
     "Drive import is set up." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -482,6 +532,7 @@
       }
     },
     "Drive import isn't set up (web dashboard)." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -594,6 +645,7 @@
       }
     },
     "Events you organize" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -649,6 +701,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Finde deine Fotos"
+          }
+        }
+      }
+    },
+    "For organizers" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Für Organisatoren"
           }
         }
       }
@@ -764,6 +826,7 @@
       }
     },
     "Importing from Google Drive…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1024,6 +1087,7 @@
       }
     },
     "Manage" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1034,6 +1098,7 @@
       }
     },
     "Members" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1119,6 +1184,17 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Meine Fotos"
+          }
+        }
+      }
+    },
+    "Needs attention" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Braucht Aufmerksamkeit"
           }
         }
       }
@@ -1244,6 +1320,7 @@
       }
     },
     "Nothing to review." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1314,6 +1391,7 @@
       }
     },
     "Organizer" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1374,6 +1452,7 @@
       }
     },
     "Photos" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1587,6 +1666,7 @@
       }
     },
     "QR code to join %@" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1617,6 +1697,7 @@
       }
     },
     "Reject" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1667,6 +1748,7 @@
       }
     },
     "Review" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1677,6 +1759,7 @@
       }
     },
     "Revoke" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1687,6 +1770,7 @@
       }
     },
     "Revoke access?" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1697,6 +1781,7 @@
       }
     },
     "Revoked" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1766,7 +1851,19 @@
         }
       }
     },
+    "Searches" : {
+      "extractionState" : "stale",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suchen"
+          }
+        }
+      }
+    },
     "Section" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1857,6 +1954,7 @@
       }
     },
     "Share join link" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2199,6 +2297,7 @@
       }
     },
     "This event is invite-only: invite people from the web dashboard." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2509,6 +2608,7 @@
       }
     },
     "Uploaded photo" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2609,6 +2709,7 @@
       }
     },
     "We found you" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -2729,6 +2830,28 @@
         }
       }
     },
+    "You're in %lld photos" : {
+      "comment" : "A pluralization rule for the phrase \"You're in X photos\".",
+      "isCommentAutoGenerated" : true,
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du bist auf %lld Fotos"
+          }
+        }
+      }
+    },
+    "You're in 1 photo" : {
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du bist auf 1 Foto"
+          }
+        }
+      }
+    },
     "You're in the queue" : {
       "localizations" : {
         "de" : {
@@ -2809,98 +2932,6 @@
         }
       }
     }
-,
-    "%@ faces found" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Gesichter gefunden"
-          }
-        }
-      }
-    },
-    "%@ pending" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ ausstehend"
-          }
-        }
-      }
-    },
-    "%@% found a match" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ % mit Treffer"
-          }
-        }
-      }
-    },
-    "All clear" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alles in Ordnung"
-          }
-        }
-      }
-    },
-    "For organizers" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für Organisatoren"
-          }
-        }
-      }
-    },
-    "Needs attention" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Braucht Aufmerksamkeit"
-          }
-        }
-      }
-    },
-    "Searches" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suchen"
-          }
-        }
-      }
-    }
-,
-    "You're in 1 photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist auf 1 Foto"
-          }
-        }
-      }
-    },
-    "You're in %@ photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist auf %@ Fotos"
-          }
-        }
-      }
-    }
   },
-  "version" : "1.0"
+  "version" : "1.1"
 }
