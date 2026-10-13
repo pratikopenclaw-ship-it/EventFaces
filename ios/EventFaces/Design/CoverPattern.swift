@@ -34,11 +34,14 @@ struct CoverPattern: View {
 
     static func coverTiles(seed: String, count: Int) -> [(opacity: Double, found: Bool)] {
         var rng = Mulberry32(seed: hashSeed(seed))
-        return (0..<count).map { _ in
+        var tiles: [(opacity: Double, found: Bool)] = []
+        tiles.reserveCapacity(count)
+        for _ in 0..<count {
             let r1 = rng.next()
             let r2 = rng.next()
-            return (opacity: 0.06 + r1 * 0.16, found: r2 < 0.07)
+            tiles.append((opacity: 0.06 + r1 * 0.16, found: r2 < 0.07))
         }
+        return tiles
     }
 
     /// FNV-1a-style string hash (matches the web's seed derivation).
