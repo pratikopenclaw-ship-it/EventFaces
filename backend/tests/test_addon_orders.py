@@ -130,3 +130,48 @@ def test_empty_photo_ids_is_rejected(db: Session, organizer: User, event: Event)
     with pytest.raises(HTTPException) as exc:
         addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [])
     assert exc.value.status_code == 422
+
+
+from app.services.billing.provider import get_provider
+
+
+def test_confirmation_marks_order_paid(db: Session, organizer: User, event: Event, photo):
+    order, _ = addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [photo.id])
+    provider = get_provider()
+    raw, headers = provider.confirmation_for(order, "4242424242424242")
+    result = addon_orders.apply_confirmation(db, provider.name, provider.parse_confirmation(raw, headers))
+    assert result.outcome == "paid"
+    db.refresh(order)
+    assert order.status == AddonOrderStatus.paid
+    assert order.paid_at is not None
+
+
+def test_replayed_confirmation_is_a_duplicate_not_a_double_fulfil(db: Session, organizer: User, event: Event, photo):
+    order, _ = addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [photo.id])
+    provider = get_provider()
+    raw, headers = provider.confirmation_for(order, "4242424242424242")
+    conf = provider.parse_confirmation(raw, headers)
+    first = addon_orders.apply_confirmation(db, provider.name, conf)
+    second = addon_orders.apply_confirmation(db, provider.name, conf)
+    assert first.outcome == "paid"
+    assert second.outcome == "duplicate"
+
+
+def test_confirmation_for_unknown_session_is_ignored_not_an_error(db: Session):
+    provider = get_provider()
+    from app.services.billing.provider import Confirmation
+
+    conf = Confirmation(event_id="evt_nope", type="checkout.completed", session_ref="fcs_doesnotexist", amount_cents=100, currency="EUR")
+    result = addon_orders.apply_confirmation(db, provider.name, conf)
+    assert result.outcome == "ignored"
+
+
+def test_failed_payment_sets_failure_code_not_paid(db: Session, organizer: User, event: Event, photo):
+    order, _ = addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [photo.id])
+    provider = get_provider()
+    raw, headers = provider.confirmation_for(order, "4000000000000002")  # published "card_declined" test card
+    result = addon_orders.apply_confirmation(db, provider.name, provider.parse_confirmation(raw, headers))
+    assert result.outcome == "failed"
+    db.refresh(order)
+    assert order.status == AddonOrderStatus.pending
+    assert order.failure_code == "card_declined"
