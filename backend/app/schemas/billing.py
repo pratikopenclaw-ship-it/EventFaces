@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.models import OrderKind, OrderStatus, SubscriptionStatus
+from app.models import AddonKind, AddonOrderStatus, OrderKind, OrderStatus, SubscriptionStatus
 from app.services.billing.plans import PlanKey
 
 
@@ -119,3 +119,40 @@ class EventUsageOut(BaseModel):
 
 class WebhookOut(BaseModel):
     status: Outcome
+
+
+class AddonCheckoutIn(BaseModel):
+    kind: AddonKind
+    photo_ids: list[uuid.UUID] = Field(min_length=1, max_length=50)
+
+
+class AddonCheckoutOut(BaseModel):
+    order_id: uuid.UUID
+    checkout_url: str
+
+
+class AddonOrderOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    event_id: uuid.UUID
+    kind: AddonKind
+    photo_ids: list[uuid.UUID]
+    amount_cents: int
+    vat_cents: int = 0
+    currency: str
+    vat_rate: int
+    status: AddonOrderStatus
+    failure_code: str | None
+    created_at: dt.datetime
+    paid_at: dt.datetime | None
+
+
+class AddonTestCheckoutOut(BaseModel):
+    order: AddonOrderOut
+    test_cards: list[str]
+
+
+class AddonTestPaymentOut(BaseModel):
+    outcome: Outcome
+    order: AddonOrderOut
