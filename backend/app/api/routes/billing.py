@@ -186,6 +186,7 @@ async def fake_webhook(request: Request, db: DB) -> WebhookOut:
     is_addon_order = db.scalar(
         select(AddonOrder.id).where(AddonOrder.provider == provider.name, AddonOrder.provider_ref == conf.session_ref)
     )
+    result: addon_orders.ConfirmationResult | orders.ConfirmationResult
     if is_addon_order is not None:
         result = await run_in_threadpool(addon_orders.apply_confirmation, db, provider.name, conf)
     else:

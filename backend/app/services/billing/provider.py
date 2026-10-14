@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from typing import Literal, Protocol
 
 from app.core.config import get_settings
-from app.models import Order
+from app.models import AddonOrder, Order
 
 SIGNATURE_HEADER = "fake-signature"
 TOLERANCE_SECONDS = 300  # a confirmation older (or newer) than this is refused: replay protection
@@ -60,7 +60,7 @@ class PaymentProvider(Protocol):
     name: str
     test_mode: bool
 
-    def create_checkout(self, order: Order) -> Checkout: ...
+    def create_checkout(self, order: Order | AddonOrder) -> Checkout: ...
 
     def parse_confirmation(self, raw: bytes, headers: dict[str, str]) -> Confirmation: ...
 
@@ -80,13 +80,13 @@ class FakeProvider:
     def secret(self) -> str:
         return self._secret or get_settings().payments_webhook_secret
 
-    def create_checkout(self, order: Order) -> Checkout:
+    def create_checkout(self, order: Order | AddonOrder) -> Checkout:
         ref = "fcs_" + secrets.token_urlsafe(24)
         return Checkout(session_ref=ref, url=f"/checkout/test/{ref}")
 
     # --- the "provider side": what happens on its hosted page and its servers -----------
 
-    def confirmation_for(self, order: Order, card_number: str, now: float | None = None) -> tuple[bytes, dict[str, str]]:
+    def confirmation_for(self, order: Order | AddonOrder, card_number: str, now: float | None = None) -> tuple[bytes, dict[str, str]]:
         """Simulate the provider charging a test card; returns the signed webhook it sends.
         Raises ValueError for anything that isn't a test card (the number is never kept)."""
         digits = "".join(ch for ch in card_number if not ch.isspace())

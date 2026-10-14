@@ -257,6 +257,8 @@ OPS: list[Op] = [
     Op("GET", "/api/billing/orders/{random_id}", "VERIFIED"),
     Op("POST", "/api/billing/subscription/cancel", "VERIFIED"),
     Op("POST", "/api/billing/subscription/events", "VERIFIED", json={"name": "Matrix party"}),
+    Op("GET", "/api/billing/addon-checkout/fcs_not-a-session", "VERIFIED"),
+    Op("POST", "/api/billing/addon-checkout/fcs_not-a-session/pay", "VERIFIED", json={"card_number": "4242 4242 4242 4242", "expiry": "12/30", "cvc": "123"}),
     Op("GET", "/api/drive/service-account", "ORGANIZER"),
     # --- members of event A ---
     Op("GET", f"/api/events/{E}", "MEMBER"),
@@ -278,6 +280,7 @@ OPS: list[Op] = [
     Op("GET", f"/api/events/{E}/shortlist", "MEMBER"),
     Op("POST", f"/api/events/{E}/photos/{{photo_a}}/shortlist", "MEMBER"),
     Op("DELETE", f"/api/events/{E}/photos/{{photo_a}}/shortlist", "MEMBER"),
+    Op("POST", f"/api/events/{E}/addons/checkout", "MEMBER", json={"kind": "human_edit", "photo_ids": ["{photo_a}"]}),
     # --- organizers of event A (and super admin) ---
     Op("GET", f"/api/events/{E}/admin", "MANAGER"),
     Op("GET", f"/api/events/{E}/usage", "MANAGER"),
@@ -389,6 +392,7 @@ def _normalise(path: str) -> str:
         (r"/api/downloads/not-a-real-token", "/api/downloads/{token}"),
         (r"/photos/\{photo_id\}/thumb", "/photos/{photo_id}/{variant}"),
         (r"/api/billing/test-checkout/fcs_not-a-session", "/api/billing/test-checkout/{session_ref}"),
+        (r"/api/billing/addon-checkout/fcs_not-a-session", "/api/billing/addon-checkout/{session_ref}"),
     ]
     for pattern, repl in replacements:
         path = re.sub(pattern, repl, path)
