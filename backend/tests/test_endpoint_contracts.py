@@ -28,6 +28,8 @@ ALL_OPTIONAL = {
 RATE_LIMITED = {
     ("POST", "/api/contact"),
     ("POST", "/api/billing/checkout"),
+    ("POST", "/api/events/{event_a}/addons/checkout"),
+    ("POST", "/api/billing/addon-checkout/fcs_not-a-session/pay"),
     ("POST", "/api/billing/test-checkout/fcs_not-a-session/pay"),
     ("POST", "/api/billing/subscription/events"),
     ("POST", "/api/billing/webhook/fake"),

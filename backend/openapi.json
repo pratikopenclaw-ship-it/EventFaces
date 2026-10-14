@@ -25,6 +25,195 @@
         "title": "AcceptLegalIn",
         "type": "object"
       },
+      "AddonCheckoutIn": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/AddonKind"
+          },
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Photo Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "photo_ids"
+        ],
+        "title": "AddonCheckoutIn",
+        "type": "object"
+      },
+      "AddonCheckoutOut": {
+        "properties": {
+          "checkout_url": {
+            "title": "Checkout Url",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "checkout_url"
+        ],
+        "title": "AddonCheckoutOut",
+        "type": "object"
+      },
+      "AddonKind": {
+        "enum": [
+          "human_edit"
+        ],
+        "title": "AddonKind",
+        "type": "string"
+      },
+      "AddonOrderOut": {
+        "properties": {
+          "amount_cents": {
+            "title": "Amount Cents",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "event_id": {
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AddonKind"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At"
+          },
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Photo Ids",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AddonOrderStatus"
+          },
+          "vat_cents": {
+            "default": 0,
+            "title": "Vat Cents",
+            "type": "integer"
+          },
+          "vat_rate": {
+            "title": "Vat Rate",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "kind",
+          "photo_ids",
+          "amount_cents",
+          "currency",
+          "vat_rate",
+          "status",
+          "failure_code",
+          "created_at",
+          "paid_at"
+        ],
+        "title": "AddonOrderOut",
+        "type": "object"
+      },
+      "AddonOrderStatus": {
+        "enum": [
+          "pending",
+          "paid",
+          "canceled"
+        ],
+        "title": "AddonOrderStatus",
+        "type": "string"
+      },
+      "AddonTestCheckoutOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AddonOrderOut"
+          },
+          "test_cards": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Test Cards",
+            "type": "array"
+          }
+        },
+        "required": [
+          "order",
+          "test_cards"
+        ],
+        "title": "AddonTestCheckoutOut",
+        "type": "object"
+      },
+      "AddonTestPaymentOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AddonOrderOut"
+          },
+          "outcome": {
+            "enum": [
+              "paid",
+              "failed",
+              "duplicate",
+              "ignored"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "order"
+        ],
+        "title": "AddonTestPaymentOut",
+        "type": "object"
+      },
       "AppConfigOut": {
         "properties": {
           "app_attest": {
@@ -4414,6 +4603,100 @@
         ]
       }
     },
+    "/api/billing/addon-checkout/{session_ref}": {
+      "get": {
+        "operationId": "billing_addon_test_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonTestCheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Test Checkout",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/addon-checkout/{session_ref}/pay": {
+      "post": {
+        "operationId": "billing_addon_test_pay",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestPaymentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonTestPaymentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Test Pay",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/api/billing/checkout": {
       "post": {
         "operationId": "billing_start_checkout",
@@ -4699,7 +4982,7 @@
     },
     "/api/billing/webhook/fake": {
       "post": {
-        "description": "Server-to-server payment confirmation. No session: authenticated only by its HMAC\nsignature and timestamp (replays and forgeries are refused; each event applies once).\nExempt from CSRF because it carries no cookies (api/csrf.py).",
+        "description": "Server-to-server payment confirmation. No session: authenticated only by its HMAC\nsignature and timestamp (replays and forgeries are refused; each event applies once).\nExempt from CSRF because it carries no cookies (api/csrf.py). Routes to whichever\ntable's provider_ref matches: an Order (event purchase) or an AddonOrder (photo add-on) \u2014\nnever both, so each webhook event id is only ever inserted into WebhookEvent once.",
         "operationId": "billing_fake_webhook",
         "parameters": [
           {
@@ -5076,6 +5359,59 @@
         "summary": "Rotate Access Code",
         "tags": [
           "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/addons/checkout": {
+      "post": {
+        "operationId": "billing_addon_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddonCheckoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonCheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Checkout",
+        "tags": [
+          "billing"
         ]
       }
     },

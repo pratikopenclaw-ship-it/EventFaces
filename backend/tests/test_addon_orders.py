@@ -20,7 +20,6 @@ from app.models import (
     EventMember,
     IndexStatus,
     MemberRole,
-    MemberStatus,
     Photo,
     PhotoSource,
     PhotoStatus,
