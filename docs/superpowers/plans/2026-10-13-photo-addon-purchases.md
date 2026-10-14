@@ -677,7 +677,7 @@ def test_addon_checkout_rejects_non_member(client, login_as, make_user, event, p
         cookies=cookies,
     )
     assert resp.status_code == 403
-
+```
 
 Follow whatever session-access fixture `tests/test_billing.py`'s webhook test already uses to
 fetch the `Order` row after posting to `/api/billing/webhook/fake` (likely a `db` fixture
