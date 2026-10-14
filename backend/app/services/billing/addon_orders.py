@@ -11,12 +11,14 @@ from typing import Literal
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
-from app.models import AddonKind, AddonOrder, AddonOrderStatus, Event, Photo, User
+from app.core.security import utcnow
+from app.models import AddonKind, AddonOrder, AddonOrderStatus, Event, Photo, User, WebhookEvent
 from app.services import membership
 from app.services.billing.addon_prices import ADDON_PRICES, CURRENCY, VAT_RATE
-from app.services.billing.provider import get_provider
+from app.services.billing.provider import Confirmation, get_provider
 from app.services.photo_access import viewable_photos
 
 log = logging.getLogger(__name__)
@@ -72,3 +74,50 @@ def start_checkout(
     db.add(order)
     db.commit()
     return order, checkout.url
+
+
+def apply_confirmation(db: Session, provider_name: str, conf: Confirmation) -> ConfirmationResult:
+    """Apply a verified provider confirmation. Idempotent: each provider event id is
+    processed once, and an order is fulfilled at most once. Mirrors
+    services/billing/orders.apply_confirmation's shape exactly."""
+    first_time = db.scalar(
+        pg_insert(WebhookEvent)
+        .values(provider=provider_name, provider_event_id=conf.event_id)
+        .on_conflict_do_nothing()
+        .returning(WebhookEvent.provider_event_id)
+    )
+    if first_time is None:
+        db.rollback()
+        return ConfirmationResult("duplicate")
+    order = db.scalar(
+        select(AddonOrder)
+        .where(AddonOrder.provider == provider_name, AddonOrder.provider_ref == conf.session_ref)
+        .with_for_update()
+    )
+    if order is None:
+        db.commit()  # remember the event id; nothing to apply
+        log.warning("Add-on payment confirmation for an unknown checkout session")
+        return ConfirmationResult("ignored")
+    if conf.amount_cents != order.amount_cents or conf.currency != order.currency:
+        db.commit()
+        log.error("Add-on payment confirmation amount/currency mismatch for order %s", order.id)
+        return ConfirmationResult("ignored")
+    if order.status != AddonOrderStatus.pending:
+        db.commit()
+        return ConfirmationResult("duplicate")
+    if conf.type == "checkout.payment_failed":
+        order.failure_code = conf.failure_code or "payment_failed"
+        db.commit()
+        return ConfirmationResult("failed")
+    _fulfil(db, order)
+    db.commit()
+    return ConfirmationResult("paid")
+
+
+def _fulfil(db: Session, order: AddonOrder) -> None:
+    """Mark the order paid. What a paid human_edit order then does (create an editor
+    task) is that feature's own concern, added when it lands; this stops at "paid"
+    deliberately, per the spec's stated scope for this sub-project."""
+    order.status = AddonOrderStatus.paid
+    order.paid_at = utcnow()
+    order.failure_code = None
