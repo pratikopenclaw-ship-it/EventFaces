@@ -7,11 +7,14 @@ from datetime import timedelta
 
 import pytest
 from fastapi import HTTPException
+from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.security import utcnow
 from app.models import (
     AddonKind,
+    AddonOrder,
     AddonOrderStatus,
     Event,
     EventMember,
@@ -175,3 +178,54 @@ def test_failed_payment_sets_failure_code_not_paid(db: Session, organizer: User,
     db.refresh(order)
     assert order.status == AddonOrderStatus.pending
     assert order.failure_code == "card_declined"
+
+
+def test_addon_checkout_route_then_pay_marks_paid(login_as, organizer, event, photo):
+    client = login_as(organizer)
+    resp = client.post(
+        f"/api/events/{event.id}/addons/checkout",
+        json={"kind": "human_edit", "photo_ids": [str(photo.id)]},
+    )
+    assert resp.status_code == 200
+    session_ref = resp.json()["checkout_url"].rsplit("/", 1)[-1]
+
+    get_resp = client.get(f"/api/billing/addon-checkout/{session_ref}")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["test_cards"]
+
+    pay_resp = client.post(
+        f"/api/billing/addon-checkout/{session_ref}/pay",
+        json={"card_number": "4242 4242 4242 4242", "expiry": "12/30", "cvc": "123"},
+    )
+    assert pay_resp.status_code == 200
+    assert pay_resp.json()["outcome"] == "paid"
+    assert pay_resp.json()["order"]["status"] == "paid"
+
+
+def test_addon_checkout_rejects_non_member(login_as, make_user, event, photo):
+    stranger = make_user("stranger@example.com")
+    client = login_as(stranger)
+    resp = client.post(
+        f"/api/events/{event.id}/addons/checkout",
+        json={"kind": "human_edit", "photo_ids": [str(photo.id)]},
+    )
+    assert resp.status_code == 403
+
+
+def test_webhook_routes_addon_confirmation_to_addon_order(login_as, db, organizer, event, photo):
+    client = login_as(organizer)
+    resp = client.post(
+        f"/api/events/{event.id}/addons/checkout",
+        json={"kind": "human_edit", "photo_ids": [str(photo.id)]},
+    )
+    session_ref = resp.json()["checkout_url"].rsplit("/", 1)[-1]
+    order = db.scalar(select(AddonOrder).where(AddonOrder.provider_ref == session_ref))
+
+    provider = get_provider()
+    raw, headers = provider.confirmation_for(order, "4242424242424242")
+    anonymous = TestClient(__import__("app.main", fromlist=["app"]).app)
+    webhook_resp = anonymous.post("/api/billing/webhook/fake", content=raw, headers=headers)
+    assert webhook_resp.status_code == 200
+    assert webhook_resp.json()["status"] == "paid"
+    db.refresh(order)
+    assert order.status == AddonOrderStatus.paid
