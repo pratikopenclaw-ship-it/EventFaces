@@ -12,11 +12,16 @@ from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import select
 
-from app.api.deps import DB, ManagedEvent, VerifiedUser
+from app.api.deps import DB, ManagedEvent, MemberEvent, VerifiedUser
 from app.core import rate_limit
 from app.core.config import get_settings
-from app.models import Order, OrderStatus, Subscription, User
+from app.models import AddonOrder, AddonOrderStatus, Order, OrderStatus, Subscription, User
 from app.schemas.billing import (
+    AddonCheckoutIn,
+    AddonCheckoutOut,
+    AddonOrderOut,
+    AddonTestCheckoutOut,
+    AddonTestPaymentOut,
     BillingOverviewOut,
     CheckoutIn,
     CheckoutOut,
@@ -32,7 +37,7 @@ from app.schemas.billing import (
     TestPaymentOut,
     WebhookOut,
 )
-from app.services.billing import limits, orders
+from app.services.billing import addon_orders, limits, orders
 from app.services.billing.plans import CURRENCY, EXAMPLE_PRICES, PLANS, VAT_RATE, vat_part
 from app.services.billing.provider import TEST_CARDS, InvalidConfirmation, get_provider
 
@@ -55,6 +60,53 @@ def _own_order(db: DB, user: User, *, order_id: uuid.UUID | None = None, session
     if order is None:  # also someone else's order: no difference visible
         raise NOT_FOUND
     return order
+
+
+def addon_order_out(order: AddonOrder) -> AddonOrderOut:
+    out = AddonOrderOut.model_validate(order)
+    return out.model_copy(update={"vat_cents": vat_part(order.amount_cents, order.vat_rate)})
+
+
+def _own_addon_order(db: DB, user: User, session_ref: str) -> AddonOrder:
+    order = db.scalar(select(AddonOrder).where(AddonOrder.buyer_user_id == user.id, AddonOrder.provider_ref == session_ref))
+    if order is None:
+        raise NOT_FOUND
+    return order
+
+
+@router.post("/events/{event_id}/addons/checkout", response_model=AddonCheckoutOut)
+def addon_checkout(event: MemberEvent, body: AddonCheckoutIn, user: VerifiedUser, db: DB) -> AddonCheckoutOut:
+    rate_limit.enforce(f"addon-checkout:{user.id}", rate_limit.Limit.parse(get_settings().checkout_rate_limit))
+    order, url = addon_orders.start_checkout(db, event, user, body.kind, body.photo_ids)
+    return AddonCheckoutOut(order_id=order.id, checkout_url=url)
+
+
+@router.get("/billing/addon-checkout/{session_ref}", response_model=AddonTestCheckoutOut)
+def addon_test_checkout(session_ref: str, user: VerifiedUser, db: DB) -> AddonTestCheckoutOut:
+    if not get_provider().test_mode:
+        raise NOT_FOUND
+    return AddonTestCheckoutOut(order=addon_order_out(_own_addon_order(db, user, session_ref)), test_cards=list(TEST_CARDS))
+
+
+@router.post("/billing/addon-checkout/{session_ref}/pay", response_model=AddonTestPaymentOut)
+def addon_test_pay(session_ref: str, body: TestPaymentIn, user: VerifiedUser, db: DB) -> AddonTestPaymentOut:
+    provider = get_provider()
+    if not provider.test_mode:
+        raise NOT_FOUND
+    rate_limit.enforce(f"addon-pay:{user.id}", rate_limit.Limit.parse(get_settings().payment_attempt_rate_limit))
+    order = _own_addon_order(db, user, session_ref)
+    if order.status != AddonOrderStatus.pending:
+        raise HTTPException(status.HTTP_409_CONFLICT, "This checkout is already closed")
+    try:
+        raw, headers = provider.confirmation_for(order, body.card_number)
+    except ValueError:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "This is a test checkout: use one of the test card numbers shown. No real card can be charged here.",
+        ) from None
+    db.rollback()
+    result = addon_orders.apply_confirmation(db, provider.name, provider.parse_confirmation(raw, headers))
+    return AddonTestPaymentOut(outcome=result.outcome, order=addon_order_out(_own_addon_order(db, user, session_ref)))
 
 
 @router.get("/billing/plans", response_model=PriceListOut)
@@ -120,7 +172,9 @@ WEBHOOK_OPENAPI: dict[str, object] = {
 async def fake_webhook(request: Request, db: DB) -> WebhookOut:
     """Server-to-server payment confirmation. No session: authenticated only by its HMAC
     signature and timestamp (replays and forgeries are refused; each event applies once).
-    Exempt from CSRF because it carries no cookies (api/csrf.py)."""
+    Exempt from CSRF because it carries no cookies (api/csrf.py). Routes to whichever
+    table's provider_ref matches: an Order (event purchase) or an AddonOrder (photo add-on) —
+    never both, so each webhook event id is only ever inserted into WebhookEvent once."""
     ip = rate_limit.client_ip(request)
     rate_limit.enforce(f"webhook:{ip}", rate_limit.Limit.parse(get_settings().webhook_rate_limit))
     raw = await _read_body(request)
@@ -129,7 +183,13 @@ async def fake_webhook(request: Request, db: DB) -> WebhookOut:
         conf = provider.parse_confirmation(raw, dict(request.headers))
     except InvalidConfirmation:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid signature or payload") from None
-    result = await run_in_threadpool(orders.apply_confirmation, db, provider.name, conf)
+    is_addon_order = db.scalar(
+        select(AddonOrder.id).where(AddonOrder.provider == provider.name, AddonOrder.provider_ref == conf.session_ref)
+    )
+    if is_addon_order is not None:
+        result = await run_in_threadpool(addon_orders.apply_confirmation, db, provider.name, conf)
+    else:
+        result = await run_in_threadpool(orders.apply_confirmation, db, provider.name, conf)
     return WebhookOut(status=result.outcome)
 
 
