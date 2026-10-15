@@ -8,7 +8,7 @@ import { Alert, Button, Card, EmptyState } from "@/components/ui";
 import { ApiError, RawBody, del, get, post } from "@/lib/api";
 import { oneOf } from "@/lib/safe";
 import type { SelfieRequirements, Shot } from "@/lib/face-guidance";
-import type { ConsentInfo, EventPublic, MatchedPhoto, QueuedSearch, SearchResult, SearchStatus } from "@/lib/types";
+import type { ConsentInfo, EventPublic, MatchedPhoto, QueuedSearch, SearchResult, SearchStatus, Verdict } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
 import { ConsentPanel } from "./consent-panel";
@@ -106,7 +106,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   const uploadAllowed = req.global_file_upload && event.allow_selfie_file_upload;
 
   function showResults(r: SearchResult) {
-    setResults(r.matches.map((m) => ({ ...m, verdict: null })));
+    setResults(r.matches.map((m) => ({ ...m, verdict: null, shortlisted: false })));
     setStep("results");
     void previous.reload();
   }
@@ -168,6 +168,19 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   const earlier = previous.data ?? [];
   const effective: Step = step !== "auto" ? step : earlier.length > 0 ? "results" : "capture";
   const shown = results ?? earlier;
+
+  function onVerdict(id: string, verdict: Verdict) {
+    const update = (list: MatchedPhoto[]) =>
+      verdict === "not_me" ? list.filter((p) => p.id !== id) : list.map((p) => (p.id === id ? { ...p, verdict } : p));
+    setResults((r) => (r ? update(r) : r));
+    previous.setData(update(earlier));
+  }
+
+  function onShortlistChange(id: string, shortlisted: boolean) {
+    const update = (list: MatchedPhoto[]) => list.map((p) => (p.id === id ? { ...p, shortlisted } : p));
+    setResults((r) => (r ? update(r) : r));
+    previous.setData(update(earlier));
+  }
 
   return (
     <div className="space-y-6">
@@ -232,18 +245,20 @@ export function FindPhotos({ event }: { event: EventPublic }) {
               </Button>
             </div>
           </div>
+          <PhotoGallery eventId={event.id} photos={shown} reveal={results !== null} onVerdict={onVerdict} onShortlistChange={onShortlistChange} />
+        </>
+      )}
+
+      {earlier.some((p) => p.shortlisted) && (
+        <div className="space-y-3">
+          <h2 className="font-display text-xl tracking-tight">Your shortlist</h2>
           <PhotoGallery
             eventId={event.id}
-            photos={shown}
-            reveal={results !== null}
-            onVerdict={(id, verdict) => {
-              const update = (list: MatchedPhoto[]) =>
-                verdict === "not_me" ? list.filter((p) => p.id !== id) : list.map((p) => (p.id === id ? { ...p, verdict } : p));
-              setResults((r) => (r ? update(r) : r));
-              previous.setData(update(earlier));
-            }}
+            photos={earlier.filter((p) => p.shortlisted)}
+            onVerdict={onVerdict}
+            onShortlistChange={onShortlistChange}
           />
-        </>
+        </div>
       )}
 
       <p className="pt-6 text-center text-xs text-muted">

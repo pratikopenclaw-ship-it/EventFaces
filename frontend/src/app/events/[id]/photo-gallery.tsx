@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { Alert, Button } from "@/components/ui";
-import { post, triggerDownload } from "@/lib/api";
+import { del, post, triggerDownload } from "@/lib/api";
 import type { DownloadTicket, MatchedPhoto, Verdict } from "@/lib/types";
 
 import { ReportDialog } from "./report-dialog";
@@ -20,11 +20,13 @@ export function PhotoGallery({
   eventId,
   photos: unordered,
   onVerdict,
+  onShortlistChange,
   reveal = false,
 }: {
   eventId: string;
   photos: MatchedPhoto[];
   onVerdict: (photoId: string, verdict: Verdict) => void;
+  onShortlistChange?: (photoId: string, shortlisted: boolean) => void;
   /** Fresh search results: play the one-time reveal (globals.css, "Results reveal"). */
   reveal?: boolean;
 }) {
@@ -35,6 +37,18 @@ export function PhotoGallery({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [reporting, setReporting] = useState<string | null>(null);
+
+  async function toggleShortlist(photo: MatchedPhoto) {
+    const next = !photo.shortlisted;
+    onShortlistChange?.(photo.id, next); // optimistic
+    try {
+      if (next) await post(`/api/events/${eventId}/photos/${photo.id}/shortlist`);
+      else await del(`/api/events/${eventId}/photos/${photo.id}/shortlist`);
+    } catch (e) {
+      onShortlistChange?.(photo.id, photo.shortlisted); // revert
+      setError(e instanceof Error ? e.message : "Couldn't update your shortlist");
+    }
+  }
 
   async function rate(photoId: string, verdict: Verdict) {
     setError(null);
@@ -181,6 +195,14 @@ export function PhotoGallery({
                           className="size-4 accent-accent"
                         />
                       </label>
+                      <button
+                        onClick={() => void toggleShortlist(p)}
+                        aria-pressed={p.shortlisted}
+                        aria-label={p.shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-paper/90 text-lg leading-none shadow"
+                      >
+                        <span className={p.shortlisted ? "text-accent" : "text-ink/40"}>{p.shortlisted ? "★" : "☆"}</span>
+                      </button>
                     </div>
                     {p.tier && (
                       <div className="flex items-center justify-between gap-1 px-2 py-1.5 text-xs">
@@ -234,6 +256,13 @@ export function PhotoGallery({
               )}
               <Button variant="secondary" disabled={busy} onClick={() => void download([current.id])}>
                 Download
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-ink hover:bg-mist hover:text-ink"
+                onClick={() => void toggleShortlist(current)}
+              >
+                {current.shortlisted ? "★ Shortlisted" : "☆ Shortlist"}
               </Button>
               <Button
                 variant="ghost"

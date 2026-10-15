@@ -274,6 +274,9 @@ OPS: list[Op] = [
     Op("POST", f"/api/events/{E}/uploads", "MEMBER", json={"filename": "a.jpg", "content_type": "image/jpeg", "size": 100}),
     Op("POST", f"/api/events/{E}/uploads/{{random_id}}/complete", "MEMBER"),
     Op("GET", f"/api/events/{E}/videos", "MEMBER"),
+    Op("GET", f"/api/events/{E}/shortlist", "MEMBER"),
+    Op("POST", f"/api/events/{E}/photos/{{photo_a}}/shortlist", "MEMBER"),
+    Op("DELETE", f"/api/events/{E}/photos/{{photo_a}}/shortlist", "MEMBER"),
     # --- organizers of event A (and super admin) ---
     Op("GET", f"/api/events/{E}/admin", "MANAGER"),
     Op("GET", f"/api/events/{E}/usage", "MANAGER"),

@@ -2336,6 +2336,10 @@
             "title": "Id",
             "type": "string"
           },
+          "shortlisted": {
+            "title": "Shortlisted",
+            "type": "boolean"
+          },
           "similarity": {
             "anyOf": [
               {
@@ -2396,7 +2400,8 @@
           "similarity",
           "tier",
           "verdict",
-          "expires_at"
+          "expires_at",
+          "shortlisted"
         ],
         "title": "MyPhotoOut",
         "type": "object"
@@ -6371,6 +6376,96 @@
         ]
       }
     },
+    "/api/events/{event_id}/photos/{photo_id}/shortlist": {
+      "delete": {
+        "operationId": "search_remove_from_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove From Shortlist",
+        "tags": [
+          "search"
+        ]
+      },
+      "post": {
+        "operationId": "search_add_to_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add To Shortlist",
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/api/events/{event_id}/photos/{photo_id}/{variant}": {
       "get": {
         "description": "Thumbnail/preview streamed from storage (storage URLs are never exposed).\n\nOrganizers see every photo of their event; attendees only photos they matched or\nuploaded. `viewable_photo` also requires the photo to belong to *this* event, so an\nID from another event can't be smuggled in via this event's URL.",
@@ -6929,6 +7024,54 @@
           }
         },
         "summary": "Search Status",
+        "tags": [
+          "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/shortlist": {
+      "get": {
+        "description": "This user's own shortlisted photos in the event (dropping any that became\nunviewable since, e.g. a revoked grant or a retired photo).",
+        "operationId": "search_list_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyPhotoOut"
+                  },
+                  "title": "Response Search List Shortlist",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Shortlist",
         "tags": [
           "search"
         ]

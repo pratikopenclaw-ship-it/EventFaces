@@ -76,6 +76,7 @@ class MyPhotoOut(BaseModel):
     tier: Tier | None  # None for the user's own uploads
     verdict: Verdict | None
     expires_at: dt.datetime | None
+    shortlisted: bool
 
 
 class FeedbackIn(BaseModel):

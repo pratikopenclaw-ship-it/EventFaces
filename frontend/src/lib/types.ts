@@ -157,6 +157,7 @@ export interface MatchedPhoto {
   similarity: number | null;
   tier: Tier | null; // null for the user's own uploads
   verdict: Verdict | null;
+  shortlisted: boolean;
 }
 
 export interface SearchResult {
