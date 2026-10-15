@@ -25,8 +25,9 @@ class AddonOrder(Base):
     buyer_user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), index=True
     )
-    event_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("events.id", ondelete="CASCADE"), nullable=False, index=True
+    # Kept (unlinked) when the event is deleted, like Order.event_id: paid orders are records.
+    event_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("events.id", ondelete="SET NULL"), index=True
     )
     kind: Mapped[AddonKind] = mapped_column(Enum(AddonKind, name="addon_kind"), nullable=False)
     photo_ids: Mapped[list[uuid.UUID]] = mapped_column(ARRAY(UUID(as_uuid=True)), nullable=False)

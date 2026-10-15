@@ -135,7 +135,7 @@ class AddonOrderOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
-    event_id: uuid.UUID
+    event_id: uuid.UUID | None  # None once the event was deleted (the order is kept)
     kind: AddonKind
     photo_ids: list[uuid.UUID]
     amount_cents: int

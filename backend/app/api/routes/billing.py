@@ -11,6 +11,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.api.deps import DB, ManagedEvent, MemberEvent, VerifiedUser
 from app.core import rate_limit
@@ -39,7 +40,7 @@ from app.schemas.billing import (
 )
 from app.services.billing import addon_orders, limits, orders
 from app.services.billing.plans import CURRENCY, EXAMPLE_PRICES, PLANS, VAT_RATE, vat_part
-from app.services.billing.provider import TEST_CARDS, InvalidConfirmation, get_provider
+from app.services.billing.provider import TEST_CARDS, Confirmation, InvalidConfirmation, get_provider
 
 router = APIRouter(prefix="/api", tags=["billing"])
 
@@ -183,15 +184,20 @@ async def fake_webhook(request: Request, db: DB) -> WebhookOut:
         conf = provider.parse_confirmation(raw, dict(request.headers))
     except InvalidConfirmation:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid signature or payload") from None
-    is_addon_order = db.scalar(
-        select(AddonOrder.id).where(AddonOrder.provider == provider.name, AddonOrder.provider_ref == conf.session_ref)
-    )
-    result: addon_orders.ConfirmationResult | orders.ConfirmationResult
-    if is_addon_order is not None:
-        result = await run_in_threadpool(addon_orders.apply_confirmation, db, provider.name, conf)
-    else:
-        result = await run_in_threadpool(orders.apply_confirmation, db, provider.name, conf)
+    result = await run_in_threadpool(_apply_confirmation, db, provider.name, conf)
     return WebhookOut(status=result.outcome)
+
+
+def _apply_confirmation(
+    db: Session, provider_name: str, conf: Confirmation
+) -> addon_orders.ConfirmationResult | orders.ConfirmationResult:
+    """Lookup and apply in one sync call (run in the threadpool): no blocking DB call on the loop."""
+    is_addon_order = db.scalar(
+        select(AddonOrder.id).where(AddonOrder.provider == provider_name, AddonOrder.provider_ref == conf.session_ref)
+    )
+    if is_addon_order is not None:
+        return addon_orders.apply_confirmation(db, provider_name, conf)
+    return orders.apply_confirmation(db, provider_name, conf)
 
 
 async def _read_body(request: Request) -> bytes:

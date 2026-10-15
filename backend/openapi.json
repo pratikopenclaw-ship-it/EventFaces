@@ -90,9 +90,16 @@
             "type": "string"
           },
           "event_id": {
-            "format": "uuid",
-            "title": "Event Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
           },
           "failure_code": {
             "anyOf": [
