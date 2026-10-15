@@ -82,6 +82,12 @@ class FakeProvider:
 
     def create_checkout(self, order: Order | AddonOrder) -> Checkout:
         ref = "fcs_" + secrets.token_urlsafe(24)
+        if isinstance(order, AddonOrder):
+            # Add-on orders have their own test-checkout API (/api/billing/addon-checkout/*),
+            # so they need their own page. NOTE: the /checkout/addon/[session] frontend page
+            # doesn't exist yet: this path is reserved for when the add-on checkout UI lands
+            # (out of scope for this sub-project), mirroring /checkout/test/ for orders.
+            return Checkout(session_ref=ref, url=f"/checkout/addon/{ref}")
         return Checkout(session_ref=ref, url=f"/checkout/test/{ref}")
 
     # --- the "provider side": what happens on its hosted page and its servers -----------
