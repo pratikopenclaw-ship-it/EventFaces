@@ -219,6 +219,15 @@ export interface Invite {
   accepted_at: string | null;
 }
 
+export interface EventVideo {
+  id: string;
+  title: string;
+  url: string;
+  provider: "youtube" | "vimeo" | "instagram" | "drive";
+  embed_url: string;
+  created_at: string;
+}
+
 export interface InviteUploadResult {
   sent: string[];
   invalid: string[];

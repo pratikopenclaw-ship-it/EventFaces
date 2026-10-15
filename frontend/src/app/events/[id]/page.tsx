@@ -11,6 +11,7 @@ import { useApi } from "@/lib/use-api";
 
 import { FindPhotos } from "./find-photos";
 import { GuestUpload } from "./guest-upload";
+import { VideoSection } from "./video-section";
 
 export default function EventPage() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,7 @@ export default function EventPage() {
         <FindPhotos event={event} />
         {/* Uploading doesn't need face-search consent: that consent covers the user's own selfie. */}
         {event.guest_upload_enabled && <GuestUpload event={event} />}
+        <VideoSection eventId={event.id} />
       </div>
     </div>
   );

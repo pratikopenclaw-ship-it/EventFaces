@@ -15,6 +15,9 @@ export function buildCsp(nonce: string, opts: { dev: boolean; storageOrigin: str
     `connect-src 'self' ${storageOrigin}${dev ? " ws:" : ""}`,
     "media-src 'self' blob:",
     "worker-src 'self' blob:",
+    // Event video embeds (organizer-added YouTube/Vimeo/Instagram/Drive links, services/event_videos.py):
+    // these hosts may be framed, but nothing loads until a guest clicks a video's facade card.
+    "frame-src 'self' https://www.youtube.com https://player.vimeo.com https://www.instagram.com https://drive.google.com",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",
