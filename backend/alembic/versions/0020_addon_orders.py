@@ -26,7 +26,7 @@ def upgrade() -> None:
         "addon_orders",
         sa.Column("id", UUID, primary_key=True),
         sa.Column("buyer_user_id", UUID, sa.ForeignKey("users.id", ondelete="SET NULL")),
-        sa.Column("event_id", UUID, sa.ForeignKey("events.id", ondelete="CASCADE"), nullable=False),
+        sa.Column("event_id", UUID, sa.ForeignKey("events.id", ondelete="SET NULL")),
         sa.Column("kind", addon_kind, nullable=False),
         sa.Column("photo_ids", postgresql.ARRAY(UUID), nullable=False),
         sa.Column("amount_cents", sa.Integer, nullable=False),

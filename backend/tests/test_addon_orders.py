@@ -81,7 +81,7 @@ def test_organizer_can_buy_addon_for_any_event_photo(db: Session, organizer: Use
     assert order.amount_cents == ADDON_PRICES[AddonKind.human_edit]
     assert order.event_id == event.id
     assert order.photo_ids == [photo.id]
-    assert url.startswith("/checkout/test/")
+    assert url.startswith("/checkout/addon/")
 
 
 def test_attendee_can_buy_addon_only_for_their_own_viewable_photo(
@@ -126,6 +126,18 @@ def test_photo_ids_from_another_event_are_rejected_not_silently_dropped(
     with pytest.raises(HTTPException) as exc:
         addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [other_event_photo.id])
     assert exc.value.status_code == 422
+
+
+@pytest.mark.parametrize("retired", [PhotoStatus.removed, PhotoStatus.rejected])
+def test_organizer_cannot_buy_addon_for_a_retired_photo(
+    db: Session, organizer: User, event: Event, retired: PhotoStatus
+) -> None:
+    retired_photo = _photo(db, event, status=retired)
+
+    with pytest.raises(HTTPException) as exc:
+        addon_orders.start_checkout(db, event, organizer, AddonKind.human_edit, [retired_photo.id])
+    assert exc.value.status_code == 422
+    assert db.scalars(select(AddonOrder)).first() is None
 
 
 def test_empty_photo_ids_is_rejected(db: Session, organizer: User, event: Event) -> None:
@@ -228,3 +240,31 @@ def test_webhook_routes_addon_confirmation_to_addon_order(login_as, db, organize
     assert webhook_resp.json()["status"] == "paid"
     db.refresh(order)
     assert order.status == AddonOrderStatus.paid
+
+
+def test_maintenance_cancels_only_stale_pending_addon_orders(db: Session, organizer: User, event: Event, photo: Photo) -> None:
+    from app.services.billing.orders import PENDING_ORDER_HOURS
+
+    def order(ref: str, **kw) -> AddonOrder:
+        return AddonOrder(
+            buyer_user_id=organizer.id,
+            event_id=event.id,
+            kind=AddonKind.human_edit,
+            photo_ids=[photo.id],
+            amount_cents=ADDON_PRICES[AddonKind.human_edit],
+            currency="EUR",
+            vat_rate=19,
+            status=AddonOrderStatus.pending,
+            provider="fake",
+            provider_ref=ref,
+            **kw,
+        )
+
+    stale = order("fcs_addon_stale", created_at=utcnow() - timedelta(hours=PENDING_ORDER_HOURS + 1))
+    fresh = order("fcs_addon_fresh")
+    db.add_all([stale, fresh])
+    db.commit()
+    assert addon_orders.run_maintenance(db) == {"abandoned": 1}
+    db.expire_all()
+    assert stale.status == AddonOrderStatus.canceled
+    assert fresh.status == AddonOrderStatus.pending

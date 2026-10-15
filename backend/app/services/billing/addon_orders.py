@@ -7,21 +7,26 @@ existing event, not a new event or subscription.
 import logging
 import uuid
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Literal
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
+from app.core.db import affected
 from app.core.security import utcnow
-from app.models import AddonKind, AddonOrder, AddonOrderStatus, Event, Photo, User, WebhookEvent
+from app.models import AddonKind, AddonOrder, AddonOrderStatus, Event, Photo, PhotoStatus, User, WebhookEvent
 from app.services import membership
 from app.services.billing.addon_prices import ADDON_PRICES, CURRENCY, VAT_RATE
+from app.services.billing.orders import PENDING_ORDER_HOURS
 from app.services.billing.provider import Confirmation, get_provider
 from app.services.photo_access import viewable_photos
 
 log = logging.getLogger(__name__)
+
+_RETIRED = (PhotoStatus.rejected, PhotoStatus.removed)
 
 
 @dataclass(frozen=True)
@@ -35,14 +40,21 @@ def _authorize(db: Session, event: Event, buyer: User, kind: AddonKind, photo_id
     if len(set(photo_ids)) != len(photo_ids):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Duplicate photo in the same order")
     if membership.can_manage(db, event, buyer):
-        # Organizers may buy add-ons for any (non-removed) photo in their own event, but a
-        # photo id from a different event must still be rejected (422, never silently
-        # dropped) rather than let a cross-event id ride along in the order.
-        in_event = set(
-            db.scalars(select(Photo.id).where(Photo.id.in_(photo_ids), Photo.event_id == event.id))
-        )
-        if in_event != set(photo_ids):
+        # Organizers may buy add-ons for any live photo in their own event, but a photo id
+        # from a different event must still be rejected (422, never silently dropped) rather
+        # than let a cross-event id ride along in the order. Retired photos (rejected or
+        # removed: files deleted by photo_pipeline.retire_photo) are refused too.
+        # viewable_photos isn't enough here: for organizers it still includes rejected ones.
+        in_event: dict[uuid.UUID, PhotoStatus] = {
+            pid: pstatus
+            for pid, pstatus in db.execute(
+                select(Photo.id, Photo.status).where(Photo.id.in_(photo_ids), Photo.event_id == event.id)
+            )
+        }
+        if set(in_event) != set(photo_ids):
             raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Photo does not belong to this event")
+        if any(s in _RETIRED for s in in_event.values()):
+            raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Photo has been removed")
         return
     viewable = {p.id for p in viewable_photos(db, event, buyer, photo_ids)}
     if viewable != set(photo_ids):
@@ -121,3 +133,20 @@ def _fulfil(db: Session, order: AddonOrder) -> None:
     order.status = AddonOrderStatus.paid
     order.paid_at = utcnow()
     order.failure_code = None
+
+
+def run_maintenance(db: Session) -> dict[str, int]:
+    """Hourly (beat, with orders.run_maintenance): cancel abandoned add-on checkouts, so a
+    stale session can't be paid days later for a photo retired (or a grant expired) since."""
+    abandoned = affected(
+        db.execute(
+            update(AddonOrder)
+            .where(
+                AddonOrder.status == AddonOrderStatus.pending,
+                AddonOrder.created_at < utcnow() - timedelta(hours=PENDING_ORDER_HOURS),
+            )
+            .values(status=AddonOrderStatus.canceled)
+        )
+    )
+    db.commit()
+    return {"abandoned": abandoned}
