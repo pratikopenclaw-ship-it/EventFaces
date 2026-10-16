@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { connection } from "next/server";
 
+import { BrandingProvider } from "@/components/branding";
 import { ErrorReporter } from "@/components/error-reporter";
 import { Nav } from "@/components/nav";
 import { SessionProvider } from "@/components/session";
@@ -63,29 +64,31 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <ErrorReporter />
         <SessionProvider>
           <ThemeProvider initial={pref}>
-            <Nav />
-            <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 print:max-w-none print:p-0">
-              {children}
-            </main>
-            <footer className="border-t border-line print:hidden">
-              <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-xs text-muted">
-                <Link href="/privacy" className="hover:text-ink">
-                  Privacy
-                </Link>
-                <Link href="/terms" className="hover:text-ink">
-                  Terms
-                </Link>
-                <Link href="/organizer-terms" className="hover:text-ink">
-                  Organizer terms
-                </Link>
-                <Link href="/imprint" className="hover:text-ink">
-                  Imprint
-                </Link>
-                <Link href="/removal-request" className="hover:text-ink">
-                  In a photo? Request removal
-                </Link>
-              </div>
-            </footer>
+            <BrandingProvider>
+              <Nav />
+              <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10 print:max-w-none print:p-0">
+                {children}
+              </main>
+              <footer className="border-t border-line print:hidden">
+                <div className="mx-auto flex max-w-5xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-xs text-muted">
+                  <Link href="/privacy" className="hover:text-ink">
+                    Privacy
+                  </Link>
+                  <Link href="/terms" className="hover:text-ink">
+                    Terms
+                  </Link>
+                  <Link href="/organizer-terms" className="hover:text-ink">
+                    Organizer terms
+                  </Link>
+                  <Link href="/imprint" className="hover:text-ink">
+                    Imprint
+                  </Link>
+                  <Link href="/removal-request" className="hover:text-ink">
+                    In a photo? Request removal
+                  </Link>
+                </div>
+              </footer>
+            </BrandingProvider>
           </ThemeProvider>
         </SessionProvider>
       </body>
