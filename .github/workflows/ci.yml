@@ -1,18 +1,18 @@
-# Every check that gates a merge, on GitHub's Linux runners, against the same Docker Compose
-# stacks used locally (test data only; no secrets are needed or used).
+# Manual-only (see below): these jobs mirror the same Docker Compose stacks used locally
+# (test data only; no secrets are needed or used), for an occasional on-demand run.
 #   backend   pytest (incl. ruff/mypy/bandit/authz-matrix/contract tests) in the dev API image
 #   web       eslint, next typegen, tsc, vitest, production build
 #   e2e       Playwright on the e2e stack: Chromium, Firefox, WebKit, Pixel 7, iPhone 14
 #   security  scripts/security-scan.sh (pip-audit, npm audit, semgrep, gitleaks, trivy, ...)
-#   ios       manual only (workflow_dispatch): derived files + unit tests on a macOS runner
+#   ios       additionally gated behind the `ios` input: derived files + unit tests on a macOS runner
 # Visual baselines are rendered on macOS (fonts differ on Linux), so @visual stays part of
 # the local release gate (README "Tests"), not CI.
 name: CI
 
+# Local-only deployment: GitHub is used for backup, not hosting CI. Runs are manual
+# (workflow_dispatch) so nothing fires automatically on push/PR and nothing is billed.
+# The real gate is the local Docker Compose stacks (README "Commands"/"Tests").
 on:
-  pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       ios:
@@ -25,7 +25,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: true
 
 env:
   COMPOSE_PROJECT_NAME: eventfaces

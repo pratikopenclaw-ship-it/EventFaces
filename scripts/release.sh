@@ -3,9 +3,11 @@
 # GitHub (plus a GitHub release). Deploy it on the server with scripts/deploy.sh <tag>.
 #   scripts/release.sh v1.4.0          # asks before tagging and pushing
 #   YES=1 scripts/release.sh v1.4.0    # no question
-# Refuses unless: main is checked out, clean and equal to origin/main; the tag is new and
-# greater than the latest release; and the CI workflow passed on this exact commit.
-# NO_PUSH=1 tags locally only (rehearsals); it also skips the CI check, which needs GitHub.
+# Refuses unless: main is checked out, clean and equal to origin/main; and the tag is new
+# and greater than the latest release. There is no remote CI gate (GitHub is used for
+# backup only, see .github/workflows/ci.yml) -- this asks you to confirm the local test
+# suites passed before tagging.
+# NO_PUSH=1 tags locally only (rehearsals).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -28,10 +30,9 @@ if [ -n "$PREV" ] && [ "$(printf '%s\n%s\n' "$PREV" "$TAG" | sort -V | tail -1)"
 fi
 
 SHA="$(git rev-parse HEAD)"
-if [ "${NO_PUSH:-0}" != 1 ]; then
-  command -v gh >/dev/null || die "the GitHub CLI (gh) is needed to check CI"
-  ci="$(gh run list --workflow ci.yml --commit "$SHA" --json conclusion,status --jq '[.[] | select(.status == "completed")][0].conclusion' 2>/dev/null || true)"
-  [ "$ci" = success ] || die "CI has not passed on $SHA (latest completed run: ${ci:-none})"
+if [ "${YES:-0}" != 1 ]; then
+  read -r -p "Have the local backend/web/e2e test suites passed on $SHA? [y/N] " tested
+  [ "$tested" = y ] || [ "$tested" = Y ] || die "run the local test suites first (see README Commands)"
 fi
 
 NOTES="$(mktemp)"
