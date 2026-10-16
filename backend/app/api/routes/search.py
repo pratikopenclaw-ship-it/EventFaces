@@ -16,6 +16,8 @@ from app.core import face_slots, rate_limit, storage
 from app.core.config import get_settings
 from app.core.security import utcnow
 from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoShortlist, PhotoStatus, SearchGrant, User
+from app.services import watermark
+from app.services.imaging import ORIGINAL_QUALITY
 from app.schemas.search import (
     BandOut,
     ConsentSectionOut,
@@ -409,6 +411,14 @@ def _iter_object(key: str) -> Iterator[bytes]:
         body.close()
 
 
+def _iter_download(key: str, event: Event, logo_bytes: bytes | None) -> Iterator[bytes]:
+    """Like `_iter_object`, but composites the event's watermark first when one applies."""
+    if event.logo_key is None:
+        yield from _iter_object(key)
+        return
+    yield watermark.maybe_apply(storage.get_bytes(key), event, logo_bytes, ORIGINAL_QUALITY)
+
+
 @router.get("/downloads/{token}")
 def redeem_download(token: str, user: CurrentUser, db: DB) -> StreamingResponse:
     # Links are reusable for their short life (retries, resumed downloads) but not endlessly:
@@ -428,12 +438,16 @@ def redeem_download(token: str, user: CurrentUser, db: DB) -> StreamingResponse:
     if len(photos) != len(claim.photo_ids) or any(p.original_key is None for p in photos):
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Some photos are no longer available to you")
 
+    logo_bytes = storage.get_bytes(event.logo_key) if event.logo_key else None
+
     headers = {"Cache-Control": "private, no-store"}
     if not claim.as_zip:
         photo = photos[0]
         name = downloads.safe_filename(photo.original_filename, f"photo-{photo.id.hex[:8]}")
         headers["Content-Disposition"] = f'attachment; filename="{name}"'
-        return StreamingResponse(_iter_object(photo.original_key or ""), media_type="image/jpeg", headers=headers)
+        return StreamingResponse(
+            _iter_download(photo.original_key or "", event, logo_bytes), media_type="image/jpeg", headers=headers
+        )
 
     zs = ZipStream(compress_type=ZIP_STORED, sized=False)  # JPEGs don't compress further
     used: set[str] = set()
@@ -442,6 +456,6 @@ def redeem_download(token: str, user: CurrentUser, db: DB) -> StreamingResponse:
         if name in used:
             name = f"{name[:-4]}-{i}.jpg"
         used.add(name)
-        zs.add(_iter_object(photo.original_key or ""), name)
+        zs.add(_iter_download(photo.original_key or "", event, logo_bytes), name)
     headers["Content-Disposition"] = f'attachment; filename="{event.slug}-photos.zip"'
     return StreamingResponse(iter(zs), media_type="application/zip", headers=headers)
