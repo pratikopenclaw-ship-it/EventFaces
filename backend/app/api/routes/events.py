@@ -8,15 +8,17 @@ from app.api.deps import DB, ManagedEvent, MemberEvent, SuperAdmin, VerifiedUser
 from app.api.selfie import read_capped_body
 from app.core import storage
 from app.core.security import utcnow
-from app.models import Event
+from app.models import Event, EventVideo
 from app.schemas.event import (
     EventAdminOut,
     EventCreate,
     EventListItem,
     EventPublicOut,
     EventUpdate,
+    EventVideoIn,
+    EventVideoOut,
 )
-from app.services import imaging, search_queue
+from app.services import event_videos, imaging, search_queue
 from app.services.events import generate_access_code, list_events_for, new_event, photo_counts
 from app.services.retention import reopen_event
 from app.workers.tasks import delete_event_objects, index_photo
@@ -140,3 +142,30 @@ def get_logo(event: MemberEvent) -> Response:
     if length:
         headers["Content-Length"] = str(length)
     return StreamingResponse(body.iter_chunks(), media_type="image/png", headers=headers)
+
+
+# --- Videos (organizer-added YouTube/Vimeo/Instagram/Drive links) --------------------
+
+
+def _video_out(video: EventVideo) -> EventVideoOut:
+    embed = event_videos.parse_embed(video.url)
+    return EventVideoOut(
+        id=video.id, title=video.title, url=video.url, provider=embed.provider, embed_url=embed.embed_url,
+        created_at=video.created_at,
+    )
+
+
+@router.get("/{event_id}/videos", response_model=list[EventVideoOut])
+def list_event_videos(event: MemberEvent, db: DB) -> list[EventVideoOut]:
+    return [_video_out(v) for v in event_videos.list_videos(db, event)]
+
+
+@router.post("/{event_id}/videos", status_code=status.HTTP_201_CREATED, response_model=EventVideoOut)
+def add_event_video(body: EventVideoIn, event: ManagedEvent, db: DB) -> EventVideoOut:
+    video = event_videos.add_video(db, event, body.title, body.url)
+    return _video_out(video)
+
+
+@router.delete("/{event_id}/videos/{video_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_event_video(video_id: uuid.UUID, event: ManagedEvent, db: DB) -> None:
+    event_videos.delete_video(db, event, video_id)

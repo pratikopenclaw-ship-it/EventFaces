@@ -143,3 +143,17 @@ class MemberUpdate(BaseModel):
 
 class OrganizerAssign(BaseModel):
     email: EmailStr
+
+
+class EventVideoIn(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    url: str = Field(min_length=1, max_length=500)
+
+
+class EventVideoOut(BaseModel):
+    id: uuid.UUID
+    title: str
+    url: str
+    provider: str
+    embed_url: str
+    created_at: dt.datetime
