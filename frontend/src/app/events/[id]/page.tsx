@@ -2,6 +2,7 @@
 
 import { notFound, useParams } from "next/navigation";
 
+import { useSetEventBranding } from "@/components/branding";
 import { EventCover } from "@/components/event-cover";
 import { Alert, formatDate } from "@/components/ui";
 import { accentStyle } from "@/lib/accent";
@@ -16,6 +17,7 @@ export default function EventPage() {
   const { id } = useParams<{ id: string }>();
   const valid = isUuid(id);
   const { data: event, error, loading } = useApi<EventPublic>(valid ? `/api/events/${id}` : null);
+  useSetEventBranding(event ? { id: event.id, has_logo: event.has_logo } : null);
   if (!valid) notFound();
 
   if (loading) return <p className="text-sm text-muted">Loading…</p>;

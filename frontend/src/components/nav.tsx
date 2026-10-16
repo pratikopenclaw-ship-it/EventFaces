@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 
+import { useBranding } from "@/components/branding";
 import { useSession } from "@/components/session";
 import { ThemeMenu } from "@/components/theme";
 import { Button } from "@/components/ui";
 
 export function Nav() {
   const { user, logout } = useSession();
+  const branding = useBranding();
   const isAdmin = user?.role === "super_admin" || user?.role === "organizer";
 
   return (
@@ -15,9 +17,20 @@ export function Nav() {
     // level the theme menu (z-40 inside it) would open underneath positioned page content.
     <header className="relative z-30 border-b border-line bg-paper/80 backdrop-blur print:hidden">
       <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-        <Link href="/" className="font-display text-xl tracking-tight text-ink">
-          Event<span className="text-accent">Faces</span>
-        </Link>
+        {branding ? (
+          <Link href={`/events/${branding.eventId}`} className="flex items-center">
+            {/* eslint-disable-next-line @next/next/no-img-element -- authenticated API image, not optimizable */}
+            <img
+              src={`/api/events/${branding.eventId}/logo`}
+              alt="Event logo"
+              className="h-9 max-w-40 object-contain"
+            />
+          </Link>
+        ) : (
+          <Link href="/" className="font-display text-xl tracking-tight text-ink">
+            Event<span className="text-accent">Faces</span>
+          </Link>
+        )}
         <div className="flex items-center gap-0 text-sm sm:gap-1">
           {user ? (
             <>

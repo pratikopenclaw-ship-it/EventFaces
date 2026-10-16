@@ -90,6 +90,30 @@ test("organizers print a branded QR poster or table cards", async ({ page, reque
   await expect(sheet).toBeVisible();
 });
 
+test("a branded event replaces the EventFaces wordmark with the organizer's logo in the header", async ({ page, request }) => {
+  await reset(request);
+  const event = await seedEvent(request, { name: "Branded Gala" });
+  await login(page, "org@e2e.test");
+  await page.goto(`/admin/events/${event.id}`);
+  await page.getByLabel("Upload logo").setInputFiles({
+    name: "logo.png",
+    mimeType: "image/png",
+    // 1×1 transparent PNG
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==", "base64"),
+  });
+  await page.context().clearCookies();
+
+  await login(page, "alice@e2e.test");
+  await page.goto(`/events/${event.id}`);
+  const header = page.getByRole("banner");
+  await expect(header.getByRole("img", { name: "Event logo" })).toBeVisible();
+  await expect(header.getByText("EventFaces")).toHaveCount(0);
+
+  // Leaving the event page restores the default header.
+  await page.goto("/events");
+  await expect(page.getByRole("banner").getByText("EventFaces")).toBeVisible();
+});
+
 test("link previews show the branded image and never an event name", async ({ request }) => {
   const r = await request.get("/opengraph-image");
   expect(r.status()).toBe(200);
