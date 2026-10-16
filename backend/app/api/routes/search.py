@@ -6,7 +6,7 @@ from typing import Literal
 from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse, StreamingResponse
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import Session
 from zipstream import ZIP_STORED, ZipStream
 
@@ -439,6 +439,12 @@ def redeem_download(token: str, user: CurrentUser, db: DB) -> StreamingResponse:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Some photos are no longer available to you")
 
     logo_bytes = storage.get_bytes(event.logo_key) if event.logo_key else None
+
+    # A plain aggregate, not a per-user log: feeds the organizer's "most downloaded" ranking.
+    db.execute(
+        update(Photo).where(Photo.id.in_([p.id for p in photos])).values(download_count=Photo.download_count + 1)
+    )
+    db.commit()
 
     headers = {"Cache-Control": "private, no-store"}
     if not claim.as_zip:

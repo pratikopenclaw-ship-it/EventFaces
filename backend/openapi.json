@@ -2618,6 +2618,10 @@
             "title": "Created At",
             "type": "string"
           },
+          "download_count": {
+            "title": "Download Count",
+            "type": "integer"
+          },
           "error": {
             "anyOf": [
               {
@@ -2690,6 +2694,7 @@
           "width",
           "height",
           "face_count",
+          "download_count",
           "error",
           "created_at"
         ],
@@ -6175,6 +6180,20 @@
                 }
               ],
               "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "enum": [
+                "created_at",
+                "downloads"
+              ],
+              "title": "Sort",
+              "type": "string"
             }
           }
         ],

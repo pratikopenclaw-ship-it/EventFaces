@@ -32,6 +32,7 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
   const [photos, setPhotos] = useState<PhotoAdmin[]>([]);
   const [total, setTotal] = useState(0);
   const [failedOnly, setFailedOnly] = useState(false);
+  const [sort, setSort] = useState<"created_at" | "downloads">("created_at");
   const [error, setError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const inProgress = status.data?.in_progress ?? false;
@@ -39,13 +40,13 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
 
   const loadPhotos = useCallback(
     async (offset: number) => {
-      const qs = new URLSearchParams({ offset: String(offset), limit: String(PAGE) });
+      const qs = new URLSearchParams({ offset: String(offset), limit: String(PAGE), sort });
       if (failedOnly) qs.set("index_status", "failed");
       const page = await get<PhotoPage>(`/api/events/${event.id}/photos?${qs}`);
       setPhotos((prev) => (offset === 0 ? page.items : [...prev, ...page.items]));
       setTotal(page.total);
     },
-    [event.id, failedOnly],
+    [event.id, failedOnly, sort],
   );
 
   useEffect(() => {
@@ -169,10 +170,23 @@ export function PhotosPanel({ event, onEditSettings }: { event: EventAdmin; onEd
         <h2 className="font-medium">
           Photos <span className="text-muted">({total})</span>
         </h2>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          <input type="checkbox" className="accent-accent" checked={failedOnly} onChange={(e) => setFailedOnly(e.target.checked)} />
-          Failed only
-        </label>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-sm text-muted">
+            Sort
+            <select
+              className="rounded-md border border-line bg-paper px-2 py-1 text-sm"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as "created_at" | "downloads")}
+            >
+              <option value="created_at">Newest</option>
+              <option value="downloads">Most downloaded</option>
+            </select>
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted">
+            <input type="checkbox" className="accent-accent" checked={failedOnly} onChange={(e) => setFailedOnly(e.target.checked)} />
+            Failed only
+          </label>
+        </div>
       </div>
 
       {photos.length === 0 ? (
@@ -253,13 +267,16 @@ function PhotoTile({ eventId, photo, onDelete }: { eventId: string; photo: Photo
       </div>
       <div className="flex items-center justify-between gap-2 px-2.5 py-2 text-xs">
         <span className="truncate text-muted">{photo.original_filename}</span>
-        {photo.index_status === "failed" ? (
-          <Badge tone="bad">{photo.status === "rejected" ? "Rejected" : "Failed"}</Badge>
-        ) : photo.index_status === "indexed" ? (
-          <Badge>{photo.face_count} {photo.face_count === 1 ? "face" : "faces"}</Badge>
-        ) : (
-          <Badge tone="warn">{STAGE_LABEL[photo.index_status]}</Badge>
-        )}
+        <div className="flex items-center gap-1.5">
+          {photo.download_count > 0 && <Badge>⬇ {photo.download_count}</Badge>}
+          {photo.index_status === "failed" ? (
+            <Badge tone="bad">{photo.status === "rejected" ? "Rejected" : "Failed"}</Badge>
+          ) : photo.index_status === "indexed" ? (
+            <Badge>{photo.face_count} {photo.face_count === 1 ? "face" : "faces"}</Badge>
+          ) : (
+            <Badge tone="warn">{STAGE_LABEL[photo.index_status]}</Badge>
+          )}
+        </div>
       </div>
     </li>
   );
