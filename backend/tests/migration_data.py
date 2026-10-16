@@ -34,6 +34,7 @@ from app.models import (
     MemberStatus,
     Photo,
     PhotoReport,
+    PhotoShortlist,
     PhotoSource,
     PhotoStatus,
     RemovalRequest,
@@ -89,8 +90,10 @@ def populate(session: Session) -> None:
     session.flush()
     session.add(Order(user_id=admin.id, plan="pro", kind=OrderKind.subscription, amount_cents=19900, currency="EUR", vat_rate=19, status=OrderStatus.paid, provider="fake", provider_ref="drill-session", subscription_id=sub.id, paid_at=now))
     session.add(WebhookEvent(provider="fake", provider_event_id="evt_drill"))
-    # Event videos (0016): an organizer-added YouTube link on the event's Videos tab.
+    # Event videos (0015): an organizer-added YouTube link on the event's Videos tab.
     session.add(EventVideo(event_id=ev.id, title="Highlights", url="https://youtu.be/dQw4w9WgXcQ"))
+    # Photo shortlists (0016): an attendee's personal pick.
+    session.add(PhotoShortlist(user_id=guest.id, photo_id=photo.id, event_id=ev.id))
     session.commit()
 
 

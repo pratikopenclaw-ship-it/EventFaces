@@ -1,3 +1,4 @@
+import uuid
 from collections.abc import Iterator
 from dataclasses import asdict
 from typing import Literal
@@ -14,7 +15,7 @@ from app.api.selfie import SEARCH_OPENAPI, is_selfie_set, read_selfie, read_self
 from app.core import face_slots, rate_limit, storage
 from app.core.config import get_settings
 from app.core.security import utcnow
-from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoStatus, SearchGrant, User
+from app.models import Event, FeedbackVerdict, MatchFeedback, Photo, PhotoShortlist, PhotoStatus, SearchGrant, User
 from app.schemas.search import (
     BandOut,
     ConsentSectionOut,
@@ -36,11 +37,11 @@ from app.schemas.search import (
     SelfieRejectionOut,
     ShotQualityOut,
 )
-from app.services import capture_tokens, downloads, search_queue
+from app.services import capture_tokens, downloads, search_queue, shortlist
 from app.services.feedback import MatchQuality, anonymize_feedback, match_quality, record_missing, record_verdict
 from app.services.membership import can_access
 from app.services import consent_text
-from app.services.photo_access import viewable_photos
+from app.services.photo_access import viewable_photo, viewable_photos
 from app.services.search import FACE_CONSENT_VERSION, SelfieRejected, run_search
 from app.services.selfie_quality import SHOTS_CAMERA
 
@@ -273,7 +274,7 @@ def my_photos(event: MemberEvent, user: VerifiedUser, db: DB) -> list[MyPhotoOut
     """Photos this user matched earlier (until the grant expires) or uploaded."""
     best = get_settings().match_best_threshold
     rows = db.execute(
-        select(Photo, SearchGrant, MatchFeedback.verdict)
+        select(Photo, SearchGrant, MatchFeedback.verdict, PhotoShortlist.id)
         .outerjoin(
             SearchGrant,
             (SearchGrant.photo_id == Photo.id)
@@ -281,6 +282,7 @@ def my_photos(event: MemberEvent, user: VerifiedUser, db: DB) -> list[MyPhotoOut
             & (SearchGrant.expires_at > utcnow()),
         )
         .outerjoin(MatchFeedback, (MatchFeedback.photo_id == Photo.id) & (MatchFeedback.user_id == user.id))
+        .outerjoin(PhotoShortlist, (PhotoShortlist.photo_id == Photo.id) & (PhotoShortlist.user_id == user.id))
         .where(
             Photo.event_id == event.id,
             Photo.status == PhotoStatus.published,
@@ -297,9 +299,41 @@ def my_photos(event: MemberEvent, user: VerifiedUser, db: DB) -> list[MyPhotoOut
             tier=("best" if g.similarity >= best else "possible") if g else None,
             verdict=verdict.value if verdict and verdict != FeedbackVerdict.missing else None,
             expires_at=g.expires_at if g else None,
+            shortlisted=shortlist_id is not None,
         )
-        for p, g, verdict in rows
+        for p, g, verdict, shortlist_id in rows
     ]
+
+
+# --- Shortlist -------------------------------------------------------------------
+
+
+@router.get("/events/{event_id}/shortlist", response_model=list[MyPhotoOut])
+def list_shortlist(event: MemberEvent, user: VerifiedUser, db: DB) -> list[MyPhotoOut]:
+    """This user's own shortlisted photos in the event (dropping any that became
+    unviewable since, e.g. a revoked grant or a retired photo)."""
+    ids = shortlist.shortlisted_photo_ids(db, event, user)
+    if not ids:
+        return []
+    all_mine = {p.id: p for p in my_photos(event, user, db)}
+    return [all_mine[i] for i in ids if i in all_mine]
+
+
+@router.post("/events/{event_id}/photos/{photo_id}/shortlist", status_code=status.HTTP_204_NO_CONTENT)
+def add_to_shortlist(photo_id: uuid.UUID, event: MemberEvent, user: VerifiedUser, db: DB) -> None:
+    photo = viewable_photo(db, event, user, photo_id)
+    if photo is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Photo not found")
+    shortlist.add(db, event, user, photo)
+
+
+@router.delete("/events/{event_id}/photos/{photo_id}/shortlist", status_code=status.HTTP_204_NO_CONTENT)
+def remove_from_shortlist(photo_id: uuid.UUID, event: MemberEvent, user: VerifiedUser, db: DB) -> None:
+    # Idempotent for a photo that just isn't shortlisted; 404 only for a photo the caller
+    # can't see at all (unknown id, wrong event, no access) so unknown-id checks still bite.
+    if viewable_photo(db, event, user, photo_id) is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Photo not found")
+    shortlist.remove(db, event, user, photo_id)
 
 
 # --- Match feedback --------------------------------------------------------------

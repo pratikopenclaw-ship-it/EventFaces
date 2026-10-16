@@ -24,6 +24,7 @@ from app.models.device import Device
 from app.models.event import Event, EventMember
 from app.models.event_video import EventVideo
 from app.models.photo import DriveSyncRun, Face, Photo
+from app.models.photo_shortlist import PhotoShortlist
 from app.models.search import MatchFeedback, SearchAudit, SearchGrant, SelfieQuality
 from app.models.user import AuthToken, LegalAcceptance, User
 
@@ -50,6 +51,7 @@ __all__ = [
     "OrderStatus",
     "Photo",
     "PhotoReport",
+    "PhotoShortlist",
     "PhotoSource",
     "PhotoStatus",
     "RemovalRequest",
