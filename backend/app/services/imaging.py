@@ -22,6 +22,9 @@ Image.MAX_IMAGE_PIXELS = 120_000_000
 ORIGINAL_MAX_SIDE = 6000
 PREVIEW_MAX_SIDE = 1600
 THUMB_MAX_SIDE = 400
+ORIGINAL_QUALITY = 92
+PREVIEW_QUALITY = 85
+THUMB_QUALITY = 80
 
 _HEIF_BRANDS = {b"heic", b"heix", b"hevc", b"hevx", b"heim", b"heis", b"hevm", b"hevs", b"mif1", b"msf1"}
 
@@ -90,12 +93,12 @@ def _encode(img: Image.Image, max_side: int, quality: int) -> bytes:
 
 def process(data: bytes) -> ProcessedImage:
     img = load_image(data)
-    original = _encode(img, ORIGINAL_MAX_SIDE, 92)
+    original = _encode(img, ORIGINAL_MAX_SIDE, ORIGINAL_QUALITY)
     width, height = Image.open(io.BytesIO(original)).size
     return ProcessedImage(
         original=original,
-        preview=_encode(img, PREVIEW_MAX_SIDE, 85),
-        thumb=_encode(img, THUMB_MAX_SIDE, 80),
+        preview=_encode(img, PREVIEW_MAX_SIDE, PREVIEW_QUALITY),
+        thumb=_encode(img, THUMB_MAX_SIDE, THUMB_QUALITY),
         width=width,
         height=height,
         sha256=hashlib.sha256(data).hexdigest(),

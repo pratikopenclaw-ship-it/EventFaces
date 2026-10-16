@@ -3,14 +3,15 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException, Query, status
-from fastapi.responses import StreamingResponse
+from fastapi.responses import Response, StreamingResponse
 from sqlalchemy import func, select
 
 from app.api.deps import DB, ManagedEvent, MemberEvent, VerifiedUser
 from app.core import rate_limit, storage
 from app.models import DriveSyncRun, Face, IndexStatus, Photo, PhotoStatus, SyncStatus, UserRole
 from app.schemas.photo import PhotoAdminOut, PhotoPage, PipelineCounts, SyncRunOut, SyncStatusOut
-from app.services import drive
+from app.services import drive, watermark
+from app.services.imaging import PREVIEW_QUALITY, THUMB_QUALITY
 from app.services.photo_access import viewable_photo
 from app.services.photo_pipeline import active_sync_run
 from app.workers.tasks import sync_drive
@@ -113,7 +114,7 @@ def list_photos(
 @router.get("/events/{event_id}/photos/{photo_id}/{variant}")
 def photo_image(
     photo_id: uuid.UUID, variant: Literal["thumb", "preview"], event: MemberEvent, user: VerifiedUser, db: DB
-) -> StreamingResponse:
+) -> Response:
     """Thumbnail/preview streamed from storage (storage URLs are never exposed).
 
     Organizers see every photo of their event; attendees only photos they matched or
@@ -126,8 +127,13 @@ def photo_image(
     key = photo.thumb_key if variant == "thumb" else photo.preview_key
     if key is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Image not ready yet")
-    body, length = storage.open_stream(key)
     headers = {"Cache-Control": "private, max-age=300"}
-    if length:
-        headers["Content-Length"] = str(length)
-    return StreamingResponse(body.iter_chunks(), media_type="image/jpeg", headers=headers)
+    if event.logo_key is None:
+        body, length = storage.open_stream(key)
+        if length:
+            headers["Content-Length"] = str(length)
+        return StreamingResponse(body.iter_chunks(), media_type="image/jpeg", headers=headers)
+
+    quality = THUMB_QUALITY if variant == "thumb" else PREVIEW_QUALITY
+    data = watermark.maybe_apply(storage.get_bytes(key), event, storage.get_bytes(event.logo_key), quality)
+    return Response(content=data, media_type="image/jpeg", headers=headers)
