@@ -139,8 +139,13 @@ struct ZoomablePhoto: UIViewRepresentable {
         tap.numberOfTapsRequired = 2
         scroll.addGestureRecognizer(tap)
         let events = model.events
-        Task { @MainActor in
-            imageView.image = try? await events.cachedImage(eventID: eventID, photoID: photoID, variant: "preview", maxPixel: 2400)
+        Task { @MainActor [weak scroll] in
+            let image = try? await events.cachedImage(eventID: eventID, photoID: photoID, variant: "preview", maxPixel: 2400)
+            imageView.image = image
+            // `updateUIView` runs on SwiftUI's own render cycle, not when this load
+            // finishes, so a zero-bounds scroll view at creation time would otherwise
+            // never pick up a frame for the image it just received.
+            if let scroll { imageView.frame = scroll.bounds }
         }
         return scroll
     }

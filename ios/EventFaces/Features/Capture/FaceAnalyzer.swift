@@ -22,7 +22,12 @@ enum FaceAnalyzer {
             request.setComputeDevice(cpu, for: .main)
         }
         #endif
-        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .up)
+        // Matches the rotation applied before JPEG upload (CaptureModel.jpeg): the raw
+        // buffer is landscape/sideways (see that fix's comment), so live guidance must use
+        // the same corrected orientation the server will actually see, or "ok" on screen
+        // doesn't mean what the server's gate means (confirmed live: yaw read ~0-5° live,
+        // but the server measured 28-32° once correctly oriented).
+        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .left)
         do {
             try handler.perform([request])
         } catch {
