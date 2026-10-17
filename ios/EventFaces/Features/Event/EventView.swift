@@ -12,6 +12,7 @@ struct EventView: View {
     @State private var showResults = false
     @State private var showUpload = false
     @State private var stats: OrganizerStats?
+    @State private var videos: [EventVideo] = []
 
     enum Flow: Identifiable { case consent(ConsentInfo), capture; var id: String { switch self { case .consent: "consent"; case .capture: "capture" } } }
 
@@ -30,6 +31,8 @@ struct EventView: View {
                             .accessibilityIdentifier("my-photos")
                             .padding(.top, 8)
                     }
+                    VideosSection(videos: videos)
+                        .padding(.top, 8)
                     if event.guestUploadEnabled {
                         Button { showUpload = true } label: { Label("Add your photos", systemImage: "square.and.arrow.up.on.square") }
                             .buttonStyle(.secondary)
@@ -92,6 +95,7 @@ struct EventView: View {
             event = e
             hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty
             if e.hasLogo == true, let data = try? await model.events.image(path: "/api/events/\(eventID)/logo") { logo = UIImage(data: data) }
+            videos = (try? await model.events.videos(eventID: eventID)) ?? []
             if model.myEvents.first(where: { $0.id == eventID })?.canManage == true {
                 stats = await model.events.organizerStats(eventID)
             }
