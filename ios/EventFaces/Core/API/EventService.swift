@@ -14,6 +14,7 @@ typealias SearchLogRow = Components.Schemas.SearchLogRow
 typealias ModerationItem = Components.Schemas.ModerationItem
 typealias ReportItem = Components.Schemas.ReportOut
 typealias RemovalItem = Components.Schemas.RemovalOut
+typealias EventVideo = Components.Schemas.EventVideoOut
 
 /// At-a-glance numbers for an event someone manages: the same four tiles as the web
 /// dashboard, no management actions. Each tile degrades to nil on its own if that one
@@ -234,6 +235,16 @@ struct EventService: Sendable {
     func myPhotos(eventID: String) async throws -> [String] {
         switch try await call({ try await api.searchMyPhotos(path: .init(eventId: eventID)) }) {
         case let .ok(ok): return try ok.body.json.map(\.id)
+        case .unprocessableContent: throw AppError.server(status: 422)
+        case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+        }
+    }
+
+    /// Organizer-added video links (YouTube, Vimeo, Instagram, Google Drive). Read-only on
+    /// iOS: adding/removing videos stays organizer-only on the web.
+    func videos(eventID: String) async throws -> [EventVideo] {
+        switch try await call({ try await api.eventsListEventVideos(path: .init(eventId: eventID)) }) {
+        case let .ok(ok): return try ok.body.json
         case .unprocessableContent: throw AppError.server(status: 422)
         case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
         }

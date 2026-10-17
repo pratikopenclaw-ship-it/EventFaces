@@ -1034,6 +1034,68 @@
         "title": "EventUsageOut",
         "type": "object"
       },
+      "EventVideoIn": {
+        "properties": {
+          "title": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "url"
+        ],
+        "title": "EventVideoIn",
+        "type": "object"
+      },
+      "EventVideoOut": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "embed_url": {
+            "title": "Embed Url",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "provider": {
+            "title": "Provider",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "url",
+          "provider",
+          "embed_url",
+          "created_at"
+        ],
+        "title": "EventVideoOut",
+        "type": "object"
+      },
       "FeedbackIn": {
         "properties": {
           "photo_id": {
@@ -1842,6 +1904,10 @@
             "title": "Id",
             "type": "string"
           },
+          "shortlisted": {
+            "title": "Shortlisted",
+            "type": "boolean"
+          },
           "similarity": {
             "title": "Similarity",
             "type": "number"
@@ -1868,7 +1934,8 @@
           }
         },
         "required": [
-          "id"
+          "id",
+          "shortlisted"
         ],
         "title": "MyPhotoOut",
         "type": "object"
@@ -2029,6 +2096,10 @@
             "title": "Created At",
             "type": "string"
           },
+          "download_count": {
+            "title": "Download Count",
+            "type": "integer"
+          },
           "error": {
             "title": "Error",
             "type": "string"
@@ -2070,6 +2141,7 @@
           "status",
           "index_status",
           "face_count",
+          "download_count",
           "created_at"
         ],
         "title": "PhotoAdminOut",
@@ -5359,6 +5431,20 @@
               "$ref": "#/components/schemas/PhotoStatus",
               "title": "Status"
             }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "enum": [
+                "created_at",
+                "downloads"
+              ],
+              "title": "Sort",
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -5556,6 +5642,96 @@
         "summary": "Report Photo",
         "tags": [
           "moderation"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/{photo_id}/shortlist": {
+      "delete": {
+        "operationId": "search_remove_from_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove From Shortlist",
+        "tags": [
+          "search"
+        ]
+      },
+      "post": {
+        "operationId": "search_add_to_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "photo_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Photo Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add To Shortlist",
+        "tags": [
+          "search"
         ]
       }
     },
@@ -6122,6 +6298,54 @@
         ]
       }
     },
+    "/api/events/{event_id}/shortlist": {
+      "get": {
+        "description": "This user's own shortlisted photos in the event (dropping any that became\nunviewable since, e.g. a revoked grant or a retired photo).",
+        "operationId": "search_list_shortlist",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MyPhotoOut"
+                  },
+                  "title": "Response Search List Shortlist",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Shortlist",
+        "tags": [
+          "search"
+        ]
+      }
+    },
     "/api/events/{event_id}/sync": {
       "get": {
         "operationId": "photos_sync_status",
@@ -6352,6 +6576,150 @@
         "summary": "Event Usage",
         "tags": [
           "billing"
+        ]
+      }
+    },
+    "/api/events/{event_id}/videos": {
+      "get": {
+        "operationId": "events_list_event_videos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventVideoOut"
+                  },
+                  "title": "Response Events List Event Videos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Videos",
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "operationId": "events_add_event_video",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventVideoIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventVideoOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Event Video",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/videos/{video_id}": {
+      "delete": {
+        "operationId": "events_delete_event_video",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "video_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Video Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Event Video",
+        "tags": [
+          "events"
         ]
       }
     },

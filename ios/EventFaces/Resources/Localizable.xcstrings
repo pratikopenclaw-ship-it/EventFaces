@@ -1,2937 +1,3009 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "%@ faces found" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ Gesichter gefunden"
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ faces found": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ Gesichter gefunden"
           }
         }
       }
     },
-    "%@ logo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Logo von %@"
+    "%@ logo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logo von %@"
           }
         }
       }
     },
-    "%@ pending" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ ausstehend"
+    "%@ pending": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ausstehend"
           }
         }
       }
     },
-    "%@ will lose access to this event and its photos right away." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ verliert sofort den Zugang zu diesem Event und seinen Fotos."
+    "%@ will lose access to this event and its photos right away.": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ verliert sofort den Zugang zu diesem Event und seinen Fotos."
           }
         }
       }
     },
-    "%@% found a match" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ % mit Treffer"
+    "%@% found a match": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ % mit Treffer"
           }
         }
       }
     },
-    "%lld photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld Fotos"
+    "%lld photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld Fotos"
           }
         }
       }
     },
-    "%lld published · %lld faces indexed" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%lld veröffentlicht · %lld Gesichter indexiert"
+    "%lld published · %lld faces indexed": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld veröffentlicht · %lld Gesichter indexiert"
           }
         }
       }
     },
-    "6-digit code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "6-stelliger Code"
+    "6-digit code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "6-stelliger Code"
           }
         }
       }
     },
-    "A few things that usually help:" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das hilft meistens:"
+    "A few things that usually help:": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das hilft meistens:"
           }
         }
       }
     },
-    "About" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Info"
+    "About": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Info"
           }
         }
       }
     },
-    "Accept and continue" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Akzeptieren und fortfahren"
+    "Accept and continue": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Akzeptieren und fortfahren"
           }
         }
       }
     },
-    "Access code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zugangscode"
+    "Access code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zugangscode"
           }
         }
       }
     },
-    "Account" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konto"
+    "Account": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto"
           }
         }
       }
     },
-    "Active" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktiv"
+    "Active": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktiv"
           }
         }
       }
     },
-    "Add photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos hinzufügen"
+    "Add photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos hinzufügen"
           }
         }
       }
     },
-    "Add your photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotos hinzufügen"
+    "Add to shortlist": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu Favoriten hinzufügen"
           }
         }
       }
     },
-    "All (ZIP)" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alle (ZIP)"
+    "Add your photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Fotos hinzufügen"
           }
         }
       }
     },
-    "All clear" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Alles in Ordnung"
+    "All (ZIP)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle (ZIP)"
           }
         }
       }
     },
-    "Almost there. Please accept the Terms of Use to finish signing in." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fast geschafft. Bitte akzeptiere die Nutzungsbedingungen, um die Anmeldung abzuschließen."
+    "All clear": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alles in Ordnung"
           }
         }
       }
     },
-    "Anything else the organizer should know (optional)" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Was sollte der Veranstalter noch wissen? (optional)"
+    "Almost there. Please accept the Terms of Use to finish signing in.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fast geschafft. Bitte akzeptiere die Nutzungsbedingungen, um die Anmeldung abzuschließen."
           }
         }
       }
     },
-    "Appearance" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Darstellung"
+    "Anything else the organizer should know (optional)": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was sollte der Veranstalter noch wissen? (optional)"
           }
         }
       }
     },
-    "Approve" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Freigeben"
+    "Appearance": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Darstellung"
           }
         }
       }
     },
-    "Asks when you come back to the app." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fragt, wenn du zur App zurückkehrst."
+    "Approve": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Freigeben"
           }
         }
       }
     },
-    "Attendee" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teilnehmer"
+    "Asks when you come back to the app.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fragt, wenn du zur App zurückkehrst."
           }
         }
       }
     },
-    "Back" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zurück"
+    "Attendee": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teilnehmer"
           }
         }
       }
     },
-    "Before you take your selfies" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bevor du deine Selfies machst"
+    "Back": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zurück"
           }
         }
       }
     },
-    "Best matches" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beste Treffer"
+    "Before you take your selfies": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bevor du deine Selfies machst"
           }
         }
       }
     },
-    "Camera" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamera"
+    "Best matches": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beste Treffer"
           }
         }
       }
     },
-    "Camera access is off" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamerazugriff ist aus"
+    "Camera": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamera"
           }
         }
       }
     },
-    "Camera viewfinder for the QR code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamerasucher für den QR-Code"
+    "Camera access is off": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamerazugriff ist aus"
           }
         }
       }
     },
-    "Cancel" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abbrechen"
+    "Camera viewfinder for the QR code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamerasucher für den QR-Code"
           }
         }
       }
     },
-    "Center your face in the oval" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bring dein Gesicht in das Oval"
+    "Cancel": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abbrechen"
           }
         }
       }
     },
-    "Change app language" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-Sprache ändern"
+    "Center your face in the oval": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring dein Gesicht in das Oval"
           }
         }
       }
     },
-    "Checking your photos…" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotos werden geprüft …"
+    "Change app language": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App-Sprache ändern"
           }
         }
       }
     },
-    "Choose photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos auswählen"
+    "Checking your photos…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Fotos werden geprüft …"
           }
         }
       }
     },
-    "Close" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schließen"
+    "Choose photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos auswählen"
           }
         }
       }
     },
-    "Consent" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einwilligung"
+    "Close": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließen"
           }
         }
       }
     },
-    "Couldn't load this event. Check your connection and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Event konnte nicht geladen werden. Prüfe deine Verbindung und versuch es erneut."
+    "Consent": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einwilligung"
           }
         }
       }
     },
-    "Couldn't save to Photos. Allow EventFaces to add photos in Settings." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speichern in Fotos nicht möglich. Erlaube EventFaces in den Einstellungen, Fotos hinzuzufügen."
+    "Couldn't load this event. Check your connection and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Event konnte nicht geladen werden. Prüfe deine Verbindung und versuch es erneut."
           }
         }
       }
     },
-    "Couldn't save your acceptance. Try again in a moment." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Zustimmung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
+    "Couldn't save to Photos. Allow EventFaces to add photos in Settings.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichern in Fotos nicht möglich. Erlaube EventFaces in den Einstellungen, Fotos hinzuzufügen."
           }
         }
       }
     },
-    "Couldn't save your consent. Try again in a moment." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Einwilligung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
+    "Couldn't save your acceptance. Try again in a moment.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Zustimmung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
           }
         }
       }
     },
-    "Couldn't send the report. Try again in a moment." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Meldung konnte nicht gesendet werden. Versuch es gleich noch einmal."
+    "Couldn't save your consent. Try again in a moment.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Einwilligung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
           }
         }
       }
     },
-    "Dark" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dunkel"
+    "Couldn't send the report. Try again in a moment.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Meldung konnte nicht gesendet werden. Versuch es gleich noch einmal."
           }
         }
       }
     },
-    "Delete account" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konto löschen"
+    "Dark": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dunkel"
           }
         }
       }
     },
-    "Delete my account" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mein Konto löschen"
+    "Delete account": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konto löschen"
           }
         }
       }
     },
-    "Delete my data" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meine Daten löschen"
+    "Delete my account": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mein Konto löschen"
           }
         }
       }
     },
-    "Delete your face-search data?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Daten der Gesichtssuche löschen?"
+    "Delete my data": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meine Daten löschen"
           }
         }
       }
     },
-    "Devices" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geräte"
+    "Delete your face-search data?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Daten der Gesichtssuche löschen?"
           }
         }
       }
     },
-    "Dismiss" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ausblenden"
+    "Devices": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geräte"
           }
         }
       }
     },
-    "Done" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fertig"
+    "Dismiss": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ausblenden"
           }
         }
       }
     },
-    "Done. Your matches were deleted and you'll be asked again before your next search." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erledigt. Deine Treffer wurden gelöscht; vor deiner nächsten Suche fragen wir dich erneut."
+    "Done": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig"
           }
         }
       }
     },
-    "Drive import is set up." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drive-Import ist eingerichtet."
+    "Done. Your matches were deleted and you'll be asked again before your next search.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erledigt. Deine Treffer wurden gelöscht; vor deiner nächsten Suche fragen wir dich erneut."
           }
         }
       }
     },
-    "Drive import isn't set up (web dashboard)." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drive-Import ist nicht eingerichtet (Web-Dashboard)."
+    "Drive import is set up.": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drive-Import ist eingerichtet."
           }
         }
       }
     },
-    "Email" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "E-Mail"
+    "Drive import isn't set up (web dashboard).": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drive-Import ist nicht eingerichtet (Web-Dashboard)."
           }
         }
       }
     },
-    "Email address" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "E-Mail-Adresse"
+    "Email": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-Mail"
           }
         }
       }
     },
-    "Email me a confirmation code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bestätigungscode per E-Mail senden"
+    "Email address": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "E-Mail-Adresse"
           }
         }
       }
     },
-    "Enter the code we sent to %@. You can also tap the link in that email." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gib den Code ein, den wir an %@ geschickt haben. Du kannst auch auf den Link in der E-Mail tippen."
+    "Email me a confirmation code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bestätigungscode per E-Mail senden"
           }
         }
       }
     },
-    "Event link received" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Event-Link erhalten"
+    "Enter the code we sent to %@. You can also tap the link in that email.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gib den Code ein, den wir an %@ geschickt haben. Du kannst auch auf den Link in der E-Mail tippen."
           }
         }
       }
     },
-    "EventFaces" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces"
+    "Event link received": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event-Link erhalten"
           }
         }
       }
     },
-    "EventFaces is locked" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces ist gesperrt"
+    "EventFaces": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces"
           }
         }
       }
     },
-    "EventFaces needs the camera to scan the event's QR code. Turn it on in Settings." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces braucht die Kamera, um den QR-Code des Events zu scannen. Schalte sie in den Einstellungen ein."
+    "EventFaces is locked": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces ist gesperrt"
           }
         }
       }
     },
-    "EventFaces needs the camera to take your selfies. Turn it on in Settings." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces braucht die Kamera, um deine Selfies aufzunehmen. Schalte sie in den Einstellungen ein."
+    "EventFaces needs the camera to scan the event's QR code. Turn it on in Settings.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces braucht die Kamera, um den QR-Code des Events zu scannen. Schalte sie in den Einstellungen ein."
           }
         }
       }
     },
-    "Events" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events"
+    "EventFaces needs the camera to take your selfies. Turn it on in Settings.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces braucht die Kamera, um deine Selfies aufzunehmen. Schalte sie in den Einstellungen ein."
           }
         }
       }
     },
-    "Events you organize" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Events, die du organisierst"
+    "Events": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events"
           }
         }
       }
     },
-    "Face a window or lamp; avoid bright light behind you." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schau zu einem Fenster oder einer Lampe; vermeide helles Licht hinter dir."
+    "Events you organize": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Events, die du organisierst"
           }
         }
       }
     },
-    "Face the camera" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schau in die Kamera"
+    "Face a window or lamp; avoid bright light behind you.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schau zu einem Fenster oder einer Lampe; vermeide helles Licht hinter dir."
           }
         }
       }
     },
-    "Face-search consent" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einwilligung zur Gesichtssuche"
+    "Face the camera": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schau in die Kamera"
           }
         }
       }
     },
-    "Find my photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meine Fotos finden"
+    "Face-search consent": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einwilligung zur Gesichtssuche"
           }
         }
       }
     },
-    "Find your photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Finde deine Fotos"
+    "Find my photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meine Fotos finden"
           }
         }
       }
     },
-    "For organizers" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für Organisatoren"
+    "Find your photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finde deine Fotos"
           }
         }
       }
     },
-    "For the first photo, look straight at the camera." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schau für das erste Foto direkt in die Kamera."
+    "For organizers": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für Organisatoren"
           }
         }
       }
     },
-    "For this photo, turn your head slightly to your left." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh für dieses Foto deinen Kopf leicht nach links."
+    "For the first photo, look straight at the camera.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schau für das erste Foto direkt in die Kamera."
           }
         }
       }
     },
-    "For this photo, turn your head slightly to your right." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh für dieses Foto deinen Kopf leicht nach rechts."
+    "For this photo, turn your head slightly to your left.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh für dieses Foto deinen Kopf leicht nach links."
           }
         }
       }
     },
-    "Get a notification when your photos are ready" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Benachrichtigung erhalten, wenn deine Fotos bereit sind"
+    "For this photo, turn your head slightly to your right.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh für dieses Foto deinen Kopf leicht nach rechts."
           }
         }
       }
     },
-    "Get started" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Los geht's"
+    "Get a notification when your photos are ready": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benachrichtigung erhalten, wenn deine Fotos bereit sind"
           }
         }
       }
     },
-    "Given" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erteilt"
+    "Get started": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los geht's"
           }
         }
       }
     },
-    "Good, even light on your face" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gutes, gleichmäßiges Licht im Gesicht"
+    "Given": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erteilt"
           }
         }
       }
     },
-    "Hold still" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halt still"
+    "Good, even light on your face": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gutes, gleichmäßiges Licht im Gesicht"
           }
         }
       }
     },
-    "Hold the phone at eye level" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halte das Telefon auf Augenhöhe"
+    "Hold still": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halt still"
           }
         }
       }
     },
-    "I accept the Organizer Terms and the data processing agreement on behalf of the organizer." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ich akzeptiere die Veranstalterbedingungen und den Auftragsverarbeitungsvertrag im Namen des Veranstalters."
+    "Hold the phone at eye level": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte das Telefon auf Augenhöhe"
           }
         }
       }
     },
-    "I accept the Terms of Use and confirm that I am at least 16 years old." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ich akzeptiere die Nutzungsbedingungen und bestätige, dass ich mindestens 16 Jahre alt bin."
+    "I accept the Organizer Terms and the data processing agreement on behalf of the organizer.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich akzeptiere die Veranstalterbedingungen und den Auftragsverarbeitungsvertrag im Namen des Veranstalters."
           }
         }
       }
     },
-    "Importing from Google Drive…" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Import aus Google Drive …"
+    "I accept the Terms of Use and confirm that I am at least 16 years old.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich akzeptiere die Nutzungsbedingungen und bestätige, dass ich mindestens 16 Jahre alt bin."
           }
         }
       }
     },
-    "It shows private information" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es zeigt private Informationen"
+    "Importing from Google Drive…": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Import aus Google Drive …"
           }
         }
       }
     },
-    "It's inappropriate" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es ist unangemessen"
+    "It shows private information": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es zeigt private Informationen"
           }
         }
       }
     },
-    "It's me and I want it removed" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ich bin darauf und möchte, dass es entfernt wird"
+    "It's inappropriate": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist unangemessen"
           }
         }
       }
     },
-    "It's too bright. Avoid direct sunlight or strong light behind the camera." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es ist zu hell. Vermeide direktes Sonnenlicht oder starkes Licht hinter der Kamera."
+    "It's me and I want it removed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ich bin darauf und möchte, dass es entfernt wird"
           }
         }
       }
     },
-    "It's too dark. Move to a brighter place or face a window." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es ist zu dunkel. Geh an einen helleren Ort oder schau zu einem Fenster."
+    "It's too bright. Avoid direct sunlight or strong light behind the camera.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist zu hell. Vermeide direktes Sonnenlicht oder starkes Licht hinter der Kamera."
           }
         }
       }
     },
-    "Join an event" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einem Event beitreten"
+    "It's too dark. Move to a brighter place or face a window.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist zu dunkel. Geh an einen helleren Ort oder schau zu einem Fenster."
           }
         }
       }
     },
-    "Join event" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Event beitreten"
+    "Join an event": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einem Event beitreten"
           }
         }
       }
     },
-    "Join your event" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tritt deinem Event bei"
+    "Join event": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event beitreten"
           }
         }
       }
     },
-    "Just you" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nur du"
+    "Join your event": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tritt deinem Event bei"
           }
         }
       }
     },
-    "Keep still for a moment" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halt einen Moment still"
+    "Just you": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur du"
           }
         }
       }
     },
-    "Keep your head level: don't look up or down." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halte den Kopf gerade: Schau nicht nach oben oder unten."
+    "Keep still for a moment": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halt einen Moment still"
           }
         }
       }
     },
-    "Keep your head straight" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halte den Kopf gerade"
+    "Keep your head level: don't look up or down.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte den Kopf gerade: Schau nicht nach oben oder unten."
           }
         }
       }
     },
-    "Keep your head straight: don't tilt it sideways." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Halte den Kopf gerade: Neig ihn nicht zur Seite."
+    "Keep your head straight": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte den Kopf gerade"
           }
         }
       }
     },
-    "Language" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprache"
+    "Keep your head straight: don't tilt it sideways.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte den Kopf gerade: Neig ihn nicht zur Seite."
           }
         }
       }
     },
-    "Last used %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zuletzt genutzt am %@"
+    "Language": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sprache"
           }
         }
       }
     },
-    "Legal notice" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Impressum"
+    "Last used %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zuletzt genutzt am %@"
           }
         }
       }
     },
-    "Less certain. Tell us if these are you." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weniger sicher. Sag uns, ob du das bist."
+    "Legal notice": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impressum"
           }
         }
       }
     },
-    "Let's try that again" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Versuchen wir es noch einmal"
+    "Less certain. Tell us if these are you.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weniger sicher. Sag uns, ob du das bist."
           }
         }
       }
     },
-    "Light" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hell"
+    "Let's try that again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versuchen wir es noch einmal"
           }
         }
       }
     },
-    "Lock with %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit %@ sperren"
+    "Light": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hell"
           }
         }
       }
     },
-    "Look straight at the camera" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Schau direkt in die Kamera"
+    "Lock with %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit %@ sperren"
           }
         }
       }
     },
-    "Lots of people are searching right now. Try again in a few seconds." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerade suchen sehr viele. Versuch es in ein paar Sekunden erneut."
+    "Look straight at the camera": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schau direkt in die Kamera"
           }
         }
       }
     },
-    "Lots of people are searching right now. We'll email you when your photos are ready, and show them here if this screen is still open." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gerade suchen sehr viele. Wir schicken dir eine E-Mail, sobald deine Fotos bereit sind, und zeigen sie hier, wenn dieser Bildschirm noch offen ist."
+    "Lots of people are searching right now. Try again in a few seconds.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerade suchen sehr viele. Versuch es in ein paar Sekunden erneut."
           }
         }
       }
     },
-    "Lower your chin a little" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Senk dein Kinn ein wenig"
+    "Lots of people are searching right now. We'll email you when your photos are ready, and show them here if this screen is still open.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerade suchen sehr viele. Wir schicken dir eine E-Mail, sobald deine Fotos bereit sind, und zeigen sie hier, wenn dieser Bildschirm noch offen ist."
           }
         }
       }
     },
-    "Make sure only you are in the picture" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Achte darauf, dass nur du im Bild bist"
+    "Lower your chin a little": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Senk dein Kinn ein wenig"
           }
         }
       }
     },
-    "Manage" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verwalten"
+    "Make sure only you are in the picture": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achte darauf, dass nur du im Bild bist"
           }
         }
       }
     },
-    "Members" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mitglieder"
+    "Manage": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verwalten"
           }
         }
       }
     },
-    "More than one face is visible. Make sure you're alone in the picture." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mehr als ein Gesicht ist zu sehen. Achte darauf, dass du allein im Bild bist."
+    "Members": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mitglieder"
           }
         }
       }
     },
-    "Move back a little" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geh ein Stück zurück"
+    "More than one face is visible. Make sure you're alone in the picture.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mehr als ein Gesicht ist zu sehen. Achte darauf, dass du allein im Bild bist."
           }
         }
       }
     },
-    "Move back a little: your whole face should fit in the oval." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geh ein Stück zurück: Dein ganzes Gesicht sollte ins Oval passen."
+    "Move back a little": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geh ein Stück zurück"
           }
         }
       }
     },
-    "Move closer" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komm näher"
+    "Move back a little: your whole face should fit in the oval.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geh ein Stück zurück: Dein ganzes Gesicht sollte ins Oval passen."
           }
         }
       }
     },
-    "Move closer: your face should fill the oval." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Komm näher: Dein Gesicht sollte das Oval ausfüllen."
+    "Move closer": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komm näher"
           }
         }
       }
     },
-    "Move to brighter, even light" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geh in helleres, gleichmäßiges Licht"
+    "Move closer: your face should fill the oval.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Komm näher: Dein Gesicht sollte das Oval ausfüllen."
           }
         }
       }
     },
-    "My events" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meine Events"
+    "Move to brighter, even light": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geh in helleres, gleichmäßiges Licht"
           }
         }
       }
     },
-    "My photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meine Fotos"
+    "My events": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meine Events"
           }
         }
       }
     },
-    "Needs attention" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Braucht Aufmerksamkeit"
+    "My photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meine Fotos"
           }
         }
       }
     },
-    "New photos may still be added. Try again later." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es können noch neue Fotos dazukommen. Versuch es später noch einmal."
+    "Needs attention": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Braucht Aufmerksamkeit"
           }
         }
       }
     },
-    "Next" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Weiter"
+    "New photos may still be added. Try again later.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es können noch neue Fotos dazukommen. Versuch es später noch einmal."
           }
         }
       }
     },
-    "No notifications. We'll still email you." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Benachrichtigungen. Wir schicken dir trotzdem eine E-Mail."
+    "Next": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weiter"
           }
         }
       }
     },
-    "No other people in the picture." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine anderen Personen im Bild."
+    "No notifications. We'll still email you.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Benachrichtigungen. Wir schicken dir trotzdem eine E-Mail."
           }
         }
       }
     },
-    "No photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Fotos"
+    "No other people in the picture.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine anderen Personen im Bild."
           }
         }
       }
     },
-    "No photos of you yet" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Noch keine Fotos von dir"
+    "No photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Fotos"
           }
         }
       }
     },
-    "No sunglasses, mask or hat" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Sonnenbrille, Maske oder Mütze"
+    "No photos of you yet": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch keine Fotos von dir"
           }
         }
       }
     },
-    "Normal glasses are fine." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eine normale Brille ist in Ordnung."
+    "No sunglasses, mask or hat": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keine Sonnenbrille, Maske oder Mütze"
           }
         }
       }
     },
-    "Not approved" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht freigegeben"
+    "Normal glasses are fine.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine normale Brille ist in Ordnung."
           }
         }
       }
     },
-    "Not given" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht erteilt"
+    "Not approved": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht freigegeben"
           }
         }
       }
     },
-    "Not me" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht ich"
+    "Not given": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht erteilt"
           }
         }
       }
     },
-    "Not now" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nicht jetzt"
+    "Not me": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht ich"
           }
         }
       }
     },
-    "Nothing to review." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nichts zu prüfen."
+    "Not now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nicht jetzt"
           }
         }
       }
     },
-    "Notify me" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Benachrichtige mich"
+    "Nothing to review.": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts zu prüfen."
           }
         }
       }
     },
-    "Open Settings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einstellungen öffnen"
+    "Notify me": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Benachrichtige mich"
           }
         }
       }
     },
-    "Open the App Store" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App Store öffnen"
+    "Open Settings": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen öffnen"
           }
         }
       }
     },
-    "Open your event's link or scan its QR code to get started." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Öffne den Link deines Events oder scanne den QR-Code, um loszulegen."
+    "Open the App Store": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App Store öffnen"
           }
         }
       }
     },
-    "Opens the photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Öffnet das Foto"
+    "Open your event's link or scan its QR code to get started.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne den Link deines Events oder scanne den QR-Code, um loszulegen."
           }
         }
       }
     },
-    "Or type the access code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Oder gib den Zugangscode ein"
+    "Opens the photo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffnet das Foto"
           }
         }
       }
     },
-    "Organizer" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Veranstalter"
+    "Or type the access code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oder gib den Zugangscode ein"
           }
         }
       }
     },
-    "Organizer Terms" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Veranstalterbedingungen"
+    "Organizer": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veranstalter"
           }
         }
       }
     },
-    "Photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto"
+    "Organizer Terms": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veranstalterbedingungen"
           }
         }
       }
     },
-    "Photo %lld of %lld" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto %lld von %lld"
+    "Photo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto"
           }
         }
       }
     },
-    "Photo %lld of 3" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto %lld von 3"
+    "Photo %lld of %lld": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto %lld von %lld"
           }
         }
       }
     },
-    "Photo, marked as you" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto, als du markiert"
+    "Photo %lld of 3": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto %lld von 3"
           }
         }
       }
     },
-    "Photos" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos"
+    "Photo, marked as you": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto, als du markiert"
           }
         }
       }
     },
-    "Photos always display on a dark background." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos werden immer auf dunklem Hintergrund angezeigt."
+    "Photos": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos"
           }
         }
       }
     },
-    "Photos are taken automatically when everything looks good." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Fotos werden automatisch aufgenommen, wenn alles passt."
+    "Photos always display on a dark background.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos werden immer auf dunklem Hintergrund angezeigt."
           }
         }
       }
     },
-    "Photos of me are missing" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos von mir fehlen"
+    "Photos are taken automatically when everything looks good.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Fotos werden automatisch aufgenommen, wenn alles passt."
           }
         }
       }
     },
-    "Please read and accept the current Terms of Use to continue. You can still manage or delete your account without accepting." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bitte lies und akzeptiere die aktuellen Nutzungsbedingungen, um fortzufahren. Dein Konto kannst du auch ohne Zustimmung verwalten oder löschen."
+    "Photos of me are missing": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos von mir fehlen"
           }
         }
       }
     },
-    "Possible matches" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mögliche Treffer"
+    "Plays the video": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spielt das Video ab"
           }
         }
       }
     },
-    "Privacy" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutz"
+    "Please read and accept the current Terms of Use to continue. You can still manage or delete your account without accepting.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bitte lies und akzeptiere die aktuellen Nutzungsbedingungen, um fortzufahren. Dein Konto kannst du auch ohne Zustimmung verwalten oder löschen."
           }
         }
       }
     },
-    "Privacy notice" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutzhinweis"
+    "Possible matches": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mögliche Treffer"
           }
         }
       }
     },
-    "Privacy Notice" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Datenschutzerklärung"
+    "Privacy": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datenschutz"
           }
         }
       }
     },
-    "Processing" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wird verarbeitet"
+    "Privacy Notice": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datenschutzerklärung"
           }
         }
       }
     },
-    "Published" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Veröffentlicht"
+    "Privacy notice": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Datenschutzhinweis"
           }
         }
       }
     },
-    "push.moderation_pending.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gäste haben Fotos zu deinem Event hinzugefügt. Tippe, um sie zu prüfen."
+    "Processing": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird verarbeitet"
+          }
+        }
+      }
+    },
+    "Published": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Veröffentlicht"
+          }
+        }
+      }
+    },
+    "QR code to join %@": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code zum Beitritt zu %@"
+          }
+        }
+      }
+    },
+    "QR scanning isn't available on this device. Type the access code instead.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Scannen ist auf diesem Gerät nicht verfügbar. Gib stattdessen den Zugangscode ein."
+          }
+        }
+      }
+    },
+    "Raise your chin a little": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heb dein Kinn ein wenig"
+          }
+        }
+      }
+    },
+    "Reject": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ablehnen"
+          }
+        }
+      }
+    },
+    "Remove from shortlist": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aus Favoriten entfernen"
+          }
+        }
+      }
+    },
+    "Removed": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entfernt"
+          }
+        }
+      }
+    },
+    "Report": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melden"
+          }
+        }
+      }
+    },
+    "Report photo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto melden"
+          }
+        }
+      }
+    },
+    "Retry": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Review": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prüfen"
+          }
+        }
+      }
+    },
+    "Revoke": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entziehen"
+          }
+        }
+      }
+    },
+    "Revoke access?": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zugang entziehen?"
+          }
+        }
+      }
+    },
+    "Revoked": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entzogen"
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sichern"
+          }
+        }
+      }
+    },
+    "Save your photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speichere deine Fotos"
+          }
+        }
+      }
+    },
+    "Saved to Photos.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In Fotos gesichert."
+          }
+        }
+      }
+    },
+    "Scan QR code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR-Code scannen"
+          }
+        }
+      }
+    },
+    "Scan the organizer's QR code, open their link, or type the access code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scanne den QR-Code des Veranstalters, öffne seinen Link oder gib den Zugangscode ein."
+          }
+        }
+      }
+    },
+    "Search again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut suchen"
+          }
+        }
+      }
+    },
+    "Searches": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suchen"
+          }
+        }
+      }
+    },
+    "Section": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bereich"
+          }
+        }
+      }
+    },
+    "See the photos you're in and save the ones you like.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sieh dir die Fotos an, auf denen du bist, und speichere deine Favoriten."
+          }
+        }
+      }
+    },
+    "Select": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auswählen"
+          }
+        }
+      }
+    },
+    "Selects the photo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wählt das Foto aus"
+          }
+        }
+      }
+    },
+    "Send a new code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neuen Code senden"
+          }
+        }
+      }
+    },
+    "Send code": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code senden"
+          }
+        }
+      }
+    },
+    "Send report": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meldung senden"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Einstellungen"
+          }
+        }
+      }
+    },
+    "Share": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teilen"
+          }
+        }
+      }
+    },
+    "Share join link": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beitrittslink teilen"
+          }
+        }
+      }
+    },
+    "Share your photos from %@. JPEG, PNG or HEIC, up to %lld MB each.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teile deine Fotos von %@. JPEG, PNG oder HEIC, jeweils bis zu %lld MB."
+          }
+        }
+      }
+    },
+    "Shortlisted only": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nur Favoriten"
+          }
+        }
+      }
+    },
+    "Sign in": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anmelden"
+          }
+        }
+      }
+    },
+    "Sign out": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abmelden"
+          }
+        }
+      }
+    },
+    "Sign out a phone or tablet you no longer use.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Melde ein Telefon oder Tablet ab, das du nicht mehr nutzt."
+          }
+        }
+      }
+    },
+    "Signed in as": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Angemeldet als"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Überspringen"
+          }
+        }
+      }
+    },
+    "Something else": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etwas anderes"
+          }
+        }
+      }
+    },
+    "Something went wrong on our side. Try again in a moment.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei uns ist etwas schiefgelaufen. Versuch es gleich noch einmal."
+          }
+        }
+      }
+    },
+    "Start camera": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kamera starten"
+          }
+        }
+      }
+    },
+    "System": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System"
+          }
+        }
+      }
+    },
+    "Take a quick selfie": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mach ein kurzes Selfie"
+          }
+        }
+      }
+    },
+    "Take off sunglasses, masks or hats": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nimm Sonnenbrille, Maske oder Mütze ab"
+          }
+        }
+      }
+    },
+    "Take this photo now": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Foto jetzt aufnehmen"
+          }
+        }
+      }
+    },
+    "Terms of Use": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutzungsbedingungen"
+          }
+        }
+      }
+    },
+    "Terms of use": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nutzungsbedingungen"
+          }
+        }
+      }
+    },
+    "Thanks. The organizer will review this photo.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke. Der Veranstalter prüft dieses Foto."
+          }
+        }
+      }
+    },
+    "Thanks. We've told the organizer some of your photos may be missing.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Danke. Wir haben dem Veranstalter gesagt, dass Fotos von dir fehlen könnten."
+          }
+        }
+      }
+    },
+    "That QR code isn't an EventFaces event link.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser QR-Code ist kein EventFaces-Event-Link."
+          }
+        }
+      }
+    },
+    "That code didn't work. Check it and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Code hat nicht funktioniert. Prüfe ihn und versuch es erneut."
+          }
+        }
+      }
+    },
+    "That code didn't work. Check it or send a new one.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Code hat nicht funktioniert. Prüfe ihn oder fordere einen neuen an."
+          }
+        }
+      }
+    },
+    "The camera isn't available right now. Close other apps that use it and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Kamera ist gerade nicht verfügbar. Schließ andere Apps, die sie nutzen, und versuch es erneut."
+          }
+        }
+      }
+    },
+    "The consent text has changed. Close this screen and review it again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Einwilligungstext hat sich geändert. Schließ diesen Bildschirm und lies ihn erneut."
+          }
+        }
+      }
+    },
+    "The download didn't finish. Check your connection and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Download wurde nicht abgeschlossen. Prüfe deine Verbindung und versuch es erneut."
+          }
+        }
+      }
+    },
+    "The organizer reviews photos before others can see them. Photos are re-saved without location data.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Veranstalter prüft Fotos, bevor andere sie sehen. Fotos werden ohne Standortdaten neu gespeichert."
+          }
+        }
+      }
+    },
+    "The photo is blurry. Hold still and make sure the camera is in focus.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Foto ist unscharf. Halt still und achte darauf, dass die Kamera scharf stellt."
+          }
+        }
+      }
+    },
+    "The photo is too small. Use a camera with at least 640×480.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Foto ist zu klein. Nutze eine Kamera mit mindestens 640 × 480."
+          }
+        }
+      }
+    },
+    "The three photos don't seem to show the same person. Try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die drei Fotos scheinen nicht dieselbe Person zu zeigen. Versuch es erneut."
+          }
+        }
+      }
+    },
+    "The upload didn't finish. Check your connection and retry.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Upload wurde nicht abgeschlossen. Prüfe deine Verbindung und versuch es erneut."
+          }
+        }
+      }
+    },
+    "Theme": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Design"
+          }
+        }
+      }
+    },
+    "These terms have just changed. Please read the current version.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Bedingungen wurden gerade geändert. Bitte lies die aktuelle Fassung."
+          }
+        }
+      }
+    },
+    "This device": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Gerät"
+          }
+        }
+      }
+    },
+    "This document couldn't be loaded. Check your connection and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Dokument konnte nicht geladen werden. Prüfe deine Verbindung und versuch es noch einmal."
+          }
+        }
+      }
+    },
+    "This download link has expired. Try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Download-Link ist abgelaufen. Versuch es erneut."
+          }
+        }
+      }
+    },
+    "This event is invite-only. Use the link from your invitation email.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Event ist nur mit Einladung zugänglich. Nutze den Link aus deiner Einladungs-E-Mail."
+          }
+        }
+      }
+    },
+    "This event is invite-only: invite people from the web dashboard.": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Event ist nur mit Einladung zugänglich: Lade Personen über das Web-Dashboard ein."
+          }
+        }
+      }
+    },
+    "This file type isn't supported. Use JPEG, PNG or HEIC.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Dateityp wird nicht unterstützt. Nutze JPEG, PNG oder HEIC."
+          }
+        }
+      }
+    },
+    "This invitation has expired or was already used. Ask the organizer for a new one.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Einladung ist abgelaufen oder wurde schon benutzt. Bitte den Veranstalter um eine neue."
+          }
+        }
+      }
+    },
+    "This invitation is for a different email address. Sign in with the address it was sent to.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Einladung gilt für eine andere E-Mail-Adresse. Melde dich mit der Adresse an, an die sie geschickt wurde."
+          }
+        }
+      }
+    },
+    "This is me": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das bin ich"
+          }
+        }
+      }
+    },
+    "This permanently deletes your account, your event memberships, the photos you matched, the photos you uploaded and your devices. It can't be undone.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damit werden dein Konto, deine Event-Mitgliedschaften, deine Treffer, deine hochgeladenen Fotos und deine Geräte endgültig gelöscht. Das lässt sich nicht rückgängig machen."
+          }
+        }
+      }
+    },
+    "This photo is too large.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieses Foto ist zu groß."
+          }
+        }
+      }
+    },
+    "This search didn't finish. Search again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Suche wurde nicht abgeschlossen. Such erneut."
+          }
+        }
+      }
+    },
+    "This sign-in link has expired or was already used. Request a new code.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Anmeldelink ist abgelaufen oder wurde schon benutzt. Fordere einen neuen Code an."
+          }
+        }
+      }
+    },
+    "This version is no longer supported. Update the app to keep finding your photos.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Version wird nicht mehr unterstützt. Aktualisiere die App, um weiter deine Fotos zu finden."
+          }
+        }
+      }
+    },
+    "Three quick photos help us find you reliably. They're deleted right after matching.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drei kurze Fotos helfen uns, dich zuverlässig zu finden. Sie werden direkt nach dem Abgleich gelöscht."
+          }
+        }
+      }
+    },
+    "Three short shots help us find you. Your selfie is deleted right after matching.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Drei kurze Aufnahmen helfen uns, dich zu finden. Dein Selfie wird direkt nach dem Abgleich gelöscht."
+          }
+        }
+      }
+    },
+    "To manage events, please read and accept the Organizer Terms, including the data processing agreement.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Um Veranstaltungen zu verwalten, lies und akzeptiere bitte die Veranstalterbedingungen einschließlich des Auftragsverarbeitungsvertrags."
+          }
+        }
+      }
+    },
+    "Too bright: move out of direct light": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu hell: Geh aus dem direkten Licht"
+          }
+        }
+      }
+    },
+    "Too dark: face a window or lamp": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu dunkel: Schau zu einem Fenster oder einer Lampe"
+          }
+        }
+      }
+    },
+    "Too many tries. Wait a few minutes, then try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu viele Versuche. Warte ein paar Minuten und versuch es dann erneut."
+          }
+        }
+      }
+    },
+    "Too many uploads at once. Wait a little, then retry.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu viele Uploads auf einmal. Warte kurz und versuch es dann erneut."
+          }
+        }
+      }
+    },
+    "Too many wrong codes. Wait 15 minutes, then try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu viele falsche Codes. Warte 15 Minuten und versuch es dann erneut."
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erneut versuchen"
+          }
+        }
+      }
+    },
+    "Turn back toward the camera a little": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh dich wieder etwas zur Kamera"
+          }
+        }
+      }
+    },
+    "Turn on the app lock": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App-Sperre einschalten"
+          }
+        }
+      }
+    },
+    "Turn your head less: look toward the camera.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh den Kopf weniger: Schau Richtung Kamera."
+          }
+        }
+      }
+    },
+    "Turn your head slightly to your left": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh deinen Kopf leicht nach links"
+          }
+        }
+      }
+    },
+    "Turn your head slightly to your right": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dreh deinen Kopf leicht nach rechts"
+          }
+        }
+      }
+    },
+    "Unlock EventFaces": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces entsperren"
+          }
+        }
+      }
+    },
+    "Unlock with %@": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mit %@ entsperren"
+          }
+        }
+      }
+    },
+    "Update EventFaces": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "EventFaces aktualisieren"
+          }
+        }
+      }
+    },
+    "Updated terms": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aktualisierte Bedingungen"
+          }
+        }
+      }
+    },
+    "Upload progress": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Upload-Fortschritt"
+          }
+        }
+      }
+    },
+    "Uploaded and published.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hochgeladen und veröffentlicht."
+          }
+        }
+      }
+    },
+    "Uploaded photo": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hochgeladenes Foto"
+          }
+        }
+      }
+    },
+    "Uploaded. Waiting for approval.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hochgeladen. Wartet auf Freigabe."
+          }
+        }
+      }
+    },
+    "Uploading…": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wird hochgeladen …"
+          }
+        }
+      }
+    },
+    "Uploads aren't open for this event.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für dieses Event sind keine Uploads möglich."
+          }
+        }
+      }
+    },
+    "Use another email": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Andere E-Mail verwenden"
+          }
+        }
+      }
+    },
+    "Version": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version"
+          }
+        }
+      }
+    },
+    "Videos": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videos"
+          }
+        }
+      }
+    },
+    "Waiting for approval": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wartet auf Freigabe"
+          }
+        }
+      }
+    },
+    "Waiting to upload": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wartet auf Upload"
+          }
+        }
+      }
+    },
+    "We couldn't find a face. Center your face in the oval.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir konnten kein Gesicht finden. Bring dein Gesicht in das Oval."
+          }
+        }
+      }
+    },
+    "We couldn't read this image.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir konnten dieses Bild nicht lesen."
+          }
+        }
+      }
+    },
+    "We found you": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir haben dich gefunden"
+          }
+        }
+      }
+    },
+    "We'll ask for one straight photo and two with your head turned slightly.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir bitten um ein gerades Foto und zwei mit leicht gedrehtem Kopf."
+          }
+        }
+      }
+    },
+    "We'll email you a 6-digit code. No password needed.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir schicken dir einen 6-stelligen Code per E-Mail. Kein Passwort nötig."
+          }
+        }
+      }
+    },
+    "We'll notify you when your photos are ready.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir benachrichtigen dich, sobald deine Fotos bereit sind."
+          }
+        }
+      }
+    },
+    "We'll only notify you about your searches and your events. The notification never shows photos or names.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir benachrichtigen dich nur zu deinen Suchen und Events. Die Benachrichtigung zeigt nie Fotos oder Namen."
+          }
+        }
+      }
+    },
+    "We'll open it here as soon as joining events is available in the app.": {
+      "extractionState": "stale",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir öffnen ihn hier, sobald du Events in der App beitreten kannst."
+          }
+        }
+      }
+    },
+    "We'll withdraw your consent and delete the list of photos we matched for you. Your account stays. You'll be asked again before your next search.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir widerrufen deine Einwilligung und löschen die Liste deiner Treffer. Dein Konto bleibt bestehen. Vor deiner nächsten Suche fragen wir dich erneut."
+          }
+        }
+      }
+    },
+    "Why are you reporting this photo?": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warum meldest du dieses Foto?"
+          }
+        }
+      }
+    },
+    "You can't join this event: its access has ended or was revoked.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du kannst diesem Event nicht beitreten: Der Zugang ist abgelaufen oder wurde entzogen."
+          }
+        }
+      }
+    },
+    "You don't have access to this event (any more).": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast keinen Zugriff (mehr) auf dieses Event."
+          }
+        }
+      }
+    },
+    "You don't have access to this event (any more). Its photos were removed from this device.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast keinen Zugriff (mehr) auf dieses Event. Seine Fotos wurden von diesem Gerät entfernt."
+          }
+        }
+      }
+    },
+    "You were signed out. Sign in again to continue.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du wurdest abgemeldet. Melde dich erneut an, um fortzufahren."
+          }
+        }
+      }
+    },
+    "You're in %lld photos": {
+      "comment": "A pluralization rule for the phrase \"You're in X photos\".",
+      "isCommentAutoGenerated": true,
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist auf %lld Fotos"
+          }
+        }
+      }
+    },
+    "You're in 1 photo": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist auf 1 Foto"
+          }
+        }
+      }
+    },
+    "You're in the queue": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist in der Warteschlange"
+          }
+        }
+      }
+    },
+    "You're offline. Check your connection and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist offline. Prüfe deine Verbindung und versuch es erneut."
+          }
+        }
+      }
+    },
+    "You're signed in.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du bist angemeldet."
+          }
+        }
+      }
+    },
+    "You've already reported this a few times today. Try again tomorrow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast das heute schon ein paar Mal gemeldet. Versuch es morgen noch einmal."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Guests added photos to your event. Tap to review them."
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You've already reported this a few times today. Try again tomorrow."
           }
         }
       }
     },
-    "push.moderation_pending.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Fotos warten auf Freigabe"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Photos waiting for review"
+    "You've reached the upload limit for this event.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast das Upload-Limit für dieses Event erreicht."
           }
         }
       }
     },
-    "push.search_ready.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotosuche ist fertig. Tippe, um deine Fotos zu sehen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your photo search is done. Tap to see your photos."
+    "Your account and its data were deleted.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Konto und seine Daten wurden gelöscht."
           }
         }
       }
     },
-    "push.search_ready.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Fotos sind da"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Your photos are ready"
+    "Your earlier search is still in the queue. We'll let you know when it's done.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine vorherige Suche ist noch in der Warteschlange. Wir melden uns, sobald sie fertig ist."
           }
         }
       }
     },
-    "push.search_rejected.body" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tippe, um es noch einmal zu versuchen."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tap to try again."
+    "Your face isn't clearly visible. Remove sunglasses or a mask and face the light.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein Gesicht ist nicht gut zu sehen. Nimm Sonnenbrille oder Maske ab und schau ins Licht."
           }
         }
       }
     },
-    "push.search_rejected.title" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir konnten dein Selfie nicht verwenden"
+    "Your uploads": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Uploads"
+          }
+        }
+      }
+    },
+    "push.moderation_pending.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gäste haben Fotos zu deinem Event hinzugefügt. Tippe, um sie zu prüfen."
           }
         },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "We couldn't use your selfie"
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guests added photos to your event. Tap to review them."
           }
         }
       }
     },
-    "QR code to join %@" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QR-Code zum Beitritt zu %@"
+    "push.moderation_pending.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos warten auf Freigabe"
           }
-        }
-      }
-    },
-    "QR scanning isn't available on this device. Type the access code instead." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QR-Scannen ist auf diesem Gerät nicht verfügbar. Gib stattdessen den Zugangscode ein."
-          }
-        }
-      }
-    },
-    "Raise your chin a little" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heb dein Kinn ein wenig"
-          }
-        }
-      }
-    },
-    "Reject" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ablehnen"
-          }
-        }
-      }
-    },
-    "Removed" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entfernt"
-          }
-        }
-      }
-    },
-    "Report" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Melden"
-          }
-        }
-      }
-    },
-    "Report photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto melden"
-          }
-        }
-      }
-    },
-    "Retry" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erneut versuchen"
-          }
-        }
-      }
-    },
-    "Review" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prüfen"
-          }
-        }
-      }
-    },
-    "Revoke" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entziehen"
-          }
-        }
-      }
-    },
-    "Revoke access?" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zugang entziehen?"
-          }
-        }
-      }
-    },
-    "Revoked" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Entzogen"
-          }
-        }
-      }
-    },
-    "Save" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sichern"
-          }
-        }
-      }
-    },
-    "Save your photos" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Speichere deine Fotos"
-          }
-        }
-      }
-    },
-    "Saved to Photos." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In Fotos gesichert."
-          }
-        }
-      }
-    },
-    "Scan QR code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "QR-Code scannen"
-          }
-        }
-      }
-    },
-    "Scan the organizer's QR code, open their link, or type the access code." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Scanne den QR-Code des Veranstalters, öffne seinen Link oder gib den Zugangscode ein."
-          }
-        }
-      }
-    },
-    "Search again" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erneut suchen"
-          }
-        }
-      }
-    },
-    "Searches" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suchen"
-          }
-        }
-      }
-    },
-    "Section" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bereich"
-          }
-        }
-      }
-    },
-    "See the photos you're in and save the ones you like." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sieh dir die Fotos an, auf denen du bist, und speichere deine Favoriten."
-          }
-        }
-      }
-    },
-    "Select" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Auswählen"
-          }
-        }
-      }
-    },
-    "Selects the photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wählt das Foto aus"
-          }
-        }
-      }
-    },
-    "Send a new code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Neuen Code senden"
-          }
-        }
-      }
-    },
-    "Send code" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Code senden"
-          }
-        }
-      }
-    },
-    "Send report" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Meldung senden"
-          }
-        }
-      }
-    },
-    "Settings" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Einstellungen"
-          }
-        }
-      }
-    },
-    "Share" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teilen"
-          }
-        }
-      }
-    },
-    "Share join link" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beitrittslink teilen"
-          }
-        }
-      }
-    },
-    "Share your photos from %@. JPEG, PNG or HEIC, up to %lld MB each." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Teile deine Fotos von %@. JPEG, PNG oder HEIC, jeweils bis zu %lld MB."
-          }
-        }
-      }
-    },
-    "Sign in" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Anmelden"
-          }
-        }
-      }
-    },
-    "Sign out" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abmelden"
-          }
-        }
-      }
-    },
-    "Sign out a phone or tablet you no longer use." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Melde ein Telefon oder Tablet ab, das du nicht mehr nutzt."
-          }
-        }
-      }
-    },
-    "Signed in as" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Angemeldet als"
-          }
-        }
-      }
-    },
-    "Skip" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Überspringen"
-          }
-        }
-      }
-    },
-    "Something else" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Etwas anderes"
-          }
-        }
-      }
-    },
-    "Something went wrong on our side. Try again in a moment." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bei uns ist etwas schiefgelaufen. Versuch es gleich noch einmal."
-          }
-        }
-      }
-    },
-    "Start camera" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kamera starten"
-          }
-        }
-      }
-    },
-    "System" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System"
-          }
-        }
-      }
-    },
-    "Take a quick selfie" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mach ein kurzes Selfie"
-          }
-        }
-      }
-    },
-    "Take off sunglasses, masks or hats" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nimm Sonnenbrille, Maske oder Mütze ab"
-          }
-        }
-      }
-    },
-    "Take this photo now" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Foto jetzt aufnehmen"
-          }
-        }
-      }
-    },
-    "Terms of use" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nutzungsbedingungen"
-          }
-        }
-      }
-    },
-    "Terms of Use" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nutzungsbedingungen"
-          }
-        }
-      }
-    },
-    "Thanks. The organizer will review this photo." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Danke. Der Veranstalter prüft dieses Foto."
-          }
-        }
-      }
-    },
-    "Thanks. We've told the organizer some of your photos may be missing." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Danke. Wir haben dem Veranstalter gesagt, dass Fotos von dir fehlen könnten."
-          }
-        }
-      }
-    },
-    "That code didn't work. Check it and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Code hat nicht funktioniert. Prüfe ihn und versuch es erneut."
-          }
-        }
-      }
-    },
-    "That code didn't work. Check it or send a new one." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Code hat nicht funktioniert. Prüfe ihn oder fordere einen neuen an."
-          }
-        }
-      }
-    },
-    "That QR code isn't an EventFaces event link." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser QR-Code ist kein EventFaces-Event-Link."
-          }
-        }
-      }
-    },
-    "The camera isn't available right now. Close other apps that use it and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die Kamera ist gerade nicht verfügbar. Schließ andere Apps, die sie nutzen, und versuch es erneut."
-          }
-        }
-      }
-    },
-    "The consent text has changed. Close this screen and review it again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Einwilligungstext hat sich geändert. Schließ diesen Bildschirm und lies ihn erneut."
-          }
-        }
-      }
-    },
-    "The download didn't finish. Check your connection and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Download wurde nicht abgeschlossen. Prüfe deine Verbindung und versuch es erneut."
-          }
-        }
-      }
-    },
-    "The organizer reviews photos before others can see them. Photos are re-saved without location data." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Veranstalter prüft Fotos, bevor andere sie sehen. Fotos werden ohne Standortdaten neu gespeichert."
-          }
-        }
-      }
-    },
-    "The photo is blurry. Hold still and make sure the camera is in focus." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Foto ist unscharf. Halt still und achte darauf, dass die Kamera scharf stellt."
-          }
-        }
-      }
-    },
-    "The photo is too small. Use a camera with at least 640×480." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das Foto ist zu klein. Nutze eine Kamera mit mindestens 640 × 480."
-          }
-        }
-      }
-    },
-    "The three photos don't seem to show the same person. Try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Die drei Fotos scheinen nicht dieselbe Person zu zeigen. Versuch es erneut."
-          }
-        }
-      }
-    },
-    "The upload didn't finish. Check your connection and retry." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Der Upload wurde nicht abgeschlossen. Prüfe deine Verbindung und versuch es erneut."
-          }
-        }
-      }
-    },
-    "Theme" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Design"
-          }
-        }
-      }
-    },
-    "These terms have just changed. Please read the current version." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Bedingungen wurden gerade geändert. Bitte lies die aktuelle Fassung."
-          }
-        }
-      }
-    },
-    "This device" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Gerät"
-          }
-        }
-      }
-    },
-    "This document couldn't be loaded. Check your connection and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Dokument konnte nicht geladen werden. Prüfe deine Verbindung und versuch es noch einmal."
-          }
-        }
-      }
-    },
-    "This download link has expired. Try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Download-Link ist abgelaufen. Versuch es erneut."
-          }
-        }
-      }
-    },
-    "This event is invite-only: invite people from the web dashboard." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Event ist nur mit Einladung zugänglich: Lade Personen über das Web-Dashboard ein."
-          }
-        }
-      }
-    },
-    "This event is invite-only. Use the link from your invitation email." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Event ist nur mit Einladung zugänglich. Nutze den Link aus deiner Einladungs-E-Mail."
-          }
-        }
-      }
-    },
-    "This file type isn't supported. Use JPEG, PNG or HEIC." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Dateityp wird nicht unterstützt. Nutze JPEG, PNG oder HEIC."
-          }
-        }
-      }
-    },
-    "This invitation has expired or was already used. Ask the organizer for a new one." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Einladung ist abgelaufen oder wurde schon benutzt. Bitte den Veranstalter um eine neue."
-          }
-        }
-      }
-    },
-    "This invitation is for a different email address. Sign in with the address it was sent to." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Einladung gilt für eine andere E-Mail-Adresse. Melde dich mit der Adresse an, an die sie geschickt wurde."
-          }
-        }
-      }
-    },
-    "This is me" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Das bin ich"
-          }
-        }
-      }
-    },
-    "This permanently deletes your account, your event memberships, the photos you matched, the photos you uploaded and your devices. It can't be undone." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Damit werden dein Konto, deine Event-Mitgliedschaften, deine Treffer, deine hochgeladenen Fotos und deine Geräte endgültig gelöscht. Das lässt sich nicht rückgängig machen."
-          }
-        }
-      }
-    },
-    "This photo is too large." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieses Foto ist zu groß."
-          }
-        }
-      }
-    },
-    "This search didn't finish. Search again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Suche wurde nicht abgeschlossen. Such erneut."
-          }
-        }
-      }
-    },
-    "This sign-in link has expired or was already used. Request a new code." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dieser Anmeldelink ist abgelaufen oder wurde schon benutzt. Fordere einen neuen Code an."
-          }
-        }
-      }
-    },
-    "This version is no longer supported. Update the app to keep finding your photos." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Diese Version wird nicht mehr unterstützt. Aktualisiere die App, um weiter deine Fotos zu finden."
-          }
-        }
-      }
-    },
-    "Three quick photos help us find you reliably. They're deleted right after matching." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drei kurze Fotos helfen uns, dich zuverlässig zu finden. Sie werden direkt nach dem Abgleich gelöscht."
-          }
-        }
-      }
-    },
-    "Three short shots help us find you. Your selfie is deleted right after matching." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Drei kurze Aufnahmen helfen uns, dich zu finden. Dein Selfie wird direkt nach dem Abgleich gelöscht."
-          }
-        }
-      }
-    },
-    "To manage events, please read and accept the Organizer Terms, including the data processing agreement." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Um Veranstaltungen zu verwalten, lies und akzeptiere bitte die Veranstalterbedingungen einschließlich des Auftragsverarbeitungsvertrags."
-          }
-        }
-      }
-    },
-    "Too bright: move out of direct light" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu hell: Geh aus dem direkten Licht"
-          }
-        }
-      }
-    },
-    "Too dark: face a window or lamp" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu dunkel: Schau zu einem Fenster oder einer Lampe"
-          }
-        }
-      }
-    },
-    "Too many tries. Wait a few minutes, then try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu viele Versuche. Warte ein paar Minuten und versuch es dann erneut."
-          }
-        }
-      }
-    },
-    "Too many uploads at once. Wait a little, then retry." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu viele Uploads auf einmal. Warte kurz und versuch es dann erneut."
-          }
-        }
-      }
-    },
-    "Too many wrong codes. Wait 15 minutes, then try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Zu viele falsche Codes. Warte 15 Minuten und versuch es dann erneut."
-          }
-        }
-      }
-    },
-    "Try again" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Erneut versuchen"
-          }
-        }
-      }
-    },
-    "Turn back toward the camera a little" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh dich wieder etwas zur Kamera"
-          }
-        }
-      }
-    },
-    "Turn on the app lock" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "App-Sperre einschalten"
-          }
-        }
-      }
-    },
-    "Turn your head less: look toward the camera." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh den Kopf weniger: Schau Richtung Kamera."
-          }
-        }
-      }
-    },
-    "Turn your head slightly to your left" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh deinen Kopf leicht nach links"
-          }
-        }
-      }
-    },
-    "Turn your head slightly to your right" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dreh deinen Kopf leicht nach rechts"
-          }
-        }
-      }
-    },
-    "Unlock EventFaces" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces entsperren"
-          }
-        }
-      }
-    },
-    "Unlock with %@" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mit %@ entsperren"
-          }
-        }
-      }
-    },
-    "Update EventFaces" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "EventFaces aktualisieren"
-          }
-        }
-      }
-    },
-    "Updated terms" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aktualisierte Bedingungen"
-          }
-        }
-      }
-    },
-    "Upload progress" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Upload-Fortschritt"
-          }
-        }
-      }
-    },
-    "Uploaded and published." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hochgeladen und veröffentlicht."
-          }
-        }
-      }
-    },
-    "Uploaded photo" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hochgeladenes Foto"
-          }
-        }
-      }
-    },
-    "Uploaded. Waiting for approval." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hochgeladen. Wartet auf Freigabe."
-          }
-        }
-      }
-    },
-    "Uploading…" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wird hochgeladen …"
-          }
-        }
-      }
-    },
-    "Uploads aren't open for this event." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Für dieses Event sind keine Uploads möglich."
-          }
-        }
-      }
-    },
-    "Use another email" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Andere E-Mail verwenden"
-          }
-        }
-      }
-    },
-    "Version" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Version"
-          }
-        }
-      }
-    },
-    "Waiting for approval" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wartet auf Freigabe"
-          }
-        }
-      }
-    },
-    "Waiting to upload" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wartet auf Upload"
-          }
-        }
-      }
-    },
-    "We couldn't find a face. Center your face in the oval." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir konnten kein Gesicht finden. Bring dein Gesicht in das Oval."
-          }
-        }
-      }
-    },
-    "We couldn't read this image." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir konnten dieses Bild nicht lesen."
-          }
-        }
-      }
-    },
-    "We found you" : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir haben dich gefunden"
-          }
-        }
-      }
-    },
-    "We'll ask for one straight photo and two with your head turned slightly." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir bitten um ein gerades Foto und zwei mit leicht gedrehtem Kopf."
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Photos waiting for review"
           }
         }
       }
     },
-    "We'll email you a 6-digit code. No password needed." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir schicken dir einen 6-stelligen Code per E-Mail. Kein Passwort nötig."
+    "push.search_ready.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Fotosuche ist fertig. Tippe, um deine Fotos zu sehen."
           }
-        }
-      }
-    },
-    "We'll notify you when your photos are ready." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir benachrichtigen dich, sobald deine Fotos bereit sind."
-          }
-        }
-      }
-    },
-    "We'll only notify you about your searches and your events. The notification never shows photos or names." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir benachrichtigen dich nur zu deinen Suchen und Events. Die Benachrichtigung zeigt nie Fotos oder Namen."
-          }
-        }
-      }
-    },
-    "We'll open it here as soon as joining events is available in the app." : {
-      "extractionState" : "stale",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir öffnen ihn hier, sobald du Events in der App beitreten kannst."
-          }
-        }
-      }
-    },
-    "We'll withdraw your consent and delete the list of photos we matched for you. Your account stays. You'll be asked again before your next search." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wir widerrufen deine Einwilligung und löschen die Liste deiner Treffer. Dein Konto bleibt bestehen. Vor deiner nächsten Suche fragen wir dich erneut."
-          }
-        }
-      }
-    },
-    "Why are you reporting this photo?" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Warum meldest du dieses Foto?"
-          }
-        }
-      }
-    },
-    "You can't join this event: its access has ended or was revoked." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du kannst diesem Event nicht beitreten: Der Zugang ist abgelaufen oder wurde entzogen."
-          }
-        }
-      }
-    },
-    "You don't have access to this event (any more)." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du hast keinen Zugriff (mehr) auf dieses Event."
-          }
-        }
-      }
-    },
-    "You don't have access to this event (any more). Its photos were removed from this device." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du hast keinen Zugriff (mehr) auf dieses Event. Seine Fotos wurden von diesem Gerät entfernt."
-          }
-        }
-      }
-    },
-    "You were signed out. Sign in again to continue." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du wurdest abgemeldet. Melde dich erneut an, um fortzufahren."
-          }
-        }
-      }
-    },
-    "You're in %lld photos" : {
-      "comment" : "A pluralization rule for the phrase \"You're in X photos\".",
-      "isCommentAutoGenerated" : true,
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist auf %lld Fotos"
-          }
-        }
-      }
-    },
-    "You're in 1 photo" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist auf 1 Foto"
-          }
-        }
-      }
-    },
-    "You're in the queue" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist in der Warteschlange"
-          }
-        }
-      }
-    },
-    "You're offline. Check your connection and try again." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist offline. Prüfe deine Verbindung und versuch es erneut."
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your photo search is done. Tap to see your photos."
           }
         }
       }
     },
-    "You're signed in." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du bist angemeldet."
+    "push.search_ready.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deine Fotos sind da"
           }
-        }
-      }
-    },
-    "You've reached the upload limit for this event." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Du hast das Upload-Limit für dieses Event erreicht."
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your photos are ready"
           }
         }
       }
     },
-    "Your account and its data were deleted." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dein Konto und seine Daten wurden gelöscht."
+    "push.search_rejected.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tippe, um es noch einmal zu versuchen."
           }
-        }
-      }
-    },
-    "Your earlier search is still in the queue. We'll let you know when it's done." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine vorherige Suche ist noch in der Warteschlange. Wir melden uns, sobald sie fertig ist."
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tap to try again."
           }
         }
       }
     },
-    "Your face isn't clearly visible. Remove sunglasses or a mask and face the light." : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dein Gesicht ist nicht gut zu sehen. Nimm Sonnenbrille oder Maske ab und schau ins Licht."
+    "push.search_rejected.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir konnten dein Selfie nicht verwenden"
           }
-        }
-      }
-    },
-    "Your uploads" : {
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Deine Uploads"
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We couldn't use your selfie"
           }
         }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }
