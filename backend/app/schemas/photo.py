@@ -52,6 +52,7 @@ class PhotoAdminOut(BaseModel):
     width: int | None
     height: int | None
     face_count: int
+    download_count: int
     error: str | None
     created_at: dt.datetime
 

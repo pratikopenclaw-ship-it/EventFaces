@@ -98,6 +98,7 @@ def list_photos(
     limit: Annotated[int, Query(ge=1, le=200)] = 60,
     index_status: IndexStatus | None = None,
     photo_status: Annotated[PhotoStatus | None, Query(alias="status")] = None,
+    sort: Literal["created_at", "downloads"] = "created_at",
 ) -> PhotoPage:
     where = [Photo.event_id == event.id, Photo.status != PhotoStatus.removed]
     if index_status is not None:
@@ -105,9 +106,12 @@ def list_photos(
     if photo_status is not None:
         where.append(Photo.status == photo_status)
     total = db.scalar(select(func.count()).select_from(Photo).where(*where)) or 0
-    items = db.scalars(
-        select(Photo).where(*where).order_by(Photo.created_at.desc(), Photo.id).offset(offset).limit(limit)
-    ).all()
+    order = (
+        (Photo.download_count.desc(), Photo.created_at.desc())
+        if sort == "downloads"
+        else (Photo.created_at.desc(),)
+    )
+    items = db.scalars(select(Photo).where(*where).order_by(*order, Photo.id).offset(offset).limit(limit)).all()
     return PhotoPage(items=[PhotoAdminOut.model_validate(p) for p in items], total=total)
 
 

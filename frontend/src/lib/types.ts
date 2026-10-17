@@ -115,6 +115,7 @@ export interface PhotoAdmin {
   width: number | null;
   height: number | null;
   face_count: number;
+  download_count: number;
   error: string | null;
   created_at: string;
 }

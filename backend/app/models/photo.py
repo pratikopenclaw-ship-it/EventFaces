@@ -55,6 +55,9 @@ class Photo(Base):
     height: Mapped[int | None] = mapped_column(Integer)
     sha256: Mapped[str | None] = mapped_column(String(64))
     face_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    # A plain aggregate (never tied to who downloaded): not personal data, so it isn't part
+    # of the retention/anonymization paths that cover faces and grants.
+    download_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
