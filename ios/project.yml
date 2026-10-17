@@ -1,6 +1,10 @@
 # Generate the Xcode project: ios/scripts/bootstrap.sh (runs `xcodegen generate`).
 # EventFaces.xcodeproj is generated and git-ignored; this file is the source of truth.
 name: EventFaces
+configs:
+  Debug: debug
+  Debug-Demo: debug
+  Release: release
 options:
   bundleIdPrefix: app.eventfaces
   deploymentTarget:
@@ -59,6 +63,14 @@ targets:
           INFOPLIST_FILE: EventFaces/Resources/Info-Debug.plist
           API_BASE_URL: "http://localhost:8000"
           APP_LINK_HOST: "localhost"
+        # Points a physical device at the dev stack over Tailscale Funnel, for demos off
+        # the simulator; normal `Debug` (localhost) is untouched for day-to-day work.
+        Debug-Demo:
+          INFOPLIST_FILE: EventFaces/Resources/Info-Debug.plist
+          API_BASE_URL: "https://eventface.tailffeb2f.ts.net"
+          APP_LINK_HOST: "eventface.tailffeb2f.ts.net"
+          # Personal/free Apple ID teams can't provision aps-environment (push).
+          CODE_SIGN_ENTITLEMENTS: EventFaces/Resources/EventFaces-Demo.entitlements
         Release:
           INFOPLIST_FILE: EventFaces/Resources/Info.plist
           # Set per deployment (xcodebuild API_BASE_URL=... or a .xcconfig); https only (ATS).
@@ -100,3 +112,9 @@ schemes:
       targets:
         - EventFacesTests
         - EventFacesUITests
+  EventFaces-Demo:
+    build:
+      targets:
+        EventFaces: all
+    run:
+      config: Debug-Demo

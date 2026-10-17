@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Push capability dropped: free personal Apple ID teams can't provision
+	     aps-environment. Hardware demo builds run without push; everything else
+	     is unaffected (push is best-effort, never required for a feature to work). -->
+</dict>
+</plist>
