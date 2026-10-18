@@ -9,8 +9,9 @@ const nextConfig: NextConfig = {
   output: "standalone", // slim production image (see Dockerfile "prod" stage)
   poweredByHeader: false,
   // Dev server only: lets the containerised Playwright run (Linux Firefox, see README
-  // "Tests") load the app as http://web:3000 on the compose network. No effect on builds.
-  allowedDevOrigins: ["web"],
+  // "Tests") load the app as http://web:3000 on the compose network, and (when set) a
+  // Tailscale Funnel hostname for demos. No effect on builds.
+  allowedDevOrigins: ["web", ...(process.env.ALLOWED_DEV_ORIGIN ? [process.env.ALLOWED_DEV_ORIGIN] : [])],
   async rewrites() {
     return [{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }];
   },

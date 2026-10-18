@@ -18,10 +18,11 @@ final class ResultsModel {
     private(set) var busy = false
     var selecting = false
     var selected: Set<String> = []
+    var shortlistedOnly = false
     /// A file ready to share (ZIP or JPEG); the view presents the share sheet.
     var shareFile: URL?
 
-    enum Message: Equatable { case missingReported, saved, downloadFailed, saveFailed, expired, failed }
+    enum Message: Equatable { case missingReported, saved, downloadFailed, saveFailed, expired, tooManyReports, failed }
 
     init(eventID: String, service: EventService, session: SessionManager, config: AppConfig) {
         self.eventID = eventID
@@ -32,10 +33,11 @@ final class ResultsModel {
 
     func photos(in section: Section) -> [MyPhoto] {
         photos.filter {
+            guard !shortlistedOnly || $0.shortlisted else { return false }
             switch section {
-            case .best: $0.tier == .best
-            case .possible: $0.tier == .possible
-            case .uploads: $0.tier == nil
+            case .best: return $0.tier == .best
+            case .possible: return $0.tier == .possible
+            case .uploads: return $0.tier == nil
             }
         }
     }
@@ -78,10 +80,26 @@ final class ResultsModel {
         }
     }
 
+    func toggleShortlist(_ photo: MyPhoto) async {
+        let add = !photo.shortlisted
+        guard let i = photos.firstIndex(where: { $0.id == photo.id }) else { return }
+        photos[i].shortlisted = add  // optimistic; the toggle is idempotent server-side
+        do {
+            try await service.shortlist(eventID: eventID, photoID: photo.id, add: add)
+        } catch AppError.noAccess {
+            await lostAccess()
+        } catch {
+            if let i = photos.firstIndex(where: { $0.id == photo.id }) { photos[i].shortlisted = !add }
+            message = .failed
+        }
+    }
+
     func reportMissing() async {
         do {
             try await service.reportMissing(eventID: eventID)
             message = .missingReported
+        } catch AppError.tooManyAttempts {
+            message = .tooManyReports
         } catch {
             message = .failed
         }

@@ -155,7 +155,15 @@ final class CaptureModel {
     }
 
     private func jpeg(_ frame: CVPixelBuffer) -> Data? {
-        let image = CIImage(cvPixelBuffer: frame)
+        // `AVCaptureVideoDataOutput` delivers buffers in the sensor's native (landscape)
+        // orientation regardless of `connection.videoRotationAngle`: that property only
+        // affects compatible display/encode consumers (preview layer, movie output), not
+        // raw sample-buffer delegate callbacks. Rotate explicitly so the encoded JPEG is
+        // actually portrait and upright — confirmed by real-device `selfie_quality` rows
+        // showing width > height and ~90° roll before this fix. `.right` corrected the
+        // aspect ratio but produced an upside-down face (`no_face`, confirmed live); `.left`
+        // is the other 90° direction.
+        let image = CIImage(cvPixelBuffer: frame).oriented(.left)
         // A fresh encode: no EXIF/GPS (the server re-encodes anyway).
         return ciContext.jpegRepresentation(of: image, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                                             options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: 0.9])

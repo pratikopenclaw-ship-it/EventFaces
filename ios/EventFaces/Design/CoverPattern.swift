@@ -9,10 +9,16 @@ struct CoverPattern: View {
     let rows: Int
     var tint: Color = Palette.onAccent
 
+    // Enough tiles to fill `rows` rows even at the narrowest columns ever produced (22pt
+    // tiles can't fit more than this many across any device). The web's equivalent
+    // (`grid-template-columns: repeat(auto-fill, minmax(22px, 1fr))`) computes its actual
+    // column count from the container's width; `.adaptive` is the SwiftUI equivalent — a
+    // fixed column *count* (the previous bug) forced a ~1226pt-wide grid regardless of
+    // screen width, pushing this view's content past the screen edge.
     private static let columns = 44
 
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 22), spacing: 6), count: Self.columns), spacing: 6) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 22), spacing: 6)], spacing: 6) {
             ForEach(Array(tiles.enumerated()), id: \.offset) { _, tile in
                 RoundedRectangle(cornerRadius: 3)
                     .fill(tint.opacity(tile.found ? 0.55 : tile.opacity))

@@ -6,6 +6,10 @@ x-backend: &backend
     args:
       DEV: "1"  # test & security tooling (not in production images)
   env_file: .env
+  environment:
+    # Overridable via --env-file .env.demo without editing .env (Compose var substitution
+    # reaches `environment:`, unlike `env_file:`, which it doesn't re-interpolate).
+    FRONTEND_URL: ${FRONTEND_URL}
   volumes:
     - ./backend:/app
   depends_on:
@@ -81,6 +85,9 @@ services:
     environment:
       API_INTERNAL_URL: http://api:8000
       STORAGE_PUBLIC_ORIGIN: http://localhost:8333
+      # Lets Next's dev server accept requests through a Tailscale Funnel hostname
+      # (set via --env-file .env.demo); unset = disabled, as in normal dev.
+      ALLOWED_DEV_ORIGIN: ${ALLOWED_DEV_ORIGIN:-}
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -89,6 +96,28 @@ services:
     depends_on:
       api: { condition: service_healthy }
 
+  # Exposes the dev `web` container to the internet for demos, via Tailscale Funnel.
+  # Off by default: only starts with `docker compose --profile demo up -d tailscale`.
+  # Needs TS_AUTHKEY in .env (git-ignored). Use --env-file .env.demo for FRONTEND_URL
+  # so emailed links (verify/reset/invite) point at the public hostname.
+  tailscale:
+    image: tailscale/tailscale:latest
+    profiles: ["demo"]
+    restart: unless-stopped
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY}
+      TS_HOSTNAME: eventface
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "true"
+    volumes:
+      - tailscale_state:/var/lib/tailscale
+      - ./infra/tailscale/funnel-persist.sh:/funnel-persist.sh:ro
+    entrypoint: ["/bin/sh", "/funnel-persist.sh"]
+    depends_on:
+      web:
+        condition: service_started
+
 volumes:
   pgdata:
   s3data:
+  tailscale_state:

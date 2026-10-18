@@ -27,7 +27,9 @@ struct ResultsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header(results)
-                if let message = results.message { banner(message).onTapGesture { results.dismissMessage() } }
+                if !results.photos.isEmpty {
+                    shortlistFilterButton(results)
+                }
                 if results.noAccess {
                     Banner(kind: .error, text: Text("You don't have access to this event (any more). Its photos were removed from this device."))
                         .accessibilityIdentifier("results-no-access")
@@ -74,6 +76,21 @@ struct ResultsView: View {
         // bar's identifiers.
         .accessibilityIdentifier("results")
         .refreshable { await results.load() }
+        // Pinned regardless of scroll position: the triggering buttons (e.g. "Photos of me
+        // are missing") can sit far below the fold, where an inline banner would render
+        // out of view and look like the tap did nothing.
+        .safeAreaInset(edge: .top) {
+            if let message = results.message {
+                banner(message).onTapGesture { results.dismissMessage() }.padding(16).padding(.bottom, 0)
+            }
+        }
+        // Auto-dismiss: `.task(id:)` cancels the previous sleep whenever the message
+        // changes (including back to nil), so a new banner always gets its own full delay.
+        .task(id: results.message) {
+            guard results.message != nil else { return }
+            try? await Task.sleep(for: .seconds(4))
+            if !Task.isCancelled { results.dismissMessage() }
+        }
         .safeAreaInset(edge: .bottom) {
             if results.selecting { actionBar(results) }
         }
@@ -108,6 +125,22 @@ struct ResultsView: View {
     }
 
     @ViewBuilder
+    private func shortlistFilterButton(_ results: ResultsModel) -> some View {
+        // Two distinct branches, not a ternary on .buttonStyle(): mixing two concrete
+        // ButtonStyle types in one expression defeats the compiler's type inference.
+        if results.shortlistedOnly {
+            Button { results.shortlistedOnly = false } label: { Label("Shortlisted only", systemImage: "star.fill") }
+                .buttonStyle(.primary)
+                .accessibilityIdentifier("shortlisted-only")
+                .accessibilityAddTraits([.isSelected])
+        } else {
+            Button { results.shortlistedOnly = true } label: { Label("Shortlisted only", systemImage: "star") }
+                .buttonStyle(.secondary)
+                .accessibilityIdentifier("shortlisted-only")
+        }
+    }
+
+    @ViewBuilder
     private func headline(_ results: ResultsModel) -> some View {
         switch results.matchCount {
         case 0: Text("No photos of you yet")
@@ -125,38 +158,55 @@ struct ResultsView: View {
 
     private func tile(_ photo: MyPhoto, results: ResultsModel) -> some View {
         let isSelected = results.selected.contains(photo.id)
-        return Button {
-            if results.selecting { results.toggle(photo.id) } else if let i = results.ordered.firstIndex(where: { $0.id == photo.id }) { viewerStart = ViewerStart(index: i) }
-        } label: {
-            // Sized to its own aspect ratio by the enclosing JustifiedRows layout; clipped
-            // so a thumbnail that hasn't finished downsampling never spills over.
-            Color.clear
-                .overlay { CachedPhoto(eventID: eventID, photoID: photo.id, variant: "thumb", maxPixel: 360) }
-                .clipped()
-                .overlay(alignment: .topLeading) {
-                    if results.selecting {
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                            .font(.title3)
-                            .foregroundStyle(isSelected ? Palette.accent : .white)
-                            .shadow(radius: 2)
-                            .padding(6)
+        // A ZStack, not a nested Button inside this Button's label: the shortlist star
+        // needs its own independent tap target, which a Button nested in another
+        // Button's label can't reliably get.
+        return ZStack(alignment: .topTrailing) {
+            Button {
+                if results.selecting { results.toggle(photo.id) } else if let i = results.ordered.firstIndex(where: { $0.id == photo.id }) { viewerStart = ViewerStart(index: i) }
+            } label: {
+                // Sized to its own aspect ratio by the enclosing JustifiedRows layout; clipped
+                // so a thumbnail that hasn't finished downsampling never spills over.
+                Color.clear
+                    .overlay { CachedPhoto(eventID: eventID, photoID: photo.id, variant: "thumb", maxPixel: 360) }
+                    .clipped()
+                    .overlay(alignment: .topLeading) {
+                        if results.selecting {
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.title3)
+                                .foregroundStyle(isSelected ? Palette.accent : .white)
+                                .shadow(radius: 2)
+                                .padding(6)
+                        }
                     }
-                }
-                .overlay(alignment: .bottomTrailing) {
-                    if photo.verdict == .me {
-                        Image(systemName: "person.fill.checkmark").foregroundStyle(.white).padding(6).shadow(radius: 2)
+                    .overlay(alignment: .bottomTrailing) {
+                        if photo.verdict == .me {
+                            Image(systemName: "person.fill.checkmark").foregroundStyle(.white).padding(6).shadow(radius: 2)
+                        }
                     }
+                    .clipShape(.rect(cornerRadius: 6))
+                    // Color.clear isn't hit-testable: without this a tile whose thumbnail is
+                    // still loading ignores taps.
+                    .contentShape(.rect(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(photo.verdict == .me ? "Photo, marked as you" : "Photo"))
+            .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+            .accessibilityHint(results.selecting ? Text("Selects the photo") : Text("Opens the photo"))
+            .accessibilityIdentifier("photo-\(photo.id)")
+
+            if !results.selecting {
+                Button { Task { await results.toggleShortlist(photo) } } label: {
+                    Image(systemName: photo.shortlisted ? "star.fill" : "star")
+                        .foregroundStyle(photo.shortlisted ? .yellow : .white)
+                        .shadow(radius: 2)
+                        .padding(6)
                 }
-                .clipShape(.rect(cornerRadius: 6))
-                // Color.clear isn't hit-testable: without this a tile whose thumbnail is
-                // still loading ignores taps.
-                .contentShape(.rect(cornerRadius: 6))
+                .buttonStyle(.tapTarget)
+                .accessibilityIdentifier("shortlist-\(photo.id)")
+                .accessibilityLabel(Text(photo.shortlisted ? "Remove from shortlist" : "Add to shortlist"))
+            }
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Text(photo.verdict == .me ? "Photo, marked as you" : "Photo"))
-        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
-        .accessibilityHint(results.selecting ? Text("Selects the photo") : Text("Opens the photo"))
-        .accessibilityIdentifier("photo-\(photo.id)")
     }
 
     private func actionBar(_ results: ResultsModel) -> some View {
@@ -192,6 +242,7 @@ struct ResultsView: View {
         case .downloadFailed: Banner(kind: .error, text: Text("The download didn't finish. Check your connection and try again."))
         case .saveFailed: Banner(kind: .error, text: Text("Couldn't save to Photos. Allow EventFaces to add photos in Settings."))
         case .expired: Banner(kind: .error, text: Text("This download link has expired. Try again."))
+        case .tooManyReports: Banner(kind: .error, text: Text("You've already reported this a few times today. Try again tomorrow."))
         case .failed: Banner(kind: .error, text: Text("Something went wrong on our side. Try again in a moment."))
         }
     }

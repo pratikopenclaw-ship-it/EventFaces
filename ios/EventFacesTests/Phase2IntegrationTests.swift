@@ -83,6 +83,56 @@ struct Phase2IntegrationTests {
         #expect(try await events.myPhotos(eventID: joined.id).count == result.matches.count)
     }
 
+    @Test func shortlistingAMatchedPhotoTogglesItInMyPhotos() async throws {
+        _ = try await post("__e2e/reset")
+        let event = try await post("__e2e/event")
+        let code = try #require(event["code"] as? String)
+        let (_, events) = try await signedIn("ios-shortlist-\(UUID().uuidString.prefix(6).lowercased())@example.com")
+        let joined = try await events.join(code: code.lowercased())
+        _ = try await events.giveConsent(version: try await events.consent().version)
+
+        var shots: [(name: String, jpeg: Data)] = []
+        for name in ["front", "left", "right"] {
+            let (data, _) = try await TestNet.session.data(from: Self.api.appending(path: "__e2e/selfie/\(name).jpg"))
+            shots.append((name, data))
+        }
+        let outcome = try await events.search(eventID: joined.id, captureToken: try await events.captureToken(eventID: joined.id), shots: shots)
+        guard case let .found(result) = outcome else { Issue.record("expected matches, got \(outcome)"); return }
+        let photoID = try #require(result.matches.first?.id)
+
+        var photos = try await events.photos(eventID: joined.id)
+        #expect(photos.first { $0.id == photoID }?.shortlisted == false)
+
+        try await events.shortlist(eventID: joined.id, photoID: photoID, add: true)
+        photos = try await events.photos(eventID: joined.id)
+        #expect(photos.first { $0.id == photoID }?.shortlisted == true)
+
+        try await events.shortlist(eventID: joined.id, photoID: photoID, add: false)
+        photos = try await events.photos(eventID: joined.id)
+        #expect(photos.first { $0.id == photoID }?.shortlisted == false)
+    }
+
+    @Test func organizerAddedVideosAreListedForAttendees() async throws {
+        _ = try await post("__e2e/reset")
+        let event = try await post("__e2e/event")
+        let eventID = try #require(event["id"] as? String)
+        let orgEmail = "ios-organizer-\(UUID().uuidString.prefix(6).lowercased())@example.com"
+        _ = try await post("__e2e/event/\(eventID)/organizer", query: [URLQueryItem(name: "email", value: orgEmail)])
+        let (_, organizer) = try await signedIn(orgEmail)
+
+        let (_, attendee) = try await signedIn("ios-attendee-\(UUID().uuidString.prefix(6).lowercased())@example.com")
+        _ = try await attendee.join(code: try #require(event["code"] as? String))
+
+        #expect(try await attendee.videos(eventID: eventID).isEmpty)
+
+        _ = try await organizer.api.eventsAddEventVideo(
+            path: .init(eventId: eventID),
+            body: .json(.init(title: "Highlights", url: "https://youtu.be/dQw4w9WgXcQ"))
+        )
+        let videos = try await attendee.videos(eventID: eventID)
+        #expect(videos.count == 1 && videos[0].title == "Highlights" && videos[0].provider == "youtube")
+    }
+
     @Test func aBlurrySelfieIsRejectedWithItsReason() async throws {
         _ = try await post("__e2e/reset")
         let event = try await post("__e2e/event")

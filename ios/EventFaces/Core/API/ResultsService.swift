@@ -66,6 +66,22 @@ extension EventService {
         }
     }
 
+    /// Shortlists or un-shortlists one of this user's own matched/uploaded photos. Idempotent
+    /// on the server, so a toggle that lands twice (e.g. a retry) is harmless.
+    func shortlist(eventID: String, photoID: String, add: Bool) async throws {
+        if add {
+            switch try await call2({ try await api.searchAddToShortlist(path: .init(photoId: photoID, eventId: eventID)) }) {
+            case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+            default: return  // 204 No Content
+            }
+        } else {
+            switch try await call2({ try await api.searchRemoveFromShortlist(path: .init(photoId: photoID, eventId: eventID)) }) {
+            case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+            default: return  // 204 No Content
+            }
+        }
+    }
+
     private func call2<T>(_ op: () async throws -> T) async throws -> T {
         do { return try await op() } catch let error as ClientError { throw error.underlyingError }
     }
