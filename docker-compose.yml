@@ -20,6 +20,7 @@ x-backend: &backend
 services:
   db:
     image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -36,6 +37,7 @@ services:
   redis:
     image: redis:7.4.11-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
     command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\""]
+    restart: unless-stopped
     env_file: .env
     healthcheck:
       test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$REDIS_PASSWORD\" redis-cli ping | grep -q PONG"]
@@ -47,6 +49,7 @@ services:
   s3:
     image: chrislusf/seaweedfs:latest@sha256:4e61d15fd35994cb1e43e1e553dff106794841fd9a99ade2fc8c8bfce4d7872d
     entrypoint: ["/entrypoint.sh"]
+    restart: unless-stopped
     env_file: .env
     volumes:
       - ./infra/seaweedfs/entrypoint.sh:/entrypoint.sh:ro
@@ -59,11 +62,13 @@ services:
 
   mailpit:
     image: axllent/mailpit:latest@sha256:ed9b00c609e77e99c79b93f1178255ebc271868920f2c69a8d166bd5634ed10d
+    restart: unless-stopped
     ports: ["127.0.0.1:8025:8025"]  # shows verification/reset emails: never expose beyond localhost
 
   api:
     <<: *backend
     command: sh -c "alembic upgrade head && python -m app.cli init-storage && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    restart: unless-stopped
     ports: ["127.0.0.1:8000:8000"]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
@@ -73,15 +78,18 @@ services:
   worker:
     <<: *backend
     command: celery -A app.workers.celery_app worker --loglevel=info --concurrency=2 -Q celery,index
+    restart: unless-stopped
 
   beat:
     <<: *backend
     command: celery -A app.workers.celery_app beat --loglevel=info --schedule /tmp/celerybeat-schedule
+    restart: unless-stopped
 
   web:
     build:
       context: ./frontend
       target: dev
+    restart: unless-stopped
     environment:
       API_INTERNAL_URL: http://api:8000
       STORAGE_PUBLIC_ORIGIN: http://localhost:8333
