@@ -15,7 +15,7 @@ from app.core.db import SessionLocal
 from app.models import Event, Face, MemberRole, ModerationMode, Photo, PhotoReport, PhotoStatus, SearchGrant, UserRole
 from app.services import photo_pipeline
 from app.services.search import FACE_CONSENT_VERSION
-from tests.helpers import half_photo, jpeg_with_gps, png_bytes, search_as
+from tests.helpers import half_photo, jpeg_with_gps, png_bytes, search_as, solid_jpeg
 
 LEFT_PERSON = 0
 
@@ -24,8 +24,18 @@ LEFT_PERSON = 0
 def setup(make_user, login_as, make_event, add_member):
     """(event, uploader client, searcher client, organizer client) for a guest-upload event."""
 
-    def _make(moderation: ModerationMode = ModerationMode.auto, enabled: bool = True, prefix: str = ""):
-        event = make_event("Wedding", guest_upload_enabled=enabled, moderation_mode=moderation)
+    def _make(
+        moderation: ModerationMode = ModerationMode.auto,
+        enabled: bool = True,
+        prefix: str = "",
+        auto_publish_faceless: bool = True,
+    ):
+        event = make_event(
+            "Wedding",
+            guest_upload_enabled=enabled,
+            moderation_mode=moderation,
+            auto_publish_faceless_photos=auto_publish_faceless,
+        )
         uploader_user = make_user(f"{prefix}guest@example.com")
         searcher_user = make_user(f"{prefix}searcher@example.com")
         org_user = make_user(f"{prefix}org@example.com", UserRole.organizer)
@@ -74,6 +84,33 @@ def test_auto_moderated_upload_is_stripped_indexed_and_searchable(setup, db: Ses
     mine = uploader.get(f"/api/events/{event.id}/my-uploads").json()
     assert [(u["id"], u["status"]) for u in mine] == [(str(pid), "published")]
     assert str(pid) in {p["id"] for p in uploader.get(f"/api/events/{event.id}/my-photos").json()}
+
+
+def test_faceless_upload_held_for_review_when_auto_publish_disabled(setup, db: Session) -> None:
+    """Even under auto moderation, a photo with no detected face waits for an organizer
+    when the event opts out of auto-publishing faceless photos."""
+    event, uploader, searcher, org = setup(ModerationMode.auto, auto_publish_faceless=False)
+    start, _, done = upload(uploader, event, solid_jpeg())
+    pid = start["photo_id"]
+    assert done.json()["status"] == "pending_review"
+
+    photo = db.get(Photo, uuid.UUID(pid))
+    assert photo.face_count == 0 and photo.status == PhotoStatus.pending_review
+    assert _search(searcher, event) == []
+
+    queue = org.get(f"/api/events/{event.id}/moderation").json()
+    assert [q["id"] for q in queue] == [pid] and queue[0]["face_count"] == 0
+    assert org.post(f"/api/events/{event.id}/photos/{pid}/moderate", json={"action": "approve"}).status_code == 204
+    db.expire_all()
+    assert db.get(Photo, uuid.UUID(pid)).status == PhotoStatus.published
+
+
+def test_faced_upload_still_auto_published_when_faceless_toggle_disabled(setup, db: Session) -> None:
+    event, uploader, searcher, _ = setup(ModerationMode.auto, auto_publish_faceless=False)
+    start, _, done = upload(uploader, event, jpeg_with_gps(half_photo("left")))
+    assert done.json()["status"] == "published"
+    assert db.get(Photo, uuid.UUID(start["photo_id"])).face_count == 3
+    assert _search(searcher, event) == [start["photo_id"]]
 
 
 def test_manual_moderation_hides_photo_until_approved(setup, db: Session) -> None:

@@ -29,6 +29,10 @@ class Event(Base):
     moderation_mode: Mapped[ModerationMode] = mapped_column(
         Enum(ModerationMode, name="moderation_mode"), nullable=False, default=ModerationMode.manual
     )
+    # When a photo is indexed with zero detected faces: publish it straight away (default,
+    # matches prior behaviour) or hold it as `pending_review` for an organizer to approve
+    # via the moderation queue, same as under `moderation_mode.manual`.
+    auto_publish_faceless_photos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     allow_selfie_file_upload: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     delete_photos_on_expiry: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     drive_folder_id: Mapped[str | None] = mapped_column(String(200))

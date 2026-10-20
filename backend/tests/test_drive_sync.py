@@ -79,6 +79,25 @@ def test_sync_imports_indexes_and_dedupes(organizer, db) -> None:
     assert client.get("/api/events").json()[0]["photo_count"] == 2
 
 
+def test_faceless_photos_held_for_review_when_auto_publish_disabled(make_user, login_as, make_event, add_member, db) -> None:
+    user = make_user("strict-org@example.com", UserRole.organizer)
+    event = make_event("Strict Gala", drive_folder_id=FOLDER, auto_publish_faceless_photos=False)
+    add_member(event, user, role=MemberRole.organizer)
+    client = login_as(user)
+    drive.set_drive_client(FakeDrive({FOLDER: {"f1": ("group.jpg", group_photo_bytes()), "f2": ("sky.jpg", solid_jpeg())}}))
+
+    assert client.post(f"/api/events/{event.id}/sync").status_code == 202
+    group, sky = _photos(db, event.id)
+    assert group.status == PhotoStatus.published and group.face_count == 6
+    assert sky.status == PhotoStatus.pending_review and sky.face_count == 0
+
+    queue = client.get(f"/api/events/{event.id}/moderation").json()
+    assert [q["id"] for q in queue] == [str(sky.id)] and queue[0]["face_count"] == 0
+    assert client.post(f"/api/events/{event.id}/photos/{sky.id}/moderate", json={"action": "approve"}).status_code == 204
+    db.expire_all()
+    assert db.get(Photo, sky.id).status == PhotoStatus.published
+
+
 def test_sync_paginates(organizer, db) -> None:
     client, event = organizer
     files = {f"f{i}": (f"p{i}.jpg", solid_jpeg((i * 20, 50, 50))) for i in range(5)}
