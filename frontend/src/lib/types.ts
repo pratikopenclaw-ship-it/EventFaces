@@ -120,11 +120,25 @@ export interface PhotoAdmin {
   download_count: number;
   error: string | null;
   created_at: string;
+  /** Set when an organizer shared this (faceless) photo with every member. */
+  shared_at: string | null;
 }
 
 export interface PhotoPage {
   items: PhotoAdmin[];
   total: number;
+}
+
+/** A photo the organizers shared with everyone (never has a face). */
+export interface SharedPhoto {
+  id: string;
+  width: number | null;
+  height: number | null;
+}
+
+export interface ShareResult {
+  changed: number;
+  skipped: number;
 }
 
 export interface ConsentSection {

@@ -240,6 +240,9 @@ def index_photo(db: Session, photo_id: uuid.UUID) -> int:
         for f in faces
     )
     photo.face_count = len(faces)
+    if faces:
+        # Shared photos must never show a face to everyone (services/sharing.py).
+        photo.shared_at = photo.shared_by = None
     photo.index_status = IndexStatus.indexed
     photo.indexed_at = utcnow()
     photo.error = None
@@ -294,6 +297,7 @@ def retire_photo(db: Session, photo: Photo, status: PhotoStatus) -> None:
     storage.delete_keys(photo.upload_key, photo.original_key, photo.preview_key, photo.thumb_key)
     photo.upload_key = photo.original_key = photo.preview_key = photo.thumb_key = None
     photo.face_count = 0
+    photo.shared_at = photo.shared_by = None
     photo.status = status
 
 

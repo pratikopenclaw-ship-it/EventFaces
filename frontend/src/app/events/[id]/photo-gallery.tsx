@@ -8,13 +8,13 @@ import type { DownloadTicket, MatchedPhoto, Verdict } from "@/lib/types";
 
 import { ReportDialog } from "./report-dialog";
 
-const SECTIONS = [
+type Section = { key: string; title: string; note: string | null };
+
+const SECTIONS: Section[] = [
   { key: "best", title: "Best matches", note: null },
   { key: "possible", title: "Possible matches", note: "Less certain. Please tell us if these are you." },
   { key: "upload", title: "Your uploads", note: null },
-] as const;
-
-const sectionOf = (p: MatchedPhoto) => p.tier ?? "upload";
+];
 
 export function PhotoGallery({
   eventId,
@@ -22,6 +22,8 @@ export function PhotoGallery({
   onVerdict,
   onShortlistChange,
   reveal = false,
+  heading,
+  shortlist = true,
 }: {
   eventId: string;
   photos: MatchedPhoto[];
@@ -29,9 +31,15 @@ export function PhotoGallery({
   onShortlistChange?: (photoId: string, shortlisted: boolean) => void;
   /** Fresh search results: play the one-time reveal (globals.css, "Results reveal"). */
   reveal?: boolean;
+  /** One section with this title instead of best / possible / uploads (shared photos). */
+  heading?: string;
+  /** Show the shortlist star (the shortlist only holds matched and own photos). */
+  shortlist?: boolean;
 }) {
+  const sections: Section[] = heading ? [{ key: "all", title: heading, note: null }] : SECTIONS;
+  const sectionOf = (p: MatchedPhoto) => (heading ? "all" : (p.tier ?? "upload"));
   // Best first, then possible, then own uploads; the lightbox walks this order.
-  const photos = SECTIONS.flatMap((s) => unordered.filter((p) => sectionOf(p) === s.key));
+  const photos = sections.flatMap((s) => unordered.filter((p) => sectionOf(p) === s.key));
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [open, setOpen] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -149,7 +157,7 @@ export function PhotoGallery({
         </div>
       </div>
 
-      {SECTIONS.map((section) => {
+      {sections.map((section) => {
         const items = photos.filter((p) => sectionOf(p) === section.key);
         if (items.length === 0) return null;
         return (
@@ -195,14 +203,16 @@ export function PhotoGallery({
                           className="size-4 accent-accent"
                         />
                       </label>
-                      <button
-                        onClick={() => void toggleShortlist(p)}
-                        aria-pressed={p.shortlisted}
-                        aria-label={p.shortlisted ? "Remove from shortlist" : "Add to shortlist"}
-                        className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-paper/90 text-lg leading-none shadow"
-                      >
-                        <span className={p.shortlisted ? "text-accent" : "text-ink/40"}>{p.shortlisted ? "★" : "☆"}</span>
-                      </button>
+                      {shortlist && (
+                        <button
+                          onClick={() => void toggleShortlist(p)}
+                          aria-pressed={p.shortlisted}
+                          aria-label={p.shortlisted ? "Remove from shortlist" : "Add to shortlist"}
+                          className="absolute right-2 top-2 flex size-7 items-center justify-center rounded-full bg-paper/90 text-lg leading-none shadow"
+                        >
+                          <span className={p.shortlisted ? "text-accent" : "text-ink/40"}>{p.shortlisted ? "★" : "☆"}</span>
+                        </button>
+                      )}
                     </div>
                     {p.tier && (
                       <div className="flex items-center justify-between gap-1 px-2 py-1.5 text-xs">
@@ -257,13 +267,15 @@ export function PhotoGallery({
               <Button variant="secondary" disabled={busy} onClick={() => void download([current.id])}>
                 Download
               </Button>
-              <Button
-                variant="ghost"
-                className="text-ink hover:bg-mist hover:text-ink"
-                onClick={() => void toggleShortlist(current)}
-              >
-                {current.shortlisted ? "★ Shortlisted" : "☆ Shortlist"}
-              </Button>
+              {shortlist && (
+                <Button
+                  variant="ghost"
+                  className="text-ink hover:bg-mist hover:text-ink"
+                  onClick={() => void toggleShortlist(current)}
+                >
+                  {current.shortlisted ? "★ Shortlisted" : "☆ Shortlist"}
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 className="text-ink hover:bg-mist hover:text-ink"

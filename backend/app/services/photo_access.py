@@ -1,7 +1,8 @@
 """Who may view/download a photo. The caller must already have checked event membership.
 
 - Organizers of the event (and super admins): any non-removed photo in the event.
-- Attendees: only *published* photos they matched (unexpired grant) or uploaded.
+- Attendees: only *published* photos they matched (unexpired grant) or uploaded, plus
+  photos an organizer shared with everyone (services/sharing.py), which never have a face.
 """
 
 import uuid
@@ -44,7 +45,8 @@ def viewable_photos(db: Session, event: Event, user: User, photo_ids: Iterable[u
         photos = {
             pid: p
             for pid, p in photos.items()
-            if p.status == PhotoStatus.published and (pid in granted or p.uploaded_by == user.id)
+            if p.status == PhotoStatus.published
+            and (pid in granted or p.uploaded_by == user.id or (p.shared_at is not None and p.face_count == 0))
         }
     return [photos[i] for i in ids if i in photos]
 

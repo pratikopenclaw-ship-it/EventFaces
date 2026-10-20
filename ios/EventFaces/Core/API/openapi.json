@@ -633,6 +633,10 @@
             "title": "Allow Selfie File Upload",
             "type": "boolean"
           },
+          "auto_publish_faceless_photos": {
+            "title": "Auto Publish Faceless Photos",
+            "type": "boolean"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -698,6 +702,7 @@
           "join_mode",
           "access_code",
           "moderation_mode",
+          "auto_publish_faceless_photos",
           "delete_photos_on_expiry",
           "created_at"
         ],
@@ -718,6 +723,11 @@
           "allow_selfie_file_upload": {
             "default": false,
             "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "auto_publish_faceless_photos": {
+            "default": true,
+            "title": "Auto Publish Faceless Photos",
             "type": "boolean"
           },
           "date": {
@@ -960,6 +970,10 @@
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "auto_publish_faceless_photos": {
+            "title": "Auto Publish Faceless Photos",
             "type": "boolean"
           },
           "date": {
@@ -2124,6 +2138,11 @@
             "title": "Original Filename",
             "type": "string"
           },
+          "shared_at": {
+            "format": "date-time",
+            "title": "Shared At",
+            "type": "string"
+          },
           "source": {
             "$ref": "#/components/schemas/PhotoSource"
           },
@@ -2837,6 +2856,83 @@
           }
         },
         "title": "ServiceAccountOut",
+        "type": "object"
+      },
+      "ShareFacelessIn": {
+        "properties": {
+          "confirm_no_people": {
+            "title": "Confirm No People",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "confirm_no_people"
+        ],
+        "title": "ShareFacelessIn",
+        "type": "object"
+      },
+      "SharePhotosIn": {
+        "properties": {
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Photo Ids",
+            "type": "array"
+          },
+          "shared": {
+            "title": "Shared",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "photo_ids",
+          "shared"
+        ],
+        "title": "SharePhotosIn",
+        "type": "object"
+      },
+      "ShareResultOut": {
+        "properties": {
+          "changed": {
+            "title": "Changed",
+            "type": "integer"
+          },
+          "skipped": {
+            "title": "Skipped",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "changed",
+          "skipped"
+        ],
+        "title": "ShareResultOut",
+        "type": "object"
+      },
+      "SharedPhotoOut": {
+        "properties": {
+          "height": {
+            "title": "Height",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "width": {
+            "title": "Width",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "SharedPhotoOut",
         "type": "object"
       },
       "ShotQualityOut": {
@@ -5378,6 +5474,7 @@
     },
     "/api/events/{event_id}/photos": {
       "get": {
+        "description": "`faceless=true`: only photos that may be shared with everyone (services/sharing.py).",
         "operationId": "photos_list_photos",
         "parameters": [
           {
@@ -5445,6 +5542,25 @@
               "title": "Sort",
               "type": "string"
             }
+          },
+          {
+            "in": "query",
+            "name": "faceless",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "Faceless",
+              "type": "boolean"
+            }
+          },
+          {
+            "in": "query",
+            "name": "shared",
+            "required": false,
+            "schema": {
+              "title": "Shared",
+              "type": "boolean"
+            }
           }
         ],
         "responses": {
@@ -5470,6 +5586,113 @@
           }
         },
         "summary": "List Photos",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/share": {
+      "post": {
+        "description": "Share (or unshare) photos with every member. Photos with a face are skipped.",
+        "operationId": "photos_share_photos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SharePhotosIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareResultOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Share Photos",
+        "tags": [
+          "photos"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photos/share-faceless": {
+      "post": {
+        "operationId": "photos_share_all_faceless",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShareFacelessIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShareResultOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Share All Faceless",
         "tags": [
           "photos"
         ]
@@ -6295,6 +6518,78 @@
         "summary": "Search Status",
         "tags": [
           "search"
+        ]
+      }
+    },
+    "/api/events/{event_id}/shared-photos": {
+      "get": {
+        "description": "Photos the organizers shared with everyone (no faces): no selfie needed.",
+        "operationId": "photos_list_shared_photos",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "maximum": 1000000,
+              "minimum": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 500,
+              "maximum": 500,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SharedPhotoOut"
+                  },
+                  "title": "Response Photos List Shared Photos",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Shared Photos",
+        "tags": [
+          "photos"
         ]
       }
     },

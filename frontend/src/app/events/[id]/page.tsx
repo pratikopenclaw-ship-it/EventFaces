@@ -12,6 +12,7 @@ import { useApi } from "@/lib/use-api";
 
 import { FindPhotos } from "./find-photos";
 import { GuestUpload } from "./guest-upload";
+import { SharedPhotos } from "./shared-photos";
 import { VideoSection } from "./video-section";
 
 export default function EventPage() {
@@ -32,6 +33,7 @@ export default function EventPage() {
       {event.description && <p className="-mt-2 mb-8 max-w-2xl whitespace-pre-line text-muted">{event.description}</p>}
       <div className="space-y-10">
         <FindPhotos event={event} />
+        <SharedPhotos eventId={event.id} />
         {/* Uploading doesn't need face-search consent: that consent covers the user's own selfie. */}
         {event.guest_upload_enabled && <GuestUpload event={event} />}
         <VideoSection eventId={event.id} />

@@ -62,6 +62,13 @@ class Photo(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # Set when an organizer shares a published photo with no detected face with every
+    # member of the event (services/sharing.py). Cleared when faces are found or the photo
+    # is retired; photo_access only honours it for face_count == 0.
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    shared_by: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")
+    )
 
 
 class Face(Base):
