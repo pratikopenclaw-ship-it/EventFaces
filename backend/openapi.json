@@ -699,6 +699,10 @@
             "title": "Allow Selfie File Upload",
             "type": "boolean"
           },
+          "auto_publish_faceless_photos": {
+            "title": "Auto Publish Faceless Photos",
+            "type": "boolean"
+          },
           "created_at": {
             "format": "date-time",
             "title": "Created At",
@@ -787,6 +791,7 @@
           "join_mode",
           "access_code",
           "moderation_mode",
+          "auto_publish_faceless_photos",
           "delete_photos_on_expiry",
           "drive_folder_id",
           "created_at"
@@ -822,6 +827,11 @@
           "allow_selfie_file_upload": {
             "default": false,
             "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "auto_publish_faceless_photos": {
+            "default": true,
+            "title": "Auto Publish Faceless Photos",
             "type": "boolean"
           },
           "date": {
@@ -1182,6 +1192,17 @@
               }
             ],
             "title": "Allow Selfie File Upload"
+          },
+          "auto_publish_faceless_photos": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Publish Faceless Photos"
           },
           "date": {
             "anyOf": [

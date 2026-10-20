@@ -245,8 +245,13 @@ def index_photo(db: Session, photo_id: uuid.UUID) -> int:
     photo.error = None
     if photo.status == PhotoStatus.processing:
         # Drive photos and auto-moderated guest uploads go live once indexed. Guest uploads
-        # under manual moderation are `pending_review` and wait for an organizer.
-        photo.status = PhotoStatus.published
+        # under manual moderation are `pending_review` and wait for an organizer. A photo
+        # with no detected face is held the same way when the event opts out of
+        # auto-publishing faceless photos, regardless of source or moderation mode.
+        if len(faces) == 0 and not event.auto_publish_faceless_photos:
+            photo.status = PhotoStatus.pending_review
+        else:
+            photo.status = PhotoStatus.published
     db.commit()
     return len(faces)
 

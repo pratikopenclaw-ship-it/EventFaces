@@ -41,6 +41,7 @@ export interface EventAdmin extends EventPublic {
   join_mode: JoinMode;
   access_code: string;
   moderation_mode: ModerationMode;
+  auto_publish_faceless_photos: boolean;
   delete_photos_on_expiry: boolean;
   drive_folder_id: string | null;
   created_at: string;
@@ -54,6 +55,7 @@ export interface EventInput {
   access_expires_at: string | null;
   guest_upload_enabled: boolean;
   moderation_mode: ModerationMode;
+  auto_publish_faceless_photos: boolean;
   allow_selfie_file_upload: boolean;
   delete_photos_on_expiry: boolean;
   drive_folder: string | null;
