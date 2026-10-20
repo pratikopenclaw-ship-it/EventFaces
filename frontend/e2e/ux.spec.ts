@@ -16,8 +16,8 @@ test("@xb admin tabs fit the screen, every tab is reachable, and no 'No date' no
   await expect(page.getByRole("heading", { name: event.name })).toBeVisible();
   await noSidewaysScroll(page);
   for (const tab of ["Settings", "Access", "Members", "Photos", "Moderation", "Match quality"]) {
-    await page.getByRole("tab", { name: tab }).click();
-    await expect(page.getByRole("tab", { name: tab })).toHaveAttribute("aria-selected", "true");
+    await page.getByRole("tab", { name: tab, exact: true }).click();
+    await expect(page.getByRole("tab", { name: tab, exact: true })).toHaveAttribute("aria-selected", "true");
     await noSidewaysScroll(page);
   }
   await expect(page.getByText("No date")).toHaveCount(0);
