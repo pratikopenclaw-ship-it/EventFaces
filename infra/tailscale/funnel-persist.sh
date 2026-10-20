@@ -42,7 +42,12 @@ while true; do
   # A Mac sleep/wake can leave tailscaled's control-plane connection stale without the
   # container itself crashing or exiting, so `restart: unless-stopped` never fires; poll
   # actual backend state (not just local funnel config) and force a reconnect if it drops.
-  if ! tailscale --socket=/var/run/tailscale/tailscaled.sock status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
+  # Plain (non-JSON) status prints "Logged in" lines only once actually connected and
+  # exits non-zero on "Tailscale is stopped"/not-running backends; avoids brittle JSON
+  # key/space matching (status --json pretty-prints "BackendState": "Running" with a
+  # space, which an exact-match grep silently never matches, forcing a reconnect loop
+  # every poll and never giving the public Funnel DNS record a chance to settle).
+  if ! tailscale --socket=/var/run/tailscale/tailscaled.sock status >/dev/null 2>&1; then
     reconnect
     continue
   fi
