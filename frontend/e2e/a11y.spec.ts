@@ -159,11 +159,12 @@ for (const scheme of ["light", "dark"] as const) {
         "Access",
         "Members",
         "Photos",
+        "Shared photos",
         "Moderation",
         "Match quality",
       ]) {
-        await page.getByRole("tab", { name: tab }).click();
-        await expect(page.getByRole("tab", { name: tab })).toHaveAttribute(
+        await page.getByRole("tab", { name: tab, exact: true }).click();
+        await expect(page.getByRole("tab", { name: tab, exact: true })).toHaveAttribute(
           "aria-selected",
           "true",
         );

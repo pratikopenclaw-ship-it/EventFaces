@@ -88,12 +88,12 @@ export function SharedPanel({ event }: { event: EventAdmin }) {
       {notice && <Alert kind="success">{notice}</Alert>}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div role="tablist" className="flex gap-1">
+        <div role="group" aria-label="Filter" className="flex gap-1">
           {FILTERS.map((f) => (
             <button
               key={f.key}
-              role="tab"
-              aria-selected={filter === f.key}
+              type="button"
+              aria-pressed={filter === f.key}
               onClick={() => {
                 setFilter(f.key);
                 setSelected(new Set());
