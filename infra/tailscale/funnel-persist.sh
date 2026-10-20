@@ -28,11 +28,24 @@ apply_funnel() {
   tailscale --socket=/var/run/tailscale/tailscaled.sock funnel --bg --https 443 "$BACKEND"
 }
 
+reconnect() {
+  log "WARNING: not connected to the coordination server, re-authenticating..."
+  tailscale --socket=/var/run/tailscale/tailscaled.sock up --authkey="$TS_AUTHKEY" --hostname="$TS_HOSTNAME" --accept-routes --accept-dns=false
+  apply_funnel
+}
+
 apply_funnel
 
-log "Monitoring funnel status..."
+log "Monitoring funnel + connectivity..."
 while true; do
-  sleep 300
+  sleep 60
+  # A Mac sleep/wake can leave tailscaled's control-plane connection stale without the
+  # container itself crashing or exiting, so `restart: unless-stopped` never fires; poll
+  # actual backend state (not just local funnel config) and force a reconnect if it drops.
+  if ! tailscale --socket=/var/run/tailscale/tailscaled.sock status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
+    reconnect
+    continue
+  fi
   if ! tailscale --socket=/var/run/tailscale/tailscaled.sock funnel status | grep -q "$BACKEND"; then
     log "WARNING: funnel config missing, reapplying..."
     apply_funnel
