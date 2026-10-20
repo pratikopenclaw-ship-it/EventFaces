@@ -17,13 +17,13 @@ test("admin logs in, creates an event and syncs Drive (mocked Drive API)", async
   await expect(page).toHaveURL(/\/admin\/events\/[0-9a-f-]{36}\?tab=access/);
   const id = page.url().match(/events\/([0-9a-f-]{36})/)![1];
 
-  await page.getByRole("tab", { name: "Photos" }).click();
+  await page.getByRole("tab", { name: "Photos", exact: true }).click();
   await page.getByRole("button", { name: "Sync now" }).click();
   await expect
     .poll(async () => (await (await page.request.get(`/api/events/${id}/sync`)).json()).published_photos, { timeout: 90_000 })
     .toBe(3);
   await page.reload();
-  await page.getByRole("tab", { name: "Photos" }).click();
+  await page.getByRole("tab", { name: "Photos", exact: true }).click();
   await expect(page.getByText("Published photos")).toBeVisible();
   await expect(page.getByRole("img", { name: "left.jpg" })).toBeVisible();
   expect((await request.get(`${API}/api/health`)).ok()).toBeTruthy();
