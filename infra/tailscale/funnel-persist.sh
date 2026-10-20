@@ -63,7 +63,8 @@ while true; do
   # A Mac sleep/wake can leave tailscaled's control-plane connection stale without the
   # container itself crashing or exiting, so `restart: unless-stopped` never fires; poll
   # actual backend state (not just local funnel config) and force a reconnect if it drops.
-  if ! ts status --json 2>/dev/null | grep -q '"BackendState":"Running"'; then
+  # `status --json` is pretty-printed ("BackendState": "Running"), so allow the space.
+  if ! ts status --json 2>/dev/null | grep -Eq '"BackendState": *"Running"'; then
     reconnect "not connected to the coordination server"
     continue
   fi
