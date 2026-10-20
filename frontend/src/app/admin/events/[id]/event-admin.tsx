@@ -27,15 +27,17 @@ import { MatchQualityPanel } from "./match-quality-panel";
 import { MembersPanel } from "./members-panel";
 import { ModerationPanel } from "./moderation-panel";
 import { PhotosPanel } from "./photos-panel";
+import { SharedPanel } from "./shared-panel";
 import { VideosPanel } from "./videos-panel";
 
-export type Tab = "settings" | "access" | "members" | "photos" | "videos" | "moderation" | "quality";
+export type Tab = "settings" | "access" | "members" | "photos" | "shared" | "videos" | "moderation" | "quality";
 
 const LABELS: Record<Tab, string> = {
   settings: "Settings",
   access: "Access",
   members: "Members",
   photos: "Photos",
+  shared: "Shared photos",
   videos: "Videos",
   moderation: "Moderation",
   quality: "Match quality",
@@ -88,6 +90,7 @@ export function EventAdminView({ id, initialTab }: { id: string; initialTab: Tab
       {tab === "access" && <AccessPanel event={event} onChange={setData} />}
       {tab === "members" && <MembersPanel eventId={event.id} />}
       {tab === "photos" && <PhotosPanel event={event} onEditSettings={() => setTab("settings")} />}
+      {tab === "shared" && <SharedPanel event={event} />}
       {tab === "videos" && <VideosPanel eventId={event.id} />}
       {tab === "moderation" && <ModerationPanel event={event} />}
       {tab === "quality" && <MatchQualityPanel eventId={event.id} />}

@@ -9,8 +9,18 @@ from sqlalchemy import func, select
 from app.api.deps import DB, ManagedEvent, MemberEvent, VerifiedUser
 from app.core import rate_limit, storage
 from app.models import DriveSyncRun, Face, IndexStatus, Photo, PhotoStatus, SyncStatus, UserRole
-from app.schemas.photo import PhotoAdminOut, PhotoPage, PipelineCounts, SyncRunOut, SyncStatusOut
-from app.services import drive, watermark
+from app.schemas.photo import (
+    PhotoAdminOut,
+    PhotoPage,
+    PipelineCounts,
+    ShareFacelessIn,
+    SharedPhotoOut,
+    SharePhotosIn,
+    ShareResultOut,
+    SyncRunOut,
+    SyncStatusOut,
+)
+from app.services import drive, sharing, watermark
 from app.services.imaging import PREVIEW_QUALITY, THUMB_QUALITY
 from app.services.photo_access import viewable_photo
 from app.services.photo_pipeline import active_sync_run
@@ -99,12 +109,19 @@ def list_photos(
     index_status: IndexStatus | None = None,
     photo_status: Annotated[PhotoStatus | None, Query(alias="status")] = None,
     sort: Literal["created_at", "downloads"] = "created_at",
+    faceless: bool = False,
+    shared: bool | None = None,
 ) -> PhotoPage:
+    """`faceless=true`: only photos that may be shared with everyone (services/sharing.py)."""
     where = [Photo.event_id == event.id, Photo.status != PhotoStatus.removed]
     if index_status is not None:
         where.append(Photo.index_status == index_status)
     if photo_status is not None:
         where.append(Photo.status == photo_status)
+    if faceless:
+        where.append(sharing.shareable_clause())
+    if shared is not None:
+        where.append(Photo.shared_at.is_not(None) if shared else Photo.shared_at.is_(None))
     total = db.scalar(select(func.count()).select_from(Photo).where(*where)) or 0
     order = (
         (Photo.download_count.desc(), Photo.created_at.desc())
@@ -113,6 +130,38 @@ def list_photos(
     )
     items = db.scalars(select(Photo).where(*where).order_by(*order, Photo.id).offset(offset).limit(limit)).all()
     return PhotoPage(items=[PhotoAdminOut.model_validate(p) for p in items], total=total)
+
+
+@router.post("/events/{event_id}/photos/share", response_model=ShareResultOut)
+def share_photos(body: SharePhotosIn, event: ManagedEvent, user: VerifiedUser, db: DB) -> ShareResultOut:
+    """Share (or unshare) photos with every member. Photos with a face are skipped."""
+    try:
+        changed, skipped = sharing.set_shared(db, event, user, body.photo_ids, body.shared)
+    except sharing.SharingUnavailable as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from e
+    return ShareResultOut(changed=changed, skipped=skipped)
+
+
+@router.post("/events/{event_id}/photos/share-faceless", response_model=ShareResultOut)
+def share_all_faceless(body: ShareFacelessIn, event: ManagedEvent, user: VerifiedUser, db: DB) -> ShareResultOut:
+    if not body.confirm_no_people:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Confirm that no person is recognizable in these photos")
+    try:
+        changed = sharing.share_all_faceless(db, event, user)
+    except sharing.SharingUnavailable as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e)) from e
+    return ShareResultOut(changed=changed, skipped=0)
+
+
+@router.get("/events/{event_id}/shared-photos", response_model=list[SharedPhotoOut])
+def list_shared_photos(
+    event: MemberEvent,
+    db: DB,
+    offset: Annotated[int, Query(ge=0, le=1_000_000)] = 0,
+    limit: Annotated[int, Query(ge=1, le=500)] = 500,
+) -> list[SharedPhotoOut]:
+    """Photos the organizers shared with everyone (no faces): no selfie needed."""
+    return [SharedPhotoOut.model_validate(p) for p in sharing.shared_photos(db, event, offset, limit)]
 
 
 @router.get("/events/{event_id}/photos/{photo_id}/{variant}")

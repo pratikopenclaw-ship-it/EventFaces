@@ -1,7 +1,7 @@
 import datetime as dt
 import uuid
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, StrictBool
 
 from app.models.enums import IndexStatus, PhotoSource, PhotoStatus, SyncStatus
 
@@ -55,8 +55,32 @@ class PhotoAdminOut(BaseModel):
     download_count: int
     error: str | None
     created_at: dt.datetime
+    shared_at: dt.datetime | None = None
 
 
 class PhotoPage(BaseModel):
     items: list[PhotoAdminOut]
     total: int
+
+
+class SharePhotosIn(BaseModel):
+    photo_ids: list[uuid.UUID] = Field(min_length=1, max_length=500)
+    shared: StrictBool
+
+
+class ShareFacelessIn(BaseModel):
+    # The organizer confirms they looked: "no face detected" doesn't mean "no people".
+    confirm_no_people: StrictBool
+
+
+class ShareResultOut(BaseModel):
+    changed: int
+    skipped: int
+
+
+class SharedPhotoOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: uuid.UUID
+    width: int | None
+    height: int | None
