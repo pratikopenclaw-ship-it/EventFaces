@@ -65,7 +65,7 @@ export function SharedPanel({ event }: { event: EventAdmin }) {
         "Only continue if nobody is recognizable.",
     );
     if (!ok) return;
-    void run(`/api/events/${event.id}/photos/share-faceless`, { confirm_no_people: true }, (r) => `${r.changed} photos shared.`);
+    void run(`/api/events/${event.id}/photos/share-faceless`, { confirm_no_people: true }, (r) => `${r.changed} ${r.changed === 1 ? "photo" : "photos"} shared.`);
   }
 
   function toggle(id: string) {
