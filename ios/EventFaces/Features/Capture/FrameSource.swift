@@ -13,6 +13,9 @@ protocol FrameSource: AnyObject {
     func stop()
     /// Which shot the user is on: the fake source shows the matching test frame.
     func setShot(_ shot: CaptureShot)
+    /// How this source's buffers must be turned to show an upright portrait face, for both
+    /// live guidance and the uploaded JPEG (the camera's are sideways; the fake's upright).
+    var orientation: CGImagePropertyOrientation { get }
 }
 
 enum CaptureShot: String, CaseIterable, Sendable {
@@ -29,6 +32,9 @@ enum CameraError: Error, Equatable {
 @MainActor
 final class CameraFrameSource: NSObject, FrameSource {
     var onFrame: ((CVPixelBuffer) -> Void)?
+    /// Sample buffers arrive in the sensor's landscape orientation whatever
+    /// `videoRotationAngle` says (confirmed on a real device; `.right` gave an upside-down face).
+    let orientation: CGImagePropertyOrientation = .left
     private(set) var previewLayer: AVCaptureVideoPreviewLayer?
     // Used from the camera queue only after configuration (Apple's documented pattern).
     nonisolated(unsafe) private let session = AVCaptureSession()
@@ -88,6 +94,8 @@ extension CameraFrameSource: AVCaptureVideoDataOutputSampleBufferDelegate {
 @MainActor
 final class FakeFrameSource: FrameSource {
     var onFrame: ((CVPixelBuffer) -> Void)?
+    /// The test selfies are already upright portrait JPEGs.
+    let orientation: CGImagePropertyOrientation = .up
     var previewLayer: AVCaptureVideoPreviewLayer? { nil }
     private(set) var latest: UIImage?
     private var frames: [CaptureShot: CVPixelBuffer] = [:]
