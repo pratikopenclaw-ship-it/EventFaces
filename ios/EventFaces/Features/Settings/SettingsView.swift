@@ -92,6 +92,10 @@ struct SettingsView: View {
                     RowAction(title: "Legal notice", color: Palette.accent) { shownDocument = .imprint }
                         .accessibilityIdentifier("about-imprint")
                     Divider().overlay(Palette.border)
+                    RowAction(title: "Contact us", color: Palette.accent) { openURL(model.config.contactURL) }
+                        .accessibilityIdentifier("about-contact")
+                        .accessibilityHint(Text("Opens the contact form on the website"))
+                    Divider().overlay(Palette.border)
                     ValueRow(title: "Version", value: model.config.appVersion)
                 }
             }

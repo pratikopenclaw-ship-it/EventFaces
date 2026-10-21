@@ -118,6 +118,42 @@ final class Phase2UITests: XCTestCase {
         }
     }
 
+    /// Photos the organizers shared (no faces) open from the event screen without consent
+    /// or a selfie, in the same grid and viewer, minus verdicts, shortlist and "missing".
+    func testSharedEventPhotosNeedNoSelfie() throws {
+        _ = post("__e2e/reset")
+        let event = post("__e2e/event")
+        let eventID = try XCTUnwrap(event["id"] as? String)
+        let accessCode = try XCTUnwrap(event["code"] as? String)
+        let shared = try XCTUnwrap(post("__e2e/event/\(eventID)/shared-photo")["id"] as? String)
+        launchSignedIn()
+
+        app.buttons["join-event"].tap()
+        let codeField = app.textFields["access-code-field"]
+        XCTAssertTrue(codeField.waitForExistence(timeout: 5))
+        codeField.tap()
+        codeField.typeText(accessCode)
+        app.buttons["join-with-code"].tap()
+
+        let open = app.buttons["event-photos"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15))
+        open.tap()
+        let tile = app.buttons["photo-\(shared)"]
+        XCTAssertTrue(tile.waitForExistence(timeout: 15))
+        XCTAssertFalse(app.buttons["shortlist-\(shared)"].exists)
+        XCTAssertFalse(app.buttons["shortlisted-only"].exists)
+        XCTAssertFalse(app.buttons["missing"].exists)
+        try audit()
+        tile.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["viewer"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["verdict-me"].exists)
+        XCTAssertTrue(app.buttons["viewer-save"].exists)
+        try audit()
+        app.buttons["viewer-close"].tap()
+        app.buttons["sheet-close"].tap()
+        XCTAssertTrue(app.buttons["find-my-photos"].waitForExistence(timeout: 5))
+    }
+
     func testAWrongAccessCodeIsExplained() throws {
         _ = post("__e2e/reset")
         _ = post("__e2e/event")
