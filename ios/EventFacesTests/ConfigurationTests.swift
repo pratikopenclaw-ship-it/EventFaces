@@ -31,8 +31,11 @@ struct ConfigurationTests {
 
     @Test func releaseTalksHTTPSOnly() throws {
         let project = try String(contentsOf: repoRoot.appending(path: "ios/project.yml"), encoding: .utf8)
-        let release = try #require(project.range(of: "Release:")).upperBound
-        let line = try #require(project[release...].split(separator: "\n").first { $0.contains("API_BASE_URL:") })
+        // The app target's `Release:` settings block, not the top-level `Release: release`
+        // config list (Debug's localhost URL comes right after that one).
+        let lines = project.split(separator: "\n")
+        let release = try #require(lines.firstIndex { $0.trimmingCharacters(in: .whitespaces) == "Release:" })
+        let line = try #require(lines[release...].first { $0.contains("API_BASE_URL:") })
         #expect(line.contains("\"https://"))
     }
 
