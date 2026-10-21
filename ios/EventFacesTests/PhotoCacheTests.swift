@@ -73,9 +73,9 @@ struct ResultsModelTests {
     }
 
     nonisolated static let photosJSON = #"""
-    [{"id":"aaaaaaaa-0000-0000-0000-000000000001","width":10,"height":10,"similarity":0.9,"tier":"best","verdict":null,"expires_at":null},
-     {"id":"aaaaaaaa-0000-0000-0000-000000000002","width":10,"height":10,"similarity":0.5,"tier":"possible","verdict":null,"expires_at":null},
-     {"id":"aaaaaaaa-0000-0000-0000-000000000003","width":10,"height":10,"similarity":null,"tier":null,"verdict":null,"expires_at":null}]
+    [{"id":"aaaaaaaa-0000-0000-0000-000000000001","width":10,"height":10,"similarity":0.9,"tier":"best","verdict":null,"shortlisted":false,"expires_at":null},
+     {"id":"aaaaaaaa-0000-0000-0000-000000000002","width":10,"height":10,"similarity":0.5,"tier":"possible","verdict":null,"shortlisted":false,"expires_at":null},
+     {"id":"aaaaaaaa-0000-0000-0000-000000000003","width":10,"height":10,"similarity":null,"tier":null,"verdict":null,"shortlisted":false,"expires_at":null}]
     """#
 
     @Test func sectionsFollowTheTiers() async {
@@ -117,7 +117,7 @@ struct ResultsModelTests {
 @Suite("Justified grid aspect ratio (same clamp as the web)")
 struct JustifiedRatioTests {
     func photo(width: Int?, height: Int?) -> MyPhoto {
-        let json = #"{"id":"aaaaaaaa-0000-0000-0000-000000000001","width":\#(width.map(String.init) ?? "null"),"height":\#(height.map(String.init) ?? "null")}"#
+        let json = #"{"id":"aaaaaaaa-0000-0000-0000-000000000001","width":\#(width.map(String.init) ?? "null"),"height":\#(height.map(String.init) ?? "null"),"shortlisted":false}"#
         return try! JSONDecoder.api.decode(MyPhoto.self, from: Data(json.utf8))
     }
 
