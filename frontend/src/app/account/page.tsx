@@ -11,6 +11,8 @@ import { del } from "@/lib/api";
 import type { ConsentInfo } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
+import { DevicesCard } from "./devices";
+
 export default function AccountPage() {
   const { user, reload, logout } = useSession();
   const consent = useApi<ConsentInfo>("/api/me/face-consent");
@@ -59,6 +61,7 @@ export default function AccountPage() {
           <ThemeOptions />
         </Card>
 
+        <DevicesCard />
         <Card>
           <h2 className="font-medium">Billing</h2>
           <p className="mt-1 mb-4 text-sm text-muted">Your orders, receipts and subscription.</p>
