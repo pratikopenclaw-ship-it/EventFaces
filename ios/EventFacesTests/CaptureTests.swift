@@ -117,6 +117,13 @@ func consentJSON(given: Bool) -> String {
 @MainActor
 @Suite("Capture model")
 struct CaptureModelTests {
+    /// Regression: one hard-coded rotation (right for the real camera) turned the fake
+    /// camera's upright frames sideways, so guidance said "keep your head straight" forever.
+    @Test func eachFrameSourceSaysHowToTurnItsFrames() {
+        #expect(CameraFrameSource().orientation == .left)
+        #expect(FakeFrameSource(base: URL(string: "http://localhost:8000")!).orientation == .up)
+    }
+
     /// Regression: wiping the captured selfies crashed (exclusivity violation) after every
     /// search. Drive a search outcome and the wipe through the model.
     @Test func wipingSelfiesAfterASearchDoesNotCrash() async {
@@ -138,6 +145,7 @@ struct CaptureModelTests {
 @MainActor
 final class NullSource: FrameSource {
     var onFrame: ((CVPixelBuffer) -> Void)?
+    let orientation: CGImagePropertyOrientation = .up
     var previewLayer: AVCaptureVideoPreviewLayer? { nil }
     func start() async throws {}
     func stop() {}

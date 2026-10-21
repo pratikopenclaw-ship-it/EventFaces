@@ -122,8 +122,9 @@ final class CaptureModel {
         if frameCount % 2 != 0 { return }  // ~15 analyses/s is plenty
         analyzing = true
         nonisolated(unsafe) let buffer = frame
+        let orientation = source.orientation
         Task.detached(priority: .userInitiated) {
-            let measure = FaceAnalyzer.measure(buffer)
+            let measure = FaceAnalyzer.measure(buffer, orientation: orientation)
             await MainActor.run { self.apply(measure, frame: buffer, shot: shot, requirements: requirements) }
         }
     }
@@ -160,10 +161,9 @@ final class CaptureModel {
         // affects compatible display/encode consumers (preview layer, movie output), not
         // raw sample-buffer delegate callbacks. Rotate explicitly so the encoded JPEG is
         // actually portrait and upright — confirmed by real-device `selfie_quality` rows
-        // showing width > height and ~90° roll before this fix. `.right` corrected the
-        // aspect ratio but produced an upside-down face (`no_face`, confirmed live); `.left`
-        // is the other 90° direction.
-        let image = CIImage(cvPixelBuffer: frame).oriented(.left)
+        // showing width > height and ~90° roll before this fix. The source knows its
+        // rotation (camera `.left`; the fake camera's test frames are already upright).
+        let image = CIImage(cvPixelBuffer: frame).oriented(source.orientation)
         // A fresh encode: no EXIF/GPS (the server re-encodes anyway).
         return ciContext.jpegRepresentation(of: image, colorSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                                             options: [kCGImageDestinationLossyCompressionQuality as CIImageRepresentationOption: 0.9])

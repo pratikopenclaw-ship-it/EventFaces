@@ -38,8 +38,10 @@ struct Phase2IntegrationTests {
     @Test func visionPoseMatchesTheServerConvention() async throws {
         // The e2e selfie set is one frame and its mirror: "left" has the server's largest
         // positive yaw (turned to THEIR left); "front" and "right" are the other frame.
-        let left = FaceAnalyzer.measure(try await frame("left"))
-        let right = FaceAnalyzer.measure(try await frame("right"))
+        // Turned the way the simulator's fake camera turns them (the frames it plays).
+        let upright = FakeFrameSource(base: Self.api).orientation
+        let left = FaceAnalyzer.measure(try await frame("left"), orientation: upright)
+        let right = FaceAnalyzer.measure(try await frame("right"), orientation: upright)
         #expect(left.faces == 1 && right.faces == 1, "Vision error: \(String(describing: FaceAnalyzer.lastError))")
         let (l, r) = (try #require(left.yaw), try #require(right.yaw))
         #expect(l > 0 && r < 0, "yaw left \(l) right \(r)")

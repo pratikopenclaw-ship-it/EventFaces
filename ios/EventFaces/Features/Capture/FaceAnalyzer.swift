@@ -13,7 +13,7 @@ enum FaceAnalyzer {
     /// Pitch and roll only gate on |value|, so their signs don't change any decision.
     static let pitchSign: Double = 1
 
-    static func measure(_ buffer: CVPixelBuffer) -> FrameMeasure {
+    static func measure(_ buffer: CVPixelBuffer, orientation: CGImagePropertyOrientation = .up) -> FrameMeasure {
         let request = VNDetectFaceRectanglesRequest()
         request.revision = VNDetectFaceRectanglesRequestRevision3
         #if targetEnvironment(simulator)
@@ -22,12 +22,10 @@ enum FaceAnalyzer {
             request.setComputeDevice(cpu, for: .main)
         }
         #endif
-        // Matches the rotation applied before JPEG upload (CaptureModel.jpeg): the raw
-        // buffer is landscape/sideways (see that fix's comment), so live guidance must use
-        // the same corrected orientation the server will actually see, or "ok" on screen
-        // doesn't mean what the server's gate means (confirmed live: yaw read ~0-5° live,
-        // but the server measured 28-32° once correctly oriented).
-        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: .left)
+        // The same rotation the JPEG upload gets (CaptureModel.jpeg, from the frame source),
+        // so "ok" on screen means what the server's gate means (confirmed live: unrotated
+        // camera frames read yaw ~0-5° here while the server measured 28-32°).
+        let handler = VNImageRequestHandler(cvPixelBuffer: buffer, orientation: orientation)
         do {
             try handler.perform([request])
         } catch {
