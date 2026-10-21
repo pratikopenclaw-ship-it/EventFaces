@@ -11,6 +11,7 @@
 set -euo pipefail
 source "$(dirname "$0")/env.sh"
 cd "$IOS_DIR"
+mkdir -p build  # logs and result bundles land here (absent in a fresh clone/worktree)
 
 echo "==> derived files"
 python3 scripts/sync-openapi.py --check
