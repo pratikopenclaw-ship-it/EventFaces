@@ -156,6 +156,17 @@ export interface ConsentText {
   action: string;
 }
 
+/** A phone or tablet signed in to the app (`GET /api/me/devices`). */
+export interface Device {
+  id: string;
+  name: string;
+  platform: string;
+  app_version: string;
+  created_at: string;
+  last_seen_at: string;
+  current: boolean;
+}
+
 export interface ConsentInfo {
   version: string;
   grant_days: number;
