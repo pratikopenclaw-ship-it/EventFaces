@@ -11,6 +11,12 @@ struct ConfigurationTests {
         return try #require(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
     }
 
+    /// "Contact us" opens the website's form; "/" is not an app-link path, so it stays in Safari.
+    @Test func contactLinkIsTheWebsiteForm() {
+        let config = AppConfig(apiBaseURL: URL(string: "https://eventfaces.example")!, appLinkHost: "eventfaces.example", appVersion: "1.0.0")
+        #expect(config.contactURL.absoluteString == "https://eventfaces.example/#contact")
+    }
+
     @Test func releaseHasNoATSExceptions() throws {
         #expect(try plist("Info.plist")["NSAppTransportSecurity"] == nil)
     }

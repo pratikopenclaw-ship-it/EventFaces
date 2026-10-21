@@ -10,6 +10,8 @@ struct EventView: View {
     @State private var flow: Flow?
     @State private var hasPhotos = false
     @State private var showResults = false
+    @State private var hasShared = false
+    @State private var showShared = false
     @State private var showUpload = false
     @State private var stats: OrganizerStats?
     @State private var videos: [EventVideo] = []
@@ -29,6 +31,13 @@ struct EventView: View {
                         Button("My photos") { showResults = true }
                             .buttonStyle(.secondary)
                             .accessibilityIdentifier("my-photos")
+                            .padding(.top, 8)
+                    }
+                    if hasShared {
+                        // No selfie needed: these have no faces (venue, food, decor).
+                        Button { showShared = true } label: { Label("Event photos", systemImage: "photo.on.rectangle") }
+                            .buttonStyle(.secondary)
+                            .accessibilityIdentifier("event-photos")
                             .padding(.top, 8)
                     }
                     VideosSection(videos: videos)
@@ -68,6 +77,15 @@ struct EventView: View {
             .environment(\.colorScheme, .dark)
             .sheetContent()
         }
+        .fullScreenCover(isPresented: $showShared) {
+            VStack(spacing: 0) {
+                SheetHeader(title: "Event photos", closeLabel: "Close") { showShared = false }
+                ResultsView(eventID: eventID, source: .shared)
+            }
+            .background(Palette.bg.ignoresSafeArea())
+            .environment(\.colorScheme, .dark)
+            .sheetContent()
+        }
         .fullScreenCover(item: $flow) { flow in
             Group {
                 switch flow {
@@ -96,6 +114,7 @@ struct EventView: View {
             hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty
             if e.hasLogo == true, let data = try? await model.events.image(path: "/api/events/\(eventID)/logo") { logo = UIImage(data: data) }
             videos = (try? await model.events.videos(eventID: eventID)) ?? []
+            hasShared = !((try? await model.events.sharedPhotos(eventID: eventID)) ?? []).isEmpty
             if model.myEvents.first(where: { $0.id == eventID })?.canManage == true {
                 stats = await model.events.organizerStats(eventID)
             }

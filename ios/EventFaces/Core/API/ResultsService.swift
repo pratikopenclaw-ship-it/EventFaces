@@ -15,6 +15,16 @@ extension EventService {
         }
     }
 
+    /// Photos the organizers shared with everyone (venue, food: no faces, so no selfie
+    /// needed), shaped like results so the grid and viewer can show them.
+    func sharedPhotos(eventID: String) async throws -> [MyPhoto] {
+        switch try await call2({ try await api.photosListSharedPhotos(path: .init(eventId: eventID), query: .init()) }) {
+        case let .ok(ok): return try ok.body.json.map { MyPhoto(height: $0.height, id: $0.id, shortlisted: false, width: $0.width) }
+        case .unprocessableContent: throw AppError.server(status: 422)
+        case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+        }
+    }
+
     /// "This is me" / "Not me" (the server records it against the user's own match).
     func feedback(eventID: String, photoID: String, isMe: Bool) async throws {
         let body = Components.Schemas.FeedbackIn(photoId: photoID, verdict: isMe ? .me : .notMe)

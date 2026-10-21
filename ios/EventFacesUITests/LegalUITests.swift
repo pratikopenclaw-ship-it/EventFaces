@@ -105,6 +105,11 @@ final class LegalUITests: XCTestCase {
             try auditDocumentRetryingKnownFlake(id: id, reopen: open)
             app.buttons["sheet-close"].firstMatch.tap()
         }
+        // Contact is the website's form (tapping would leave the app for Safari).
+        let contact = app.buttons["about-contact"]
+        for _ in 0..<6 where !contact.isHittable { app.swipeUp() }
+        XCTAssertTrue(contact.isHittable)
+        assertTapTarget(contact)
     }
 
     func testChangedTermsAreAcceptedBeforeJoining() throws {

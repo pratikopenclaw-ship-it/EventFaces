@@ -219,6 +219,34 @@ def seed_organizer(event_id: uuid.UUID, email: str) -> dict[str, str]:
     return {"email": email}
 
 
+@router.post("/event/{event_id}/shared-photo")
+def seed_shared_photo(event_id: uuid.UUID) -> dict[str, str]:
+    """A published photo with no face, shared with everyone by the organizer through the
+    real sharing service (the app's and web's "Event photos" section)."""
+    from app.models import IndexStatus, Photo, PhotoSource, PhotoStatus
+    from app.services import imaging, sharing
+
+    with SessionLocal() as db:
+        ev = db.get(Event, event_id)
+        org = db.scalar(select(User).where(User.email == "org@e2e.test"))
+        if ev is None or org is None:
+            raise HTTPException(404)
+        photo = Photo(event_id=ev.id, source=PhotoSource.guest, uploaded_by=org.id, status=PhotoStatus.published, index_status=IndexStatus.indexed, face_count=0, indexed_at=utcnow())
+        db.add(photo)
+        db.flush()
+        processed = imaging.process(solid_jpeg((200, 140, 60), (800, 600)))
+        for variant, data in (("original", processed.original), ("preview", processed.preview), ("thumb", processed.thumb)):
+            key = storage.photo_key(ev.id, photo.id, variant)
+            storage.put_jpeg(key, data)
+            setattr(photo, f"{variant}_key", key)
+        photo.width, photo.height, photo.sha256 = processed.width, processed.height, processed.sha256
+        db.commit()
+        changed, _ = sharing.set_shared(db, ev, org, [photo.id], True)
+        if changed != 1:
+            raise HTTPException(409, "not shareable")
+        return {"id": str(photo.id)}
+
+
 @router.post("/event/{event_id}/expire")
 def expire_event(event_id: uuid.UUID) -> dict[str, str]:
     with SessionLocal() as db:

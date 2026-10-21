@@ -6,8 +6,12 @@ import UIKit
 @Observable
 final class ResultsModel {
     enum Section: String, CaseIterable, Identifiable { case best, possible, uploads; var id: String { rawValue } }
+    /// `mine`: your matches and uploads. `shared`: photos the organizers shared with
+    /// everyone (no faces, so no verdicts, shortlist or "missing" report).
+    enum Source { case mine, shared }
 
     let eventID: String
+    let source: Source
     private let service: EventService
     private let session: SessionManager
     private let config: AppConfig
@@ -24,8 +28,9 @@ final class ResultsModel {
 
     enum Message: Equatable { case missingReported, saved, downloadFailed, saveFailed, expired, tooManyReports, failed }
 
-    init(eventID: String, service: EventService, session: SessionManager, config: AppConfig) {
+    init(eventID: String, source: Source = .mine, service: EventService, session: SessionManager, config: AppConfig) {
         self.eventID = eventID
+        self.source = source
         self.service = service
         self.session = session
         self.config = config
@@ -52,8 +57,15 @@ final class ResultsModel {
         loading = true
         defer { loading = false }
         do {
-            photos = try await service.photos(eventID: eventID)
-            await PhotoCache.shared.keepOnly(event: eventID, photos: Set(photos.map(\.id)))
+            switch source {
+            case .mine:
+                photos = try await service.photos(eventID: eventID)
+                // Drops cached photos you lost access to. Not for the shared list: it would
+                // evict your own matches (the next "My photos" load evicts unshared ones).
+                await PhotoCache.shared.keepOnly(event: eventID, photos: Set(photos.map(\.id)))
+            case .shared:
+                photos = try await service.sharedPhotos(eventID: eventID)
+            }
         } catch AppError.noAccess {
             noAccess = true
             photos = []

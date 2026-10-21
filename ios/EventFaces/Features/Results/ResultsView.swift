@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// Your photos for an event: best and possible matches, your uploads. Always dark.
+/// Your photos for an event: best and possible matches, your uploads. With `.shared`, the
+/// photos the organizers shared with everyone instead. Always dark.
 struct ResultsView: View {
     let eventID: String
+    var source: ResultsModel.Source = .mine
     @Environment(AppModel.self) private var model
     @State private var results: ResultsModel?
     @State private var viewerStart: ViewerStart?
@@ -16,7 +18,7 @@ struct ResultsView: View {
         .background(Palette.bg.ignoresSafeArea())
         .environment(\.colorScheme, .dark)  // photos always display on a dark background
         .onAppear {
-            if results == nil { results = ResultsModel(eventID: eventID, service: model.events, session: model.auth.session, config: model.config) }
+            if results == nil { results = ResultsModel(eventID: eventID, source: source, service: model.events, session: model.auth.session, config: model.config) }
         }
         .task(id: results == nil) { await results?.load() }
     }
@@ -27,7 +29,7 @@ struct ResultsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
                 header(results)
-                if !results.photos.isEmpty {
+                if results.source == .mine && !results.photos.isEmpty {
                     shortlistFilterButton(results)
                 }
                 if results.noAccess {
@@ -35,11 +37,11 @@ struct ResultsView: View {
                         .accessibilityIdentifier("results-no-access")
                 } else if !results.loading && results.photos.isEmpty {
                     VStack(spacing: 8) {
-                        Image(systemName: "person.crop.circle.badge.questionmark")
+                        Image(systemName: results.source == .mine ? "person.crop.circle.badge.questionmark" : "photo.on.rectangle")
                             .font(.system(size: 36))
                             .foregroundStyle(Palette.textMuted)
                             .accessibilityHidden(true)
-                        Text("New photos may still be added. Try again later.")
+                        Text(results.source == .mine ? LocalizedStringKey("New photos may still be added. Try again later.") : "The organizers haven't shared any photos yet.")
                             .foregroundStyle(Palette.textMuted)
                             .multilineTextAlignment(.center)
                     }
@@ -50,7 +52,7 @@ struct ResultsView: View {
                     let items = results.photos(in: section)
                     if !items.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(title(section)).font(.headline).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
+                            Text(title(section, source: results.source)).font(.headline).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
                             if section == .possible {
                                 Text("Less certain. Tell us if these are you.").font(.footnote).foregroundStyle(Palette.textMuted)
                             }
@@ -63,7 +65,7 @@ struct ResultsView: View {
                         }
                     }
                 }
-                if !results.noAccess {
+                if results.source == .mine && !results.noAccess {
                     Button("Photos of me are missing") { Task { await results.reportMissing() } }
                         .buttonStyle(.secondary)
                         .accessibilityIdentifier("missing")
@@ -107,9 +109,16 @@ struct ResultsView: View {
     private func header(_ results: ResultsModel) -> some View {
         HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: 4) {
-                headline(results)
-                    .font(.title2.bold()).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
-                    .accessibilityIdentifier("results-title")
+                if results.source == .shared {
+                    // The sheet header already says "Event photos".
+                    Text("Shared with everyone by the organizers")
+                        .font(.subheadline).foregroundStyle(Palette.textMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                } else {
+                    headline(results)
+                        .font(.title2.bold()).foregroundStyle(Palette.text).accessibilityAddTraits(.isHeader)
+                        .accessibilityIdentifier("results-title")
+                }
             }
             Spacer()
             if !results.photos.isEmpty {
@@ -195,7 +204,7 @@ struct ResultsView: View {
             .accessibilityHint(results.selecting ? Text("Selects the photo") : Text("Opens the photo"))
             .accessibilityIdentifier("photo-\(photo.id)")
 
-            if !results.selecting {
+            if results.source == .mine && !results.selecting {
                 Button { Task { await results.toggleShortlist(photo) } } label: {
                     Image(systemName: photo.shortlisted ? "star.fill" : "star")
                         .foregroundStyle(photo.shortlisted ? .yellow : .white)
@@ -227,11 +236,12 @@ struct ResultsView: View {
         .overlay(alignment: .top) { Divider().overlay(Palette.border) }
     }
 
-    private func title(_ section: ResultsModel.Section) -> LocalizedStringKey {
+    private func title(_ section: ResultsModel.Section, source: ResultsModel.Source) -> LocalizedStringKey {
+        if source == .shared { return "Venue, food & more" }  // one section: shared photos have no tier
         switch section {
-        case .best: "Best matches"
-        case .possible: "Possible matches"
-        case .uploads: "Your uploads"
+        case .best: return "Best matches"
+        case .possible: return "Possible matches"
+        case .uploads: return "Your uploads"
         }
     }
 

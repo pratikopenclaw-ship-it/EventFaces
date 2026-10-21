@@ -391,6 +391,16 @@
         }
       }
     },
+    "Contact us": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kontakt"
+          }
+        }
+      }
+    },
     "Couldn't load this event. Check your connection and try again.": {
       "localizations": {
         "de": {
@@ -600,6 +610,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Event-Link erhalten"
+          }
+        }
+      }
+    },
+    "Event photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Event-Fotos"
           }
         }
       }
@@ -1381,6 +1401,16 @@
         }
       }
     },
+    "Opens the contact form on the website": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffnet das Kontaktformular auf der Website"
+          }
+        }
+      }
+    },
     "Opens the photo": {
       "localizations": {
         "de": {
@@ -1905,6 +1935,16 @@
         }
       }
     },
+    "Shared with everyone by the organizers": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Von den Organisatoren mit allen geteilt"
+          }
+        }
+      }
+    },
     "Shortlisted only": {
       "extractionState": "manual",
       "localizations": {
@@ -2143,6 +2183,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Der Veranstalter prüft Fotos, bevor andere sie sehen. Fotos werden ohne Standortdaten neu gespeichert."
+          }
+        }
+      }
+    },
+    "The organizers haven't shared any photos yet.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Organisatoren haben noch keine Fotos geteilt."
           }
         }
       }
@@ -2596,6 +2646,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Andere E-Mail verwenden"
+          }
+        }
+      }
+    },
+    "Venue, food & more": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Location, Essen & mehr"
           }
         }
       }
