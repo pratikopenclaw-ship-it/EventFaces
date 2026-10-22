@@ -36,7 +36,9 @@ struct PhotoViewer: View {
                 topBar(photos)
                 if photos.count > 1 { filmstrip(photos) }
             }
-            .background(Color.black.opacity(0.6))
+            // Opaque: on iPad the photo fills the screen and a light one showed through
+            // a translucent bar, taking Close below 4.5:1.
+            .background(Color.black)
         }
         .safeAreaInset(edge: .bottom) { if photos.indices.contains(index) { bottomBar(photos[index]) } }
         .environment(\.colorScheme, .dark)
