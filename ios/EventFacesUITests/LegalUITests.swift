@@ -138,7 +138,7 @@ final class LegalUITests: XCTestCase {
         XCTAssertTrue(codeInput.waitForExistence(timeout: 5))
         codeInput.tap()
         codeInput.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
 
         let accept = app.buttons["accept-legal"]
         XCTAssertTrue(accept.waitForExistence(timeout: 15), "the acceptance sheet appears")
@@ -154,7 +154,7 @@ final class LegalUITests: XCTestCase {
         XCTAssertTrue(codeInput.waitForExistence(timeout: 5))
         codeInput.tap()
         codeInput.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
         XCTAssertTrue(app.buttons["find-my-photos"].waitForExistence(timeout: 15), "joined once accepted")
     }
 }

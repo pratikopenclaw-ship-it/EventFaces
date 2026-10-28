@@ -29,6 +29,28 @@ extension XCTestCase {
         for _ in 0..<4 where send.exists && !send.isHittable { app.scrollViews.firstMatch.swipeUp() }
     }
 
+    /// Taps once the element has stopped moving. On iPad a form sheet slides up for the keyboard
+    /// and, on a busy simulator, only after the typing is done: a tap aimed before the slide
+    /// lands where the button was, and the button never fires.
+    func tapWhenSettled(_ app: XCUIApplication, _ element: XCUIElement, timeout: TimeInterval = 5) {
+        let window = app.windows.firstMatch.frame
+        func keyboardSliding() -> Bool {
+            let keyboard = app.keyboards.firstMatch
+            guard keyboard.exists else { return false }
+            let frame = keyboard.frame
+            return frame.height == 0 || frame.maxY > window.maxY + 1
+        }
+        let end = Date().addingTimeInterval(timeout)
+        var last = element.frame, still = 0
+        while still < 2, Date() < end {
+            _ = XCTWaiter.wait(for: [XCTestExpectation(description: "sheet settles")], timeout: 0.3)
+            let now = element.frame
+            still = now == last && !keyboardSliding() ? still + 1 : 0
+            last = now
+        }
+        element.tap()
+    }
+
     /// The tappable area is at least 44 × 44 pt (Apple's minimum). A Button's accessibility
     /// frame is its label's frame, which is also what receives taps.
     func assertTapTarget(_ element: XCUIElement, file: StaticString = #filePath, line: UInt = #line) {
@@ -43,7 +65,8 @@ extension XCTestCase {
     /// scroll view is re-checked with that element scrolled fully into view (keyboard
     /// dismissed), where it must pass. Nothing is filtered: every element is audited where it
     /// is fully visible. A contrast failure is checked against the rendered pixels and stands
-    /// unless they measure at least 4.5:1 (`measuredContrast`).
+    /// unless they measure at least 4.5:1 (`measuredContrast`), with the element fully in view
+    /// when the audit's re-layout has moved it out again (`contrastPassesInView`).
     func auditScreen(_ app: XCUIApplication, line: UInt = #line) throws {
         // An element is identified by identifier and label together: two texts can share a
         // label (a document's version line at its top and its end marker).
@@ -75,6 +98,7 @@ extension XCTestCase {
             var failures: [XCUIAccessibilityAuditIssue] = []
             for _ in 0..<3 {
                 failures = []
+                var movedAway: XCUIAccessibilityAuditIssue?  // contrast judged after the audit's re-layout moved it out of view
                 try audit(app, before: {
                     if let target, target.exists { self.scrollIntoView(target, in: app) }
                     layout = Layout(app)
@@ -83,8 +107,16 @@ extension XCTestCase {
                     let verdict = self.measuredContrast(issue, in: app)
                     if element == nil || key(element) == k {
                         // The element under re-check: it must pass where it is fully visible
-                        // (still not drawn here fails too).
-                        if verdict != .passes { failures.append(issue) }
+                        // (still not drawn here fails too). The audit's own re-layout can scroll
+                        // the form back (iPad sheets keep the focused field in view), so a
+                        // contrast issue raised while it is out of view again is measured in
+                        // view below; any other issue fails.
+                        if verdict == .passes { return true }
+                        if issue.auditType == .contrast, let element, self.isOverlapped(element, Layout(app)) {
+                            movedAway = issue
+                        } else {
+                            failures.append(issue)
+                        }
                         return true
                     }
                     // Others: skipped only if hidden now (each was audited where it was in view).
@@ -92,6 +124,7 @@ extension XCTestCase {
                     if verdict != .passes { failures.append(issue) }
                     return true
                 }
+                if let movedAway, !(target.map { contrastPassesInView($0, in: app) } ?? false) { failures.append(movedAway) }
                 if failures.isEmpty { break }
             }
             for issue in failures {
@@ -132,12 +165,32 @@ extension XCTestCase {
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "scroll settles")], timeout: 1.0)
     }
 
+    /// The element's rendered contrast, measured with it scrolled fully into view: at least
+    /// 4.5:1 passes; out of view, not drawn or not measurable fails.
+    private func contrastPassesInView(_ element: XCUIElement, in app: XCUIApplication) -> Bool {
+        guard element.exists else { return false }
+        scrollIntoView(element, in: app)
+        guard !isOverlapped(element, Layout(app)) else { return false }
+        let shot = XCUIScreen.main.screenshot()
+        guard let ratio = Self.renderedContrast(shot.image, frame: element.frame, points: app.windows.firstMatch.frame.width) else { return false }
+        let attachment = XCTAttachment(screenshot: shot)
+        attachment.name = "contrast in view \(element.label) \(String(format: "%.2f", ratio)):1"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+        print("AUDIT CONTRAST IN VIEW '\(element.label)': measured \(String(format: "%.2f", ratio)):1")
+        return ratio >= 4.5
+    }
+
     private func dismissKeyboard(_ app: XCUIApplication) {
         guard app.keyboards.firstMatch.exists else { return }
         app.swipeUp()  // forms close the keyboard on scroll (a swipe down would dismiss a sheet)
-        // iPhone: "Done"; iPad: the dismiss key (its label varies by iOS version).
-        let dismiss = app.keyboards.buttons.matching(NSPredicate(format: "label ==[c] 'Done' OR label CONTAINS[c] 'hide' OR label CONTAINS[c] 'dismiss' OR identifier CONTAINS[c] 'dismiss'")).firstMatch
-        if app.keyboards.firstMatch.exists, dismiss.exists { dismiss.tap() }
+        // The swipe usually closes it: wait for the slide-out, or the key below would be
+        // tapped mid-animation, already off screen (iPad: "failed to scroll to visible").
+        if !app.keyboards.firstMatch.waitForNonExistence(timeout: 1.5) {
+            // iPhone: "Done"; iPad: the dismiss key (its label varies by iOS version).
+            let dismiss = app.keyboards.buttons.matching(NSPredicate(format: "label ==[c] 'Done' OR label CONTAINS[c] 'hide' OR label CONTAINS[c] 'dismiss' OR identifier CONTAINS[c] 'dismiss'")).firstMatch
+            if dismiss.isHittable { dismiss.tap() }
+        }
         // On iPad the form sheet slides back down after the keyboard: measure once it has.
         _ = XCTWaiter.wait(for: [XCTestExpectation(description: "keyboard gone")], timeout: 1.2)
     }
