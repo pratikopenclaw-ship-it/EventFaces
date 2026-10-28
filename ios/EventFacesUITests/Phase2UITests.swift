@@ -12,12 +12,9 @@ final class Phase2UITests: XCTestCase {
         app = XCUIApplication()
     }
 
-    private func post(_ path: String) -> [String: Any] {
-        var r = URLRequest(url: Self.api.appending(path: path))
-        r.httpMethod = "POST"
-        let data = (try? NSURLConnectionLike.send(r)) ?? Data()
-        return (try? JSONSerialization.jsonObject(with: data) as? [String: Any]) ?? [:]
-    }
+    // The shared helper retries: seeding an event indexes its photos in the request, which
+    // can outlast one 10 s attempt right after a search.
+    private func post(_ path: String, expect key: String? = nil) -> [String: Any] { e2ePost(path, expect: key) }
 
     private func code(for email: String) -> String {
         for _ in 0..<20 {
@@ -69,7 +66,7 @@ final class Phase2UITests: XCTestCase {
 
     func testJoinByCodeConsentCaptureFindsYou() throws {
         _ = post("__e2e/reset")
-        let event = post("__e2e/event")
+        let event = post("__e2e/event", expect: "code")
         let accessCode = try XCTUnwrap(event["code"] as? String)
         launchSignedIn()
 
@@ -78,7 +75,7 @@ final class Phase2UITests: XCTestCase {
         XCTAssertTrue(codeField.waitForExistence(timeout: 5))
         codeField.tap()
         codeField.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
 
         try consentAndCapture()
         // The fake camera shows front, left, right as the steps ask; guidance captures each.
@@ -122,10 +119,10 @@ final class Phase2UITests: XCTestCase {
     /// or a selfie, in the same grid and viewer, minus verdicts, shortlist and "missing".
     func testSharedEventPhotosNeedNoSelfie() throws {
         _ = post("__e2e/reset")
-        let event = post("__e2e/event")
+        let event = post("__e2e/event", expect: "code")
         let eventID = try XCTUnwrap(event["id"] as? String)
         let accessCode = try XCTUnwrap(event["code"] as? String)
-        let shared = try XCTUnwrap(post("__e2e/event/\(eventID)/shared-photo")["id"] as? String)
+        let shared = try XCTUnwrap(post("__e2e/event/\(eventID)/shared-photo", expect: "id")["id"] as? String)
         launchSignedIn()
 
         app.buttons["join-event"].tap()
@@ -133,7 +130,7 @@ final class Phase2UITests: XCTestCase {
         XCTAssertTrue(codeField.waitForExistence(timeout: 5))
         codeField.tap()
         codeField.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
 
         let open = app.buttons["event-photos"]
         XCTAssertTrue(open.waitForExistence(timeout: 15))
@@ -156,20 +153,20 @@ final class Phase2UITests: XCTestCase {
 
     func testAWrongAccessCodeIsExplained() throws {
         _ = post("__e2e/reset")
-        _ = post("__e2e/event")
+        _ = post("__e2e/event", expect: "code")
         launchSignedIn()
         app.buttons["join-event"].tap()
         let codeField = app.textFields["access-code-field"]
         XCTAssertTrue(codeField.waitForExistence(timeout: 5))
         codeField.tap()
         codeField.typeText("WRONG123")
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
         XCTAssertTrue(app.otherElements["join-error"].waitForExistence(timeout: 10) || app.staticTexts["That code didn't work. Check it and try again."].exists)
     }
 
     func testQRCodeLinkJoinsTheEvent() throws {
         _ = post("__e2e/reset")
-        let event = post("__e2e/event")
+        let event = post("__e2e/event", expect: "code")
         let slug = try XCTUnwrap(event["slug"] as? String), accessCode = try XCTUnwrap(event["code"] as? String)
         launchSignedIn(["-ui-testing-scan", "http://localhost:3000/join/\(slug)?code=\(accessCode)"])
         app.buttons["join-event"].tap()
@@ -186,7 +183,7 @@ final class Phase2UITests: XCTestCase {
 
     func testTwoRejectedSelfiesPauseWithTips() throws {
         _ = post("__e2e/reset")
-        let event = post("__e2e/event")
+        let event = post("__e2e/event", expect: "code")
         let accessCode = try XCTUnwrap(event["code"] as? String)
         launchSignedIn(["-fake-frame", "front=blurry"])
         app.buttons["join-event"].tap()
@@ -194,7 +191,7 @@ final class Phase2UITests: XCTestCase {
         XCTAssertTrue(codeField.waitForExistence(timeout: 5))
         codeField.tap()
         codeField.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
         try consentAndCapture()
         // The blurry front shot passes on-device guidance but the server rejects it, twice.
         XCTAssertTrue(app.otherElements["paused"].waitForExistence(timeout: 120) || app.staticTexts["Let's try that again"].waitForExistence(timeout: 5))

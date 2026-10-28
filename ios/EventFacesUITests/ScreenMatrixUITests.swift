@@ -55,7 +55,7 @@ final class ScreenMatrixUITests: XCTestCase {
         try check("join", accessField)
         accessField.tap()
         accessField.typeText(accessCode)
-        app.buttons["join-with-code"].tap()
+        tapWhenSettled(app, app.buttons["join-with-code"])
 
         try check("event", app.buttons["find-my-photos"])
         app.buttons["find-my-photos"].tap()
