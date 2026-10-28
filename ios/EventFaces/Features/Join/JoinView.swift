@@ -9,6 +9,7 @@ struct JoinView: View {
     @State private var busy = false
     @State private var error: LocalizedStringKey?
     @State private var scanning = false
+    @FocusState private var codeFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -39,6 +40,7 @@ struct JoinView: View {
                         .background(Palette.surface, in: .rect(cornerRadius: 12))
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Palette.border))
                         .onChange(of: code) { _, new in code = String(new.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(32)) }
+                        .focused($codeFocused)
                         .submitLabel(.join)
                         .onSubmit { Task { await join() } }
                         .accessibilityIdentifier("access-code-field")
@@ -70,6 +72,9 @@ struct JoinView: View {
 
     private func join() async {
         guard code.count >= 4, !busy else { return }
+        // Drop the keyboard first: on iPad, closing the sheet while its field still has
+        // focus stalls the dismissal (and the push behind it) until the next interaction.
+        codeFocused = false
         busy = true
         error = nil
         defer { busy = false }
