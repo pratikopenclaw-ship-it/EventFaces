@@ -11,13 +11,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
 
-from sqlalchemy import exists, func, select
+from sqlalchemy import delete, exists, func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.email import Mail, get_mailer
-from app.models import Event, EventMember, EventPhotoAlert, LegalAcceptance, Photo, PhotoStatus, User
+from app.models import AlertToken, Event, EventMember, EventPhotoAlert, LegalAcceptance, Photo, PhotoStatus, User
 from app.services import membership, push, tokens
 
 log = logging.getLogger(__name__)
@@ -53,6 +53,19 @@ def has_new_photos(db: Session, user_id: uuid.UUID, event_id: uuid.UUID) -> bool
     if row is None:
         return False
     return bool(db.scalar(select(exists().where(*_qualifying_after(event_id, row.last_searched_at)))))
+
+
+def forget_event(db: Session, event_id: uuid.UUID) -> None:
+    """With the event's face data (retention): nobody is told about its photos any more. No commit."""
+    db.execute(delete(EventPhotoAlert).where(EventPhotoAlert.event_id == event_id))
+    db.execute(delete(AlertToken).where(AlertToken.event_id == event_id))
+
+
+def forget_user(db: Session, user_id: uuid.UUID) -> None:
+    """Consent withdrawal and account deletion: the record of which events they searched
+    goes too. No commit."""
+    db.execute(delete(EventPhotoAlert).where(EventPhotoAlert.user_id == user_id))
+    db.execute(delete(AlertToken).where(AlertToken.user_id == user_id))
 
 
 def unsubscribe(db: Session, raw_token: str, scope: str) -> None:

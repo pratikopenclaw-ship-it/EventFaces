@@ -41,6 +41,7 @@ from app.models import (
     SelfieQuality,
     User,
 )
+from app.services import photo_alerts
 from app.services.feedback import anonymize_feedback
 from app.services.photo_pipeline import retire_photo
 
@@ -67,6 +68,7 @@ def expire_event(db: Session, event: Event, report: RetentionReport) -> None:
     report.faces_deleted += affected(db.execute(delete(Face).where(Face.event_id == event.id)))
     report.feedback_anonymized += anonymize_feedback(db, MatchFeedback.event_id == event.id)
     report.grants_deleted += affected(db.execute(delete(SearchGrant).where(SearchGrant.event_id == event.id)))
+    photo_alerts.forget_event(db, event.id)  # who searched it (new-photo alerts)
     report.invites_revoked += (
         affected(db.execute(
             update(Invite)
