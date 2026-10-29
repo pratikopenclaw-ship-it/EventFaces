@@ -959,6 +959,10 @@
             "title": "Name",
             "type": "string"
           },
+          "notify_new_photos": {
+            "title": "Notify New Photos",
+            "type": "boolean"
+          },
           "slug": {
             "title": "Slug",
             "type": "string"
@@ -988,6 +992,7 @@
           "access_code",
           "moderation_mode",
           "auto_publish_faceless_photos",
+          "notify_new_photos",
           "delete_photos_on_expiry",
           "drive_folder_id",
           "created_at"
@@ -1082,6 +1087,11 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "notify_new_photos": {
+            "default": true,
+            "title": "Notify New Photos",
+            "type": "boolean"
           }
         },
         "required": [
@@ -1257,6 +1267,104 @@
           "missing_reports"
         ],
         "title": "EventMatchQualityOut",
+        "type": "object"
+      },
+      "EventMemberOut": {
+        "description": "GET /api/events/{id} for the requesting member: plus their own new-photo banner flag\n(never on admin views: organizers don't see who searched).",
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "guest_upload_enabled": {
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "has_logo": {
+            "default": false,
+            "title": "Has Logo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "new_photos_since_last_search": {
+            "default": false,
+            "title": "New Photos Since Last Search",
+            "type": "boolean"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "upload_max_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "date",
+          "description",
+          "access_expires_at",
+          "guest_upload_enabled",
+          "allow_selfie_file_upload"
+        ],
+        "title": "EventMemberOut",
         "type": "object"
       },
       "EventPublicOut": {
@@ -1489,6 +1597,17 @@
               }
             ],
             "title": "Name"
+          },
+          "notify_new_photos": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notify New Photos"
           }
         },
         "title": "EventUpdate",
@@ -2930,6 +3049,38 @@
         "title": "PhotoAdminOut",
         "type": "object"
       },
+      "PhotoAlertIn": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "PhotoAlertIn",
+        "type": "object"
+      },
+      "PhotoAlertOut": {
+        "description": "`subscribed`: the user has searched the event (alerts exist only after a search).",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "subscribed": {
+            "title": "Subscribed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "subscribed",
+          "enabled"
+        ],
+        "title": "PhotoAlertOut",
+        "type": "object"
+      },
       "PhotoPage": {
         "properties": {
           "items": {
@@ -3056,14 +3207,30 @@
         "type": "object"
       },
       "PreferencesIn": {
+        "description": "Only the provided preferences change.",
         "properties": {
+          "new_photo_alerts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Photo Alerts"
+          },
           "theme": {
-            "$ref": "#/components/schemas/ThemePreference"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThemePreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "required": [
-          "theme"
-        ],
         "title": "PreferencesIn",
         "type": "object"
       },
@@ -4308,6 +4475,11 @@
             "title": "Id",
             "type": "string"
           },
+          "new_photo_alerts": {
+            "default": true,
+            "title": "New Photo Alerts",
+            "type": "boolean"
+          },
           "organizer_terms_accepted": {
             "readOnly": true,
             "title": "Organizer Terms Accepted",
@@ -5450,7 +5622,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventPublicOut"
+                  "$ref": "#/components/schemas/EventMemberOut"
                 }
               }
             },
@@ -6578,6 +6750,100 @@
         "summary": "Assign Organizer",
         "tags": [
           "members"
+        ]
+      }
+    },
+    "/api/events/{event_id}/photo-alerts": {
+      "get": {
+        "operationId": "photo_alerts_get_photo_alerts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAlertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Photo Alerts",
+        "tags": [
+          "photo_alerts"
+        ]
+      },
+      "put": {
+        "operationId": "photo_alerts_set_photo_alerts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoAlertIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAlertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Photo Alerts",
+        "tags": [
+          "photo_alerts"
         ]
       }
     },

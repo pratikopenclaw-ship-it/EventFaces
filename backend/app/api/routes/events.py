@@ -13,12 +13,12 @@ from app.schemas.event import (
     EventAdminOut,
     EventCreate,
     EventListItem,
-    EventPublicOut,
+    EventMemberOut,
     EventUpdate,
     EventVideoIn,
     EventVideoOut,
 )
-from app.services import event_videos, imaging, search_queue
+from app.services import event_videos, imaging, photo_alerts, search_queue
 from app.services.events import generate_access_code, list_events_for, new_event, photo_counts
 from app.services.retention import reopen_event
 from app.workers.tasks import delete_event_objects, index_photo
@@ -52,9 +52,10 @@ def list_events(user: VerifiedUser, db: DB) -> list[EventListItem]:
     ]
 
 
-@router.get("/{event_id}", response_model=EventPublicOut)
-def get_event(event: MemberEvent) -> Event:
-    return event
+@router.get("/{event_id}", response_model=EventMemberOut)
+def get_event(event: MemberEvent, user: VerifiedUser, db: DB) -> EventMemberOut:
+    out = EventMemberOut.model_validate(event)
+    return out.model_copy(update={"new_photos_since_last_search": photo_alerts.has_new_photos(db, user.id, event.id)})
 
 
 @router.get("/{event_id}/admin", response_model=EventAdminOut)
@@ -67,7 +68,7 @@ def update_event(body: EventUpdate, event: ManagedEvent, db: DB) -> Event:
     changes = body.model_dump(exclude_unset=True)
     if "drive_folder" in changes:
         event.drive_folder_id = changes.pop("drive_folder")
-    for field in ("name", "join_mode", "moderation_mode", "description"):
+    for field in ("name", "join_mode", "moderation_mode", "description", "notify_new_photos"):
         if field in changes and changes[field] is None:
             changes.pop(field)  # not nullable
     for field, value in changes.items():
