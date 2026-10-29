@@ -26,6 +26,8 @@ celery_app.conf.update(
         # Deletes face data of expired events, expired grants, old audit rows, etc.
         "retention": {"task": "retention.run", "schedule": 3600.0},
         "billing": {"task": "billing.maintenance", "schedule": 3600.0},
+        # New photos went live since attendees searched (services/photo_alerts.py).
+        "new-photo-alerts": {"task": "alerts.new_photos", "schedule": 300.0},
     },
 )
 

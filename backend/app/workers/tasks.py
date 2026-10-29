@@ -107,3 +107,14 @@ def billing_maintenance() -> dict[str, int]:
 @celery_app.task(name="storage.delete_event_objects")
 def delete_event_objects(event_id: str) -> int:
     return storage.delete_prefix(storage.event_prefix(event_id))
+
+
+@celery_app.task(name="alerts.new_photos")
+def new_photo_alerts() -> int:
+    """Tell attendees who searched an event that new photos went live (one push + one email
+    per batch, at most daily). Returns how many people were notified."""
+    from app.core.security import utcnow
+    from app.services import photo_alerts
+
+    with SessionLocal() as db:
+        return photo_alerts.run(db, utcnow())
