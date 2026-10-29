@@ -39,7 +39,7 @@ from app.schemas.search import (
     SelfieRejectionOut,
     ShotQualityOut,
 )
-from app.services import capture_tokens, downloads, search_queue, shortlist
+from app.services import capture_tokens, downloads, photo_alerts, search_queue, shortlist
 from app.services.feedback import MatchQuality, anonymize_feedback, match_quality, record_missing, record_verdict
 from app.services.membership import can_access
 from app.services import consent_text
@@ -95,6 +95,7 @@ def withdraw_consent(request: Request, user: CurrentUser, db: DB) -> ConsentInfo
     user.face_consent_version = None
     db.execute(delete(SearchGrant).where(SearchGrant.user_id == user.id))
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
+    photo_alerts.forget_user(db, user.id)  # alerts only follow searches, which need consent
     db.commit()
     return _consent_info(user, request)
 

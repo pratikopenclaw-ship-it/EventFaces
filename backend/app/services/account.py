@@ -24,7 +24,7 @@ from app.models import (
     UserRole,
 )
 from app.services.billing import orders as billing_orders
-from app.services import search_queue
+from app.services import photo_alerts, search_queue
 from app.services.feedback import anonymize_feedback
 from app.services.photo_pipeline import retire_photo
 
@@ -60,6 +60,7 @@ def delete_account(db: Session, user: User) -> DeletionSummary:
     db.execute(delete(AuthToken).where(AuthToken.user_id == user.id))
     db.execute(delete(Device).where(Device.user_id == user.id))  # incl. push tokens
     db.execute(delete(LegalAcceptance).where(LegalAcceptance.user_id == user.id))
+    photo_alerts.forget_user(db, user.id)  # which events they searched, unsubscribe tokens
     # Keep aggregate counts for security/accountability, without the person.
     anonymize_feedback(db, MatchFeedback.user_id == user.id)
     anonymized = (

@@ -519,3 +519,45 @@ def test_no_repeat_without_new_photos(b: SimpleNamespace, db: Session, mailer: F
     assert _run(db, b, 15 * M) == 1
     assert _run(db, b, 15 * M + timedelta(hours=25)) == 0
     assert len(_alerts(mailer, b)) == 1
+
+
+# --- Task 5: forgetting -----------------------------------------------------------------
+
+
+def _alert_data(db: Session, w: SimpleNamespace) -> tuple[int, int]:
+    """(alert rows, unsubscribe tokens) of the attendee"""
+    db.expire_all()
+    rows = db.scalars(select(EventPhotoAlert).where(EventPhotoAlert.user_id == w.attendee_user.id)).all()
+    toks = db.scalars(select(AlertToken).where(AlertToken.user_id == w.attendee_user.id)).all()
+    return len(rows), len(toks)
+
+
+def test_retention_deletes_alert_rows_and_tokens(w: SimpleNamespace, db: Session) -> None:
+    from app.services.retention import RetentionReport, expire_event
+
+    _search(w)
+    _token(db, w)
+    assert _alert_data(db, w) == (1, 1)
+    expire_event(db, db.get(type(w.event), w.event.id), RetentionReport())
+    assert _alert_data(db, w) == (0, 0)
+
+
+def test_withdrawal_deletes_user_alert_rows_and_tokens(w: SimpleNamespace, db: Session) -> None:
+    _search(w)
+    _token(db, w)
+    assert w.attendee.delete("/api/me/face-consent").status_code == 200
+    assert _alert_data(db, w) == (0, 0)
+
+
+def test_account_deletion_deletes_alert_rows_and_tokens(w: SimpleNamespace, db: Session, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Explicit deletes, not only the FK cascade (a later soft delete must not keep them)."""
+    from app.services import account
+
+    _search(w)
+    _token(db, w)
+    calls: list[uuid.UUID] = []
+    original = photo_alerts.forget_user
+    monkeypatch.setattr(photo_alerts, "forget_user", lambda db_, uid: (calls.append(uid), original(db_, uid))[1])
+    account.delete_account(db, db.get(User, w.attendee_user.id))
+    assert calls == [w.attendee_user.id]
+    assert _alert_data(db, w) == (0, 0)
