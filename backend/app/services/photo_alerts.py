@@ -11,7 +11,8 @@ from sqlalchemy import exists, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
-from app.models import EventPhotoAlert, Photo, PhotoStatus
+from app.models import EventPhotoAlert, Photo, PhotoStatus, User
+from app.services import tokens
 
 
 def _qualifying_after(event_id: uuid.UUID, since: datetime):  # type: ignore[no-untyped-def]
@@ -41,3 +42,19 @@ def has_new_photos(db: Session, user_id: uuid.UUID, event_id: uuid.UUID) -> bool
     if row is None:
         return False
     return bool(db.scalar(select(exists().where(*_qualifying_after(event_id, row.last_searched_at)))))
+
+
+def unsubscribe(db: Session, raw_token: str, scope: str) -> None:
+    """Email link: stop this event's alerts ("event") or all alerts ("all") for the token's
+    user. Unknown or expired tokens change nothing and are not reported. No commit."""
+    token = tokens.find_alert_token(db, raw_token)
+    if token is None:
+        return
+    if scope == "all":
+        user = db.get(User, token.user_id)
+        if user is not None:
+            user.new_photo_alerts = False
+        return
+    row = get(db, token.user_id, token.event_id)
+    if row is not None:
+        row.enabled = False

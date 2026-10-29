@@ -8,12 +8,15 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core import storage
 from app.core.security import utcnow
-from app.models import EventPhotoAlert, IndexStatus, MemberRole, ModerationMode, Photo, PhotoSource, PhotoStatus, UserRole
-from app.services import photo_pipeline
+from app.main import app
+from app.models import AlertToken, EventPhotoAlert, User, IndexStatus, MemberRole, ModerationMode, Photo, PhotoSource, PhotoStatus, UserRole
+from app.services import photo_pipeline, tokens
 from app.services.search import FACE_CONSENT_VERSION
 from tests.helpers import group_photo_bytes, search_as, solid_jpeg
 
@@ -183,3 +186,102 @@ def test_organizer_can_disable_notify_new_photos(w: SimpleNamespace) -> None:
     assert w.org.get(f"/api/events/{w.event.id}/admin").json()["notify_new_photos"] is True
     r = w.org.patch(f"/api/events/{w.event.id}", json={"notify_new_photos": False})
     assert r.status_code == 200 and r.json()["notify_new_photos"] is False
+
+
+# --- Task 3: unsubscribe tokens ---------------------------------------------------------
+
+UNSUB = "/api/alerts/unsubscribe"
+
+
+def _anonymous() -> TestClient:
+    """A mail client or link opened without a session: no cookies, no CSRF header."""
+    return TestClient(app)
+
+
+def _token(db: Session, w: SimpleNamespace, expires_in: timedelta = timedelta(days=30)) -> str:
+    raw = tokens.issue_alert_token(db, w.attendee_user.id, w.event.id, utcnow() + expires_in)
+    db.commit()
+    return raw
+
+
+def _enabled(db: Session, w: SimpleNamespace) -> tuple[bool, bool]:
+    """(this event's alerts on, account-wide alerts on)"""
+    row = _row(db, w)
+    return row.enabled, db.get(User, w.attendee_user.id).new_photo_alerts
+
+
+def test_unsubscribe_event_scope(w: SimpleNamespace, db: Session) -> None:
+    _search(w)
+    r = _anonymous().post(UNSUB, json={"token": _token(db, w), "scope": "event"})
+    assert r.status_code == 200 and r.json() == {"detail": "ok"}
+    assert _enabled(db, w) == (False, True)
+
+
+def test_unsubscribe_all_scope(w: SimpleNamespace, db: Session) -> None:
+    _search(w)
+    token = _token(db, w)
+    assert _anonymous().post(UNSUB, json={"token": token, "scope": "event"}).status_code == 200
+    assert _anonymous().post(UNSUB, json={"token": token, "scope": "all"}).status_code == 200  # reusable
+    assert _enabled(db, w) == (False, False)
+
+
+def test_one_click_form_post(w: SimpleNamespace, db: Session) -> None:
+    """RFC 8058: the mail provider POSTs List-Unsubscribe=One-Click to the header's URL."""
+    _search(w)
+    r = _anonymous().post(
+        f"{UNSUB}?token={_token(db, w)}",
+        content=b"List-Unsubscribe=One-Click",
+        headers={"content-type": "application/x-www-form-urlencoded"},
+    )
+    assert r.status_code == 200
+    assert _enabled(db, w) == (False, True)
+
+
+@pytest.mark.parametrize("kind", ["unknown", "expired", "other-event"])
+def test_bad_or_expired_token_looks_ok_and_changes_nothing(w: SimpleNamespace, db: Session, make_event, kind: str) -> None:
+    _search(w)
+    if kind == "unknown":
+        token = "not-a-real-token-123"
+    elif kind == "expired":
+        token = _token(db, w, expires_in=timedelta(seconds=-1))
+    else:
+        other = make_event("Other")
+        token = tokens.issue_alert_token(db, w.attendee_user.id, other.id, utcnow() + timedelta(days=1))
+        db.commit()
+    r = _anonymous().post(UNSUB, json={"token": token, "scope": "event" if kind != "expired" else "all"})
+    assert r.status_code == 200 and r.json() == {"detail": "ok"}  # no oracle about tokens or accounts
+    assert _enabled(db, w) == (True, True)
+
+
+def test_token_hashed_at_rest(w: SimpleNamespace, db: Session) -> None:
+    raw = _token(db, w)
+    stored = db.scalars(select(AlertToken.token_hash)).all()
+    assert raw not in stored and len(stored) == 1 and len(stored[0]) == 64
+
+
+def test_unsubscribe_get_has_no_effect(w: SimpleNamespace, db: Session) -> None:
+    """Link scanners prefetch URLs: a GET must never unsubscribe."""
+    _search(w)
+    assert _anonymous().get(f"{UNSUB}?token={_token(db, w)}").status_code == 405
+    assert _enabled(db, w) == (True, True)
+
+
+def test_unsubscribe_without_cookie_skips_csrf(w: SimpleNamespace, db: Session) -> None:
+    _search(w)
+    assert _anonymous().post(UNSUB, json={"token": _token(db, w), "scope": "event"}).status_code == 200
+
+
+def test_unsubscribe_with_cookie_needs_csrf(w: SimpleNamespace, db: Session) -> None:
+    _search(w)
+    token = _token(db, w)
+    csrf = w.attendee.headers.pop("X-CSRF-Token", None)
+    assert w.attendee.post(UNSUB, json={"token": token, "scope": "event"}).status_code == 403
+    assert _enabled(db, w) == (True, True)
+    w.attendee.headers["X-CSRF-Token"] = csrf
+    assert w.attendee.post(UNSUB, json={"token": token, "scope": "event"}).status_code == 200
+
+
+def test_unsubscribe_is_rate_limited_per_ip(w: SimpleNamespace) -> None:
+    c = _anonymous()
+    codes = [c.post(UNSUB, json={"token": f"guess-{i}", "scope": "event"}).status_code for i in range(31)]
+    assert codes[:30] == [200] * 30 and codes[30] == 429

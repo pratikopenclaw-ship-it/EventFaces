@@ -10,16 +10,20 @@ SAFE_METHODS = {"GET", "HEAD", "OPTIONS"}
 MOBILE_AUTH_PREFIX = "/api/mobile/auth/"
 # Payment-provider webhooks: server to server, no cookies, authenticated by their signature.
 WEBHOOK_PREFIX = "/api/billing/webhook/"
+# New-photo alert unsubscribe: opened from an email, authorized only by its token; mail
+# providers' RFC 8058 one-click POSTs carry no cookies.
+ALERTS_UNSUBSCRIBE_PREFIX = "/api/alerts/unsubscribe"
 
 
 def cookieless_app_request(request: Request) -> bool:
     """A request the CSRF check doesn't apply to: it carries no auth cookie and either an
     Authorization header (which a cross-site page can't add: CORS is not enabled) or it
-    targets the cookie-free mobile sign-in endpoints or a payment webhook."""
+    targets the cookie-free mobile sign-in endpoints, a payment webhook or the alert
+    unsubscribe endpoint."""
     if ACCESS_COOKIE in request.cookies or REFRESH_COOKIE in request.cookies:
         return False
     path = request.url.path
-    return "authorization" in request.headers or path.startswith((MOBILE_AUTH_PREFIX, WEBHOOK_PREFIX))
+    return "authorization" in request.headers or path.startswith((MOBILE_AUTH_PREFIX, WEBHOOK_PREFIX, ALERTS_UNSUBSCRIBE_PREFIX))
 
 
 class CSRFMiddleware(BaseHTTPMiddleware):

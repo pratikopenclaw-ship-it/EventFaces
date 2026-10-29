@@ -4630,6 +4630,101 @@
         ]
       }
     },
+    "/api/alerts/unsubscribe": {
+      "post": {
+        "description": "Stop new-photo alerts from an email link, without a login: authorized only by the\nlink's token (services/tokens.find_alert_token). Accepts the page's JSON body\n{token, scope} or a mail provider's RFC 8058 one-click form POST to the header URL\n(?token=..., scope \"event\"). Always answers ok, so it tells nothing about tokens or\naccounts. CSRF-exempt only without auth cookies (api/csrf.py); GET is not allowed, so\nlink scanners can't unsubscribe anyone.",
+        "operationId": "photo_alerts_unsubscribe",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "token",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 200,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Token"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "scope": {
+                    "enum": [
+                      "event",
+                      "all"
+                    ],
+                    "title": "Scope",
+                    "type": "string"
+                  },
+                  "token": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "title": "Token",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "scope"
+                ],
+                "title": "UnsubscribeIn",
+                "type": "object"
+              }
+            },
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "properties": {
+                  "List-Unsubscribe": {
+                    "enum": [
+                      "One-Click"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unsubscribe",
+        "tags": [
+          "photo_alerts"
+        ]
+      }
+    },
     "/api/app/config": {
       "get": {
         "operationId": "mobile_app_config",
