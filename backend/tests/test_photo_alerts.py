@@ -483,3 +483,39 @@ def test_deliver_holds_no_connection(b: SimpleNamespace, db: Session, mailer: Fa
     with SessionLocal() as fresh:
         assert photo_alerts.run(fresh, b.base + 30 * M) == 1
     assert seen and set(seen) == {0}, seen
+
+
+def test_deleted_account_not_alerted(b: SimpleNamespace, db: Session) -> None:
+    b.live(1 * M)
+    db.get(User, b.attendee_user.id).deleted_at = utcnow()
+    db.commit()
+    assert _run(db, b, 30 * M) == 0
+
+
+def test_unverified_account_not_alerted(b: SimpleNamespace, db: Session) -> None:
+    b.live(1 * M)
+    db.get(User, b.attendee_user.id).email_verified_at = None
+    db.commit()
+    assert _run(db, b, 30 * M) == 0
+
+
+def test_expired_access_stops_alerts_for_organizers_too(b: SimpleNamespace, db: Session, mailer: FakeMailer) -> None:
+    """Organizers keep their membership after the access window (to manage retention), but
+    alerts are about finding photos, which ends with the window."""
+    org = db.scalar(select(User).where(User.email == "org@example.com"))
+    org.face_consent_version, org.face_consent_at = FACE_CONSENT_VERSION, utcnow()
+    db.add(EventPhotoAlert(user_id=org.id, event_id=b.event.id, last_searched_at=b.base))
+    db.commit()
+    b.live(1 * M)
+    db.refresh(b.event)
+    b.event.access_expires_at = b.base + 5 * M
+    db.commit()
+    assert _run(db, b, 30 * M) == 0 and [m for m in mailer.outbox if m.to == "org@example.com"] == []
+
+
+def test_no_repeat_without_new_photos(b: SimpleNamespace, db: Session, mailer: FakeMailer) -> None:
+    """Once a notice covered a batch, the next day brings nothing unless more photos came."""
+    b.live(1 * M)
+    assert _run(db, b, 15 * M) == 1
+    assert _run(db, b, 15 * M + timedelta(hours=25)) == 0
+    assert len(_alerts(mailer, b)) == 1
