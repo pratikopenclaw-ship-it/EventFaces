@@ -36,7 +36,7 @@ ACCEPTED: tuple[Document, ...] = ("terms", "organizer-terms")
 VERSIONS: dict[Document, str] = {
     "terms": "2026-10-03",
     "organizer-terms": "2026-10-03",
-    "privacy": "2026-10-03",
+    "privacy": "2026-10-29",
     "imprint": "2026-10-03",
 }
 
@@ -419,6 +419,7 @@ _PRIVACY_DE = LegalText(
             "Wenn Sie suchen, wandeln wir das Gesicht auf Ihren drei Selfies in eine numerische Gesichtsvorlage um und vergleichen sie nur mit den Gesichtern auf den Fotos dieser Veranstaltung. Gesichtsvorlagen sind biometrische Daten; wir verarbeiten sie nur mit Ihrer ausdrücklichen Einwilligung (Art. 9 Abs. 2 lit. a, Art. 6 Abs. 1 lit. a DSGVO), die Sie jederzeit in den Einstellungen widerrufen können. Der Widerruf berührt die Rechtmäßigkeit bisheriger Suchen nicht.",
             "Ihre Selfies und deren Gesichtsvorlage werden nur im Arbeitsspeicher verarbeitet und nie gespeichert, auch nicht in der App. Sind viele Suchen gleichzeitig aktiv, warten sie höchstens 15 Minuten im Arbeitsspeicher. Gespeichert wird nur, welche Fotos zu Ihnen passen ({grant_days} Tage oder bis der Zugang zur Veranstaltung endet), sowie Ihre Rückmeldungen dazu („Das bin ich“ / „Nicht ich“).",
             "Die Suche ist automatisiert, trifft aber keine Entscheidungen mit rechtlicher Wirkung (Art. 22 DSGVO): Sie zeigt Ihnen nur mögliche Fotos, die Sie korrigieren können.",
+            "Hinweis auf neue Fotos: Nach einer Suche merken wir uns, dass und wann Sie diese Veranstaltung durchsucht haben (keine Selfies, keine Gesichtsvorlage). Kommen danach neue Fotos mit Gesichtern hinzu, schicken wir Ihnen höchstens einmal am Tag je Veranstaltung eine E-Mail und, wenn Sie Mitteilungen erlauben, eine Push-Mitteilung, damit Sie erneut suchen können; beide nennen keine Anzahlen und zeigen keine Fotos (Art. 6 Abs. 1 lit. b und f DSGVO). Sie können das je Veranstaltung, in den Einstellungen oder über den Link in jeder E-Mail abschalten; auch der Veranstalter kann es abschalten. Veranstalter sehen nie, wer gesucht hat.",
         ),
         _s(
             "5. Veranstaltungsfotos (Information nach Art. 14 DSGVO)",
@@ -455,7 +456,7 @@ _PRIVACY_DE = LegalText(
         ),
         _s(
             "11. Speicherdauer",
-            "Selfies und deren Gesichtsvorlage: nicht gespeichert. Gesichtsvorlagen der Personen auf Veranstaltungsfotos: bis zum Ende des Zugangszeitraums. Ihre Treffer: {grant_days} Tage oder bis zum Ende des Zugangs, gelöscht beim Widerruf der Einwilligung. Veranstaltungsfotos: nach Festlegung des Veranstalters. Suchprotokoll: 365 Tage. Konto: bis Sie es löschen; nie bestätigte Konten nach 14 Tagen. Entfernungsanfragen: unbestätigt 48 Stunden, abgeschlossen 180 Tage. Zustimmungen zu Nutzungsbedingungen: solange Ihr Konto besteht.",
+            "Selfies und deren Gesichtsvorlage: nicht gespeichert. Gesichtsvorlagen der Personen auf Veranstaltungsfotos: bis zum Ende des Zugangszeitraums. Ihre Treffer: {grant_days} Tage oder bis zum Ende des Zugangs, gelöscht beim Widerruf der Einwilligung. Veranstaltungsfotos: nach Festlegung des Veranstalters. Suchprotokoll: 365 Tage. Konto: bis Sie es löschen; nie bestätigte Konten nach 14 Tagen. Entfernungsanfragen: unbestätigt 48 Stunden, abgeschlossen 180 Tage. Zustimmungen zu Nutzungsbedingungen: solange Ihr Konto besteht. Vermerk für Hinweise auf neue Fotos (wann Sie eine Veranstaltung durchsucht haben): bis zum Ende des Zugangszeitraums, gelöscht beim Widerruf der Einwilligung oder mit Ihrem Konto.",
         ),
         _s(
             "12. Ihre Rechte",
@@ -494,6 +495,7 @@ _PRIVACY_EN = LegalText(
             "When you search, we turn the face in your three selfies into a numeric face template and compare it only with the faces in that event's photos. Face templates are biometric data; we process them only with your explicit consent (Art. 9(2)(a), Art. 6(1)(a) GDPR), which you can withdraw at any time in Settings. Withdrawal does not affect the lawfulness of earlier searches.",
             "Your selfies and their face template are processed in memory only and never stored, not in the app either. If many searches run at once, they wait in memory for at most 15 minutes. We store only which photos matched you ({grant_days} days, or until the event's access ends) and your feedback on them (“This is me” / “Not me”).",
             "The search is automated but makes no decisions with legal effect (Art. 22 GDPR): it only shows you possible photos, which you can correct.",
+            "New-photo alerts: after a search we remember that and when you searched this event (no selfies, no face template). If photos with faces are added later, we send you at most one email a day per event and, if you allow notifications, a push notification so you can search again; neither says how many or shows any photo (Art. 6(1)(b) and (f) GDPR). You can turn this off per event, in Settings or with the link in each email; the organizer can also turn it off. Organizers never see who searched.",
         ),
         _s(
             "5. Event photos (information under Art. 14 GDPR)",
@@ -530,7 +532,7 @@ _PRIVACY_EN = LegalText(
         ),
         _s(
             "11. Retention",
-            "Selfies and their face template: not stored. Face templates of people in event photos: until the access period ends. Your matches: {grant_days} days or until access ends, deleted when you withdraw consent. Event photos: as the organizer sets. Search log: 365 days. Account: until you delete it; never-verified accounts after 14 days. Removal requests: unconfirmed 48 hours, completed 180 days. Acceptances of the Terms of Use: as long as your account exists.",
+            "Selfies and their face template: not stored. Face templates of people in event photos: until the access period ends. Your matches: {grant_days} days or until access ends, deleted when you withdraw consent. Event photos: as the organizer sets. Search log: 365 days. Account: until you delete it; never-verified accounts after 14 days. Removal requests: unconfirmed 48 hours, completed 180 days. Acceptances of the Terms of Use: as long as your account exists. Record for new-photo alerts (when you searched an event): until the access period ends, deleted when you withdraw consent or with your account.",
         ),
         _s(
             "12. Your rights",

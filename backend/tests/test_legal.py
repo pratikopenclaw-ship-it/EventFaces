@@ -30,7 +30,7 @@ from tests.test_mobile_auth import DeviceKey, app_client, last_code, request_cod
 PINNED = {
     "terms": ("2026-10-03", "0d8148d2e2265c09fd03beaf0443051a0a7b9087f27385b1170b0cea2b78874c"),
     "organizer-terms": ("2026-10-03", "09965e389231e0af2898dc208bb644ba6efe1ece3ecd445cffb70d94f6381ec5"),
-    "privacy": ("2026-10-03", "e215f74ed2ba1fe7db668c35525be91badc3dbb63bcee4c8ea56b5701e4184e1"),
+    "privacy": ("2026-10-29", "17f8149cafad816d6c952439159562151bd5b2463a357793d925e3b31406e570"),
     "imprint": ("2026-10-03", "b7a0e8615a4924d4040cfacbd25dbe4a0b9f39a11b5e2fe4435cf9739f24b070"),
 }
 
