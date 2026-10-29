@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, Enum, ForeignKey, String, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, String, func, true
 from sqlalchemy.dialects.postgresql import CITEXT, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,6 +33,8 @@ class User(Base):
         Enum(ThemePreference, name="theme_preference"), nullable=False, default=ThemePreference.system,
         server_default=ThemePreference.system.value,
     )
+    # Account-wide switch for new-photo alert emails and pushes (services/photo_alerts.py).
+    new_photo_alerts: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
 
     # Current accepted versions of the Terms of Use / Organizer Terms (services/legal.py);
     # the full history with time and channel is in legal_acceptances.

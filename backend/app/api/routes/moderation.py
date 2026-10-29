@@ -9,7 +9,7 @@ from app.core.security import utcnow
 from app.models import Event, Photo, PhotoReport, PhotoStatus, ReportStatus, User
 from app.schemas.community import ModerateIn, ModerationItem, ReportIn, ReportOut, ResolveReportIn
 from app.services.photo_access import viewable_photo
-from app.services.photo_pipeline import retire_photo
+from app.services.photo_pipeline import publish, retire_photo
 
 router = APIRouter(prefix="/api/events/{event_id}", tags=["moderation"])
 
@@ -49,7 +49,7 @@ def moderate(photo_id: uuid.UUID, body: ModerateIn, event: ManagedEvent, db: DB)
     if photo.status != PhotoStatus.pending_review:
         raise HTTPException(status.HTTP_409_CONFLICT, "This photo isn't awaiting review")
     if body.action == "approve":
-        photo.status = PhotoStatus.published
+        publish(photo)
     else:
         retire_photo(db, photo, PhotoStatus.rejected)
     db.commit()
