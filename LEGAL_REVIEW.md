@@ -64,6 +64,9 @@ Production refuses to start while these are empty (`Settings` validator). Set th
 
     Please confirm the processes behind them, including handling times and records.
 
+**New-photo alerts** (added 2026-10-29, privacy notice version 2026-10-29)
+11. After a search we keep a record that (and when) the user searched an event, and send at most one email + push per event per day when photos with faces are added (no counts, no photos). The privacy notice (section 4 and 11) names Art. 6(1)(b)/(f). Please confirm the legal basis and wording, and whether the Organizer Terms' DPA annex needs a line about these alerts (that would be an `organizer-terms` version bump, which sends every organizer through the acceptance gate again).
+
 **Privacy notice facts to verify operationally** (we wrote them; the operator must make them true)
 
 11. Server logs deleted after **at most 14 days**: configure log rotation on the host and Caddy.
