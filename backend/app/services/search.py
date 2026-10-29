@@ -30,7 +30,7 @@ from app.models import (
     SelfieQuality,
     User,
 )
-from app.services import imaging, selfie_quality
+from app.services import imaging, photo_alerts, selfie_quality
 from app.services.faces import current_model_id, detect_faces
 from app.services.selfie_quality import ShotResult
 
@@ -206,6 +206,7 @@ def run_search(db: Session, user: User, event: Event, shots: list[tuple[str, byt
     audit = SearchAudit(user_id=user.id, event_id=event.id, match_count=len(matches))
     db.add(audit)
     db.flush()
+    photo_alerts.record_search(db, user.id, event.id, utcnow())  # new-photo alerts subscribe on search
 
     if matches:
         now = utcnow()

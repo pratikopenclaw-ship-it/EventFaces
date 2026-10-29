@@ -12,9 +12,10 @@ from sqlalchemy.orm import Session
 
 from app.core import storage
 from app.core.security import utcnow
-from app.models import IndexStatus, MemberRole, ModerationMode, Photo, PhotoSource, PhotoStatus, UserRole
+from app.models import EventPhotoAlert, IndexStatus, MemberRole, ModerationMode, Photo, PhotoSource, PhotoStatus, UserRole
 from app.services import photo_pipeline
-from tests.helpers import group_photo_bytes, solid_jpeg
+from app.services.search import FACE_CONSENT_VERSION
+from tests.helpers import group_photo_bytes, search_as, solid_jpeg
 
 APP = Path(__file__).resolve().parents[1] / "app"
 
@@ -46,9 +47,25 @@ def w(db: Session, make_user, login_as, make_event, add_member) -> SimpleNamespa
         db.commit()
         return p
 
-    return SimpleNamespace(
-        event=event, org=login_as(org_user), attendee=login_as(attendee_user), attendee_user=attendee_user, photo=photo
-    )
+    attendee = login_as(attendee_user)
+    attendee.post("/api/me/face-consent", json={"version": FACE_CONSENT_VERSION})
+    return SimpleNamespace(event=event, org=login_as(org_user), attendee=attendee, attendee_user=attendee_user, photo=photo)
+
+
+def _search(w: SimpleNamespace) -> None:
+    r = search_as(w.attendee, w.event)
+    assert r.status_code == 200, r.text
+
+
+def _row(db: Session, w: SimpleNamespace) -> EventPhotoAlert | None:
+    db.expire_all()
+    return db.get(EventPhotoAlert, (w.attendee_user.id, w.event.id))
+
+
+def _banner(w: SimpleNamespace) -> bool:
+    r = w.attendee.get(f"/api/events/{w.event.id}")
+    assert r.status_code == 200, r.text
+    return r.json()["new_photos_since_last_search"]
 
 
 # --- Task 1: published_at -------------------------------------------------------------
@@ -96,3 +113,73 @@ def test_only_publish_helper_sets_published() -> None:
     source = (APP / "services/photo_pipeline.py").read_text().splitlines()
     body = source[source.index("def publish(photo: Photo) -> None:") :][:6]
     assert any(pattern.search(line) for line in body)
+
+
+# --- Task 2: subscribe on search, toggles, banner flag ----------------------------------
+
+
+def test_search_records_subscription(w: SimpleNamespace, db: Session) -> None:
+    assert _row(db, w) is None
+    _search(w)
+    row = _row(db, w)
+    assert row is not None and row.enabled and abs(utcnow() - row.last_searched_at) < timedelta(seconds=30)
+    first = row.last_searched_at
+    assert w.attendee.put(f"/api/events/{w.event.id}/photo-alerts", json={"enabled": False}).status_code == 200
+    _search(w)
+    row = _row(db, w)
+    assert row.last_searched_at > first and row.enabled is False  # a new search keeps the opt-out
+
+
+def test_banner_flag(w: SimpleNamespace, db: Session) -> None:
+    assert _banner(w) is False  # never searched
+    _search(w)
+    assert _banner(w) is False
+    w.photo(image=solid_jpeg())  # faceless photos never count
+    photo_pipeline.index_photo(db, w.photo(image=solid_jpeg()).id)
+    assert _banner(w) is False
+    photo_pipeline.index_photo(db, w.photo(image=group_photo_bytes()).id)
+    assert _banner(w) is True
+    _search(w)
+    assert _banner(w) is False
+
+
+def test_toggle_requires_prior_search(w: SimpleNamespace) -> None:
+    url = f"/api/events/{w.event.id}/photo-alerts"
+    assert w.attendee.get(url).json() == {"subscribed": False, "enabled": False}
+    r = w.attendee.put(url, json={"enabled": False})
+    assert r.status_code == 409 and r.json()["detail"] == "search_first"
+
+
+def test_toggle_roundtrip(w: SimpleNamespace) -> None:
+    url = f"/api/events/{w.event.id}/photo-alerts"
+    _search(w)
+    assert w.attendee.get(url).json() == {"subscribed": True, "enabled": True}
+    assert w.attendee.put(url, json={"enabled": False}).json() == {"subscribed": True, "enabled": False}
+    assert w.attendee.get(url).json() == {"subscribed": True, "enabled": False}
+    assert w.attendee.put(url, json={"enabled": True}).json() == {"subscribed": True, "enabled": True}
+
+
+def test_preferences_new_photo_alerts(w: SimpleNamespace, db: Session) -> None:
+    assert w.attendee.get("/api/me").json()["new_photo_alerts"] is True
+    r = w.attendee.patch("/api/me/preferences", json={"new_photo_alerts": False})
+    assert r.status_code == 200 and r.json()["new_photo_alerts"] is False
+    assert not [h for h in r.headers.get_list("set-cookie") if h.startswith("ef_theme=")]  # theme untouched
+    assert r.json()["theme"] == "system"
+    r = w.attendee.patch("/api/me/preferences", json={"theme": "dark"})
+    assert r.json()["theme"] == "dark" and r.json()["new_photo_alerts"] is False
+
+
+def test_admin_event_out_has_no_alert_rows(w: SimpleNamespace) -> None:
+    """Organizers never see who searched (Privacy Notice): no alert data in admin views."""
+    _search(w)
+    admin = w.org.get(f"/api/events/{w.event.id}/admin").json()
+    members = w.org.get(f"/api/events/{w.event.id}/members").json()
+    text = str(admin) + str(members)
+    for field in ("last_searched_at", "new_photos_since_last_search", "notified_through", "last_notified_at", "subscribed"):
+        assert field not in text
+
+
+def test_organizer_can_disable_notify_new_photos(w: SimpleNamespace) -> None:
+    assert w.org.get(f"/api/events/{w.event.id}/admin").json()["notify_new_photos"] is True
+    r = w.org.patch(f"/api/events/{w.event.id}", json={"notify_new_photos": False})
+    assert r.status_code == 200 and r.json()["notify_new_photos"] is False

@@ -225,7 +225,11 @@ def me(user: CurrentUser) -> User:
 
 @me_router.patch("/me/preferences", response_model=UserOut)
 def update_preferences(body: PreferencesIn, response: Response, user: CurrentUser, db: DB) -> User:
-    user.theme = body.theme
+    if body.new_photo_alerts is not None:
+        user.new_photo_alerts = body.new_photo_alerts
+    if body.theme is not None:
+        user.theme = body.theme
     db.commit()
-    set_theme_cookie(response, user.theme)
+    if body.theme is not None:
+        set_theme_cookie(response, user.theme)
     return user

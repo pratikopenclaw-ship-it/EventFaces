@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, computed_field, field_validator
 
 from app.models.enums import ThemePreference, UserRole
 from app.schemas.legal import AcceptsTerms
@@ -49,6 +49,7 @@ class UserOut(BaseModel):
     email_verified_at: datetime | None
     created_at: datetime
     theme: ThemePreference
+    new_photo_alerts: bool = True
     terms_version: str | None = None
     organizer_terms_version: str | None = None
 
@@ -69,7 +70,18 @@ class UserOut(BaseModel):
 
 
 class PreferencesIn(BaseModel):
-    theme: ThemePreference
+    """Only the provided preferences change."""
+
+    theme: ThemePreference | None = None
+    new_photo_alerts: bool | None = None
+
+    @field_validator("theme", "new_photo_alerts")
+    @classmethod
+    def _not_null(cls, value: object) -> object:
+        # Omit a preference to keep it; an explicit null is refused (defaults aren't validated).
+        if value is None:
+            raise ValueError("must not be null")
+        return value
 
 
 class MessageOut(BaseModel):

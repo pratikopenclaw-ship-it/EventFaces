@@ -25,6 +25,202 @@
         "title": "AcceptLegalIn",
         "type": "object"
       },
+      "AddonCheckoutIn": {
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/AddonKind"
+          },
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "title": "Photo Ids",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "photo_ids"
+        ],
+        "title": "AddonCheckoutIn",
+        "type": "object"
+      },
+      "AddonCheckoutOut": {
+        "properties": {
+          "checkout_url": {
+            "title": "Checkout Url",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "order_id",
+          "checkout_url"
+        ],
+        "title": "AddonCheckoutOut",
+        "type": "object"
+      },
+      "AddonKind": {
+        "enum": [
+          "human_edit"
+        ],
+        "title": "AddonKind",
+        "type": "string"
+      },
+      "AddonOrderOut": {
+        "properties": {
+          "amount_cents": {
+            "title": "Amount Cents",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "event_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
+          },
+          "failure_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/AddonKind"
+          },
+          "paid_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At"
+          },
+          "photo_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Photo Ids",
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AddonOrderStatus"
+          },
+          "vat_cents": {
+            "default": 0,
+            "title": "Vat Cents",
+            "type": "integer"
+          },
+          "vat_rate": {
+            "title": "Vat Rate",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "event_id",
+          "kind",
+          "photo_ids",
+          "amount_cents",
+          "currency",
+          "vat_rate",
+          "status",
+          "failure_code",
+          "created_at",
+          "paid_at"
+        ],
+        "title": "AddonOrderOut",
+        "type": "object"
+      },
+      "AddonOrderStatus": {
+        "enum": [
+          "pending",
+          "paid",
+          "canceled"
+        ],
+        "title": "AddonOrderStatus",
+        "type": "string"
+      },
+      "AddonTestCheckoutOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AddonOrderOut"
+          },
+          "test_cards": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Test Cards",
+            "type": "array"
+          }
+        },
+        "required": [
+          "order",
+          "test_cards"
+        ],
+        "title": "AddonTestCheckoutOut",
+        "type": "object"
+      },
+      "AddonTestPaymentOut": {
+        "properties": {
+          "order": {
+            "$ref": "#/components/schemas/AddonOrderOut"
+          },
+          "outcome": {
+            "enum": [
+              "paid",
+              "failed",
+              "duplicate",
+              "ignored"
+            ],
+            "title": "Outcome",
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome",
+          "order"
+        ],
+        "title": "AddonTestPaymentOut",
+        "type": "object"
+      },
       "AppConfigOut": {
         "properties": {
           "app_attest": {
@@ -126,15 +322,23 @@
             "type": "number"
           },
           "wrong_rate": {
-            "title": "Wrong Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong Rate"
           }
         },
         "required": [
           "lower",
           "upper",
           "me",
-          "not_me"
+          "not_me",
+          "wrong_rate"
         ],
         "title": "BandOut",
         "type": "object"
@@ -149,10 +353,18 @@
             "type": "array"
           },
           "subscription": {
-            "$ref": "#/components/schemas/SubscriptionOut"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubscriptionOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
+          "subscription",
           "orders"
         ],
         "title": "BillingOverviewOut",
@@ -179,15 +391,29 @@
       "CheckoutIn": {
         "properties": {
           "event_date": {
-            "format": "date",
-            "title": "Event Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
           },
           "event_name": {
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Event Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Name"
           },
           "plan": {
             "enum": [
@@ -305,9 +531,16 @@
             "type": "boolean"
           },
           "given_at": {
-            "format": "date-time",
-            "title": "Given At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Given At"
           },
           "grant_days": {
             "title": "Grant Days",
@@ -325,6 +558,7 @@
           "version",
           "grant_days",
           "given",
+          "given_at",
           "text"
         ],
         "title": "ConsentInfo",
@@ -470,14 +704,28 @@
         "description": "Re-authenticate with the password, or (accounts without one: app sign-in) with the\ncode from POST /api/me/reauth-code.",
         "properties": {
           "code": {
-            "pattern": "^\\d{6}$",
-            "title": "Code",
-            "type": "string"
+            "anyOf": [
+              {
+                "pattern": "^\\d{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
           },
           "password": {
-            "maxLength": 128,
-            "title": "Password",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Password"
           }
         },
         "title": "DeleteMeIn",
@@ -617,17 +865,31 @@
       "EventAdminOut": {
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "access_code": {
             "title": "Access Code",
             "type": "string"
           },
           "access_expires_at": {
-            "format": "date-time",
-            "title": "Access Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
@@ -643,9 +905,16 @@
             "type": "string"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "delete_photos_on_expiry": {
             "title": "Delete Photos On Expiry",
@@ -656,8 +925,15 @@
             "type": "string"
           },
           "drive_folder_id": {
-            "title": "Drive Folder Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder Id"
           },
           "guest_upload_enabled": {
             "title": "Guest Upload Enabled",
@@ -683,27 +959,42 @@
             "title": "Name",
             "type": "string"
           },
+          "notify_new_photos": {
+            "title": "Notify New Photos",
+            "type": "boolean"
+          },
           "slug": {
             "title": "Slug",
             "type": "string"
           },
           "upload_max_bytes": {
-            "title": "Upload Max Bytes",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
+          "date",
           "description",
+          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload",
           "join_mode",
           "access_code",
           "moderation_mode",
           "auto_publish_faceless_photos",
+          "notify_new_photos",
           "delete_photos_on_expiry",
+          "drive_folder_id",
           "created_at"
         ],
         "title": "EventAdminOut",
@@ -712,13 +1003,27 @@
       "EventCreate": {
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "access_expires_at": {
-            "format": "date-time",
-            "title": "Access Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
           },
           "allow_selfie_file_upload": {
             "default": false,
@@ -731,9 +1036,16 @@
             "type": "boolean"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "delete_photos_on_expiry": {
             "default": false,
@@ -747,8 +1059,15 @@
             "type": "string"
           },
           "drive_folder": {
-            "title": "Drive Folder",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder"
           },
           "guest_upload_enabled": {
             "default": false,
@@ -768,6 +1087,11 @@
             "minLength": 1,
             "title": "Name",
             "type": "string"
+          },
+          "notify_new_photos": {
+            "default": true,
+            "title": "Notify New Photos",
+            "type": "boolean"
           }
         },
         "required": [
@@ -779,13 +1103,27 @@
       "EventListItem": {
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "access_expires_at": {
-            "format": "date-time",
-            "title": "Access Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
@@ -797,9 +1135,16 @@
             "type": "boolean"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "description": {
             "title": "Description",
@@ -820,7 +1165,14 @@
             "type": "string"
           },
           "my_role": {
-            "$ref": "#/components/schemas/MemberRole"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MemberRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "name": {
             "title": "Name",
@@ -832,23 +1184,39 @@
             "type": "integer"
           },
           "search_state": {
-            "title": "Search State",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Search State"
           },
           "slug": {
             "title": "Slug",
             "type": "string"
           },
           "upload_max_bytes": {
-            "title": "Upload Max Bytes",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
+          "date",
           "description",
+          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload"
         ],
@@ -879,8 +1247,15 @@
             "type": "integer"
           },
           "wrong_rate": {
-            "title": "Wrong Rate",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wrong Rate"
           }
         },
         "required": [
@@ -888,31 +1263,151 @@
           "event_name",
           "searches",
           "feedback",
+          "wrong_rate",
           "missing_reports"
         ],
         "title": "EventMatchQualityOut",
         "type": "object"
       },
-      "EventPublicOut": {
-        "description": "What attendees see: no access code, no admin settings.",
+      "EventMemberOut": {
+        "description": "GET /api/events/{id} for the requesting member: plus their own new-photo banner flag\n(never on admin views: organizers don't see who searched).",
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "access_expires_at": {
-            "format": "date-time",
-            "title": "Access Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
             "type": "boolean"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
+          },
+          "description": {
+            "title": "Description",
             "type": "string"
+          },
+          "guest_upload_enabled": {
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
+          },
+          "has_logo": {
+            "default": false,
+            "title": "Has Logo",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "new_photos_since_last_search": {
+            "default": false,
+            "title": "New Photos Since Last Search",
+            "type": "boolean"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "upload_max_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "date",
+          "description",
+          "access_expires_at",
+          "guest_upload_enabled",
+          "allow_selfie_file_upload"
+        ],
+        "title": "EventMemberOut",
+        "type": "object"
+      },
+      "EventPublicOut": {
+        "description": "What attendees see: no access code, no admin settings.",
+        "properties": {
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "access_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
+          },
+          "allow_selfie_file_upload": {
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
+          },
+          "date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "description": {
             "title": "Description",
@@ -941,15 +1436,24 @@
             "type": "string"
           },
           "upload_max_bytes": {
-            "title": "Upload Max Bytes",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Upload Max Bytes"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
+          "date",
           "description",
+          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload"
         ],
@@ -960,55 +1464,150 @@
         "description": "All fields optional; only provided fields are changed.",
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "access_expires_at": {
-            "format": "date-time",
-            "title": "Access Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access Expires At"
           },
           "allow_selfie_file_upload": {
-            "title": "Allow Selfie File Upload",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Allow Selfie File Upload"
           },
           "auto_publish_faceless_photos": {
-            "title": "Auto Publish Faceless Photos",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Auto Publish Faceless Photos"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "delete_photos_on_expiry": {
-            "title": "Delete Photos On Expiry",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delete Photos On Expiry"
           },
           "description": {
-            "maxLength": 5000,
-            "title": "Description",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
           },
           "drive_folder": {
-            "title": "Drive Folder",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drive Folder"
           },
           "guest_upload_enabled": {
-            "title": "Guest Upload Enabled",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Guest Upload Enabled"
           },
           "join_mode": {
-            "$ref": "#/components/schemas/JoinMode"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JoinMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "moderation_mode": {
-            "$ref": "#/components/schemas/ModerationMode"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ModerationMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "name": {
-            "maxLength": 200,
-            "minLength": 1,
-            "title": "Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "notify_new_photos": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notify New Photos"
           }
         },
         "title": "EventUpdate",
@@ -1021,27 +1620,59 @@
             "type": "integer"
           },
           "max_attendees": {
-            "title": "Max Attendees",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Attendees"
           },
           "max_photos": {
-            "title": "Max Photos",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Photos"
           },
           "photos": {
             "title": "Photos",
             "type": "integer"
           },
           "plan": {
-            "title": "Plan",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan"
           },
           "plan_name": {
-            "title": "Plan Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Name"
           }
         },
         "required": [
+          "plan",
+          "plan_name",
+          "max_attendees",
+          "max_photos",
           "attendees",
           "photos"
         ],
@@ -1192,8 +1823,15 @@
             "type": "integer"
           },
           "suggested_threshold": {
-            "title": "Suggested Threshold",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Threshold"
           },
           "suggestion_note": {
             "title": "Suggestion Note",
@@ -1207,6 +1845,7 @@
           "bands",
           "current_possible",
           "current_best",
+          "suggested_threshold",
           "suggestion_note",
           "quality_histogram",
           "rejection_reasons",
@@ -1260,9 +1899,16 @@
       "InviteOut": {
         "properties": {
           "accepted_at": {
-            "format": "date-time",
-            "title": "Accepted At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accepted At"
           },
           "email": {
             "title": "Email",
@@ -1279,9 +1925,16 @@
             "type": "string"
           },
           "sent_at": {
-            "format": "date-time",
-            "title": "Sent At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
           },
           "status": {
             "$ref": "#/components/schemas/InviteStatus"
@@ -1291,7 +1944,9 @@
           "id",
           "email",
           "status",
-          "expires_at"
+          "sent_at",
+          "expires_at",
+          "accepted_at"
         ],
         "title": "InviteOut",
         "type": "object"
@@ -1311,9 +1966,16 @@
             "type": "string"
           },
           "event_date": {
-            "format": "date",
-            "title": "Event Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
           },
           "event_name": {
             "title": "Event Name",
@@ -1322,6 +1984,7 @@
         },
         "required": [
           "event_name",
+          "event_date",
           "email",
           "account_exists",
           "accepted"
@@ -1454,13 +2117,27 @@
       "JoinPreviewOut": {
         "properties": {
           "accent_color": {
-            "title": "Accent Color",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
           },
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "join_mode": {
             "$ref": "#/components/schemas/JoinMode"
@@ -1477,6 +2154,7 @@
         "required": [
           "slug",
           "name",
+          "date",
           "join_mode"
         ],
         "title": "JoinPreviewOut",
@@ -1610,8 +2288,15 @@
       "MatchOut": {
         "properties": {
           "height": {
-            "title": "Height",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
           },
           "id": {
             "format": "uuid",
@@ -1631,14 +2316,23 @@
             "type": "string"
           },
           "width": {
-            "title": "Width",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
           }
         },
         "required": [
           "id",
           "similarity",
-          "tier"
+          "tier",
+          "width",
+          "height"
         ],
         "title": "MatchOut",
         "type": "object"
@@ -1695,8 +2389,15 @@
             "type": "integer"
           },
           "suggested_threshold": {
-            "title": "Suggested Threshold",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Suggested Threshold"
           },
           "suggestion_note": {
             "title": "Suggestion Note",
@@ -1710,6 +2411,7 @@
           "bands",
           "current_possible",
           "current_best",
+          "suggested_threshold",
           "suggestion_note",
           "quality_histogram",
           "rejection_reasons",
@@ -1726,9 +2428,16 @@
             "type": "string"
           },
           "expires_at": {
-            "format": "date-time",
-            "title": "Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
           },
           "joined_at": {
             "format": "date-time",
@@ -1752,7 +2461,8 @@
           "email",
           "role",
           "status",
-          "joined_at"
+          "joined_at",
+          "expires_at"
         ],
         "title": "MemberOut",
         "type": "object"
@@ -1777,12 +2487,26 @@
       "MemberUpdate": {
         "properties": {
           "expires_at": {
-            "format": "date-time",
-            "title": "Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
           },
           "status": {
-            "$ref": "#/components/schemas/MemberStatus"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MemberStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "title": "MemberUpdate",
@@ -1877,16 +2601,32 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "title": "Original Filename",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
           },
           "uploader_email": {
-            "title": "Uploader Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploader Email"
           }
         },
         "required": [
           "id",
+          "original_filename",
+          "uploader_email",
           "index_status",
           "face_count",
           "created_at"
@@ -1905,13 +2645,27 @@
       "MyPhotoOut": {
         "properties": {
           "expires_at": {
-            "format": "date-time",
-            "title": "Expires At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
           },
           "height": {
-            "title": "Height",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
           },
           "id": {
             "format": "uuid",
@@ -1923,32 +2677,66 @@
             "type": "boolean"
           },
           "similarity": {
-            "title": "Similarity",
-            "type": "number"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Similarity"
           },
           "tier": {
-            "enum": [
-              "best",
-              "possible"
+            "anyOf": [
+              {
+                "enum": [
+                  "best",
+                  "possible"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Tier",
-            "type": "string"
+            "title": "Tier"
           },
           "verdict": {
-            "enum": [
-              "me",
-              "not_me"
+            "anyOf": [
+              {
+                "enum": [
+                  "me",
+                  "not_me"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Verdict",
-            "type": "string"
+            "title": "Verdict"
           },
           "width": {
-            "title": "Width",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
           }
         },
         "required": [
           "id",
+          "width",
+          "height",
+          "similarity",
+          "tier",
+          "verdict",
+          "expires_at",
           "shortlisted"
         ],
         "title": "MyPhotoOut",
@@ -1962,8 +2750,15 @@
             "type": "string"
           },
           "error": {
-            "title": "Error",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
           },
           "id": {
             "format": "uuid",
@@ -1974,8 +2769,15 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "title": "Original Filename",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
           },
           "status": {
             "$ref": "#/components/schemas/PhotoStatus"
@@ -1983,8 +2785,10 @@
         },
         "required": [
           "id",
+          "original_filename",
           "status",
           "index_status",
+          "error",
           "created_at"
         ],
         "title": "MyUploadOut",
@@ -2015,22 +2819,50 @@
             "type": "string"
           },
           "event_date": {
-            "format": "date",
-            "title": "Event Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
           },
           "event_id": {
-            "format": "uuid",
-            "title": "Event Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Id"
           },
           "event_name": {
-            "title": "Event Name",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Name"
           },
           "failure_code": {
-            "title": "Failure Code",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Code"
           },
           "id": {
             "format": "uuid",
@@ -2041,9 +2873,16 @@
             "$ref": "#/components/schemas/OrderKind"
           },
           "paid_at": {
-            "format": "date-time",
-            "title": "Paid At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paid At"
           },
           "plan": {
             "title": "Plan",
@@ -2075,7 +2914,12 @@
           "currency",
           "vat_rate",
           "status",
-          "created_at"
+          "failure_code",
+          "event_name",
+          "event_date",
+          "event_id",
+          "created_at",
+          "paid_at"
         ],
         "title": "OrderOut",
         "type": "object"
@@ -2115,16 +2959,30 @@
             "type": "integer"
           },
           "error": {
-            "title": "Error",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
           },
           "face_count": {
             "title": "Face Count",
             "type": "integer"
           },
           "height": {
-            "title": "Height",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
           },
           "id": {
             "format": "uuid",
@@ -2135,13 +2993,27 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "title": "Original Filename",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Filename"
           },
           "shared_at": {
-            "format": "date-time",
-            "title": "Shared At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shared At"
           },
           "source": {
             "$ref": "#/components/schemas/PhotoSource"
@@ -2150,8 +3022,15 @@
             "$ref": "#/components/schemas/PhotoStatus"
           },
           "width": {
-            "title": "Width",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
           }
         },
         "required": [
@@ -2159,11 +3038,47 @@
           "source",
           "status",
           "index_status",
+          "original_filename",
+          "width",
+          "height",
           "face_count",
           "download_count",
+          "error",
           "created_at"
         ],
         "title": "PhotoAdminOut",
+        "type": "object"
+      },
+      "PhotoAlertIn": {
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "title": "PhotoAlertIn",
+        "type": "object"
+      },
+      "PhotoAlertOut": {
+        "description": "`subscribed`: the user has searched the event (alerts exist only after a search).",
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "subscribed": {
+            "title": "Subscribed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "subscribed",
+          "enabled"
+        ],
+        "title": "PhotoAlertOut",
         "type": "object"
       },
       "PhotoPage": {
@@ -2292,14 +3207,30 @@
         "type": "object"
       },
       "PreferencesIn": {
+        "description": "Only the provided preferences change.",
         "properties": {
+          "new_photo_alerts": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "New Photo Alerts"
+          },
           "theme": {
-            "$ref": "#/components/schemas/ThemePreference"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ThemePreference"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
-        "required": [
-          "theme"
-        ],
         "title": "PreferencesIn",
         "type": "object"
       },
@@ -2372,10 +3303,17 @@
       "RefreshIn": {
         "properties": {
           "assertion": {
-            "maxLength": 1400,
-            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
-            "title": "Assertion",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 1400,
+                "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assertion"
           },
           "device_id": {
             "format": "uuid",
@@ -2443,9 +3381,16 @@
       "RemovalInfo": {
         "properties": {
           "event_date": {
-            "format": "date",
-            "title": "Event Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Date"
           },
           "event_name": {
             "title": "Event Name",
@@ -2453,7 +3398,8 @@
           }
         },
         "required": [
-          "event_name"
+          "event_name",
+          "event_date"
         ],
         "title": "RemovalInfo",
         "type": "object"
@@ -2512,13 +3458,20 @@
             "type": "string"
           },
           "photo_ids": {
-            "items": {
-              "format": "uuid",
-              "type": "string"
-            },
-            "maxItems": 500,
-            "title": "Photo Ids",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "maxItems": 500,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Photo Ids"
           }
         },
         "required": [
@@ -2588,8 +3541,15 @@
             "type": "string"
           },
           "reporter_email": {
-            "title": "Reporter Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reporter Email"
           },
           "status": {
             "$ref": "#/components/schemas/ReportStatus"
@@ -2601,6 +3561,7 @@
           "reason",
           "details",
           "status",
+          "reporter_email",
           "created_at"
         ],
         "title": "ReportOut",
@@ -2666,11 +3627,19 @@
             "type": "integer"
           },
           "user_email": {
-            "title": "User Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Email"
           }
         },
         "required": [
+          "user_email",
           "match_count",
           "created_at"
         ],
@@ -2709,24 +3678,59 @@
       "SearchStatusOut": {
         "properties": {
           "code": {
-            "title": "Code",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
           },
           "match_count": {
-            "title": "Match Count",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Match Count"
           },
           "message": {
-            "title": "Message",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
           },
           "queued_at": {
-            "title": "Queued At",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queued At"
           },
           "shot": {
-            "title": "Shot",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shot"
           },
           "state": {
             "enum": [
@@ -2741,8 +3745,15 @@
             "type": "string"
           },
           "updated_at": {
-            "title": "Updated At",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
           }
         },
         "required": [
@@ -2851,10 +3862,20 @@
       "ServiceAccountOut": {
         "properties": {
           "email": {
-            "title": "Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
           }
         },
+        "required": [
+          "email"
+        ],
         "title": "ServiceAccountOut",
         "type": "object"
       },
@@ -2916,8 +3937,15 @@
       "SharedPhotoOut": {
         "properties": {
           "height": {
-            "title": "Height",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Height"
           },
           "id": {
             "format": "uuid",
@@ -2925,12 +3953,21 @@
             "type": "string"
           },
           "width": {
-            "title": "Width",
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
           }
         },
         "required": [
-          "id"
+          "id",
+          "width",
+          "height"
         ],
         "title": "SharedPhotoOut",
         "type": "object"
@@ -2966,10 +4003,17 @@
             "type": "string"
           },
           "next": {
-            "maxLength": 130,
-            "pattern": "^/join/[a-z0-9-]{1,80}(\\?code=[A-Za-z0-9]{1,32})?$",
-            "title": "Next",
-            "type": "string"
+            "anyOf": [
+              {
+                "maxLength": 130,
+                "pattern": "^/join/[a-z0-9-]{1,80}(\\?code=[A-Za-z0-9]{1,32})?$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next"
           },
           "password": {
             "maxLength": 128,
@@ -2989,9 +4033,16 @@
       "SubscriptionEventIn": {
         "properties": {
           "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Date"
           },
           "name": {
             "maxLength": 200,
@@ -3009,9 +4060,16 @@
       "SubscriptionOut": {
         "properties": {
           "canceled_at": {
-            "format": "date-time",
-            "title": "Canceled At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Canceled At"
           },
           "current_period_end": {
             "format": "date-time",
@@ -3056,7 +4114,8 @@
           "plan",
           "status",
           "current_period_start",
-          "current_period_end"
+          "current_period_end",
+          "canceled_at"
         ],
         "title": "SubscriptionOut",
         "type": "object"
@@ -3077,8 +4136,15 @@
             "type": "string"
           },
           "error": {
-            "title": "Error",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
           },
           "files_listed": {
             "title": "Files Listed",
@@ -3098,9 +4164,16 @@
             "type": "integer"
           },
           "finished_at": {
-            "format": "date-time",
-            "title": "Finished At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
           },
           "folder_id": {
             "title": "Folder Id",
@@ -3112,9 +4185,16 @@
             "type": "string"
           },
           "started_at": {
-            "format": "date-time",
-            "title": "Started At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Started At"
           },
           "status": {
             "$ref": "#/components/schemas/SyncStatus"
@@ -3127,7 +4207,10 @@
           "files_listed",
           "files_new",
           "files_retried",
-          "created_at"
+          "error",
+          "created_at",
+          "started_at",
+          "finished_at"
         ],
         "title": "SyncRunOut",
         "type": "object"
@@ -3153,15 +4236,29 @@
             "type": "integer"
           },
           "folder_id": {
-            "title": "Folder Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Folder Id"
           },
           "in_progress": {
             "title": "In Progress",
             "type": "boolean"
           },
           "last_run": {
-            "$ref": "#/components/schemas/SyncRunOut"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SyncRunOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "pipeline": {
             "$ref": "#/components/schemas/PipelineCounts"
@@ -3171,12 +4268,22 @@
             "type": "integer"
           },
           "service_account_email": {
-            "title": "Service Account Email",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Account Email"
           }
         },
         "required": [
           "drive_configured",
+          "service_account_email",
+          "folder_id",
+          "last_run",
           "in_progress",
           "pipeline",
           "published_photos",
@@ -3352,14 +4459,26 @@
             "type": "string"
           },
           "email_verified_at": {
-            "format": "date-time",
-            "title": "Email Verified At",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Verified At"
           },
           "id": {
             "format": "uuid",
             "title": "Id",
             "type": "string"
+          },
+          "new_photo_alerts": {
+            "default": true,
+            "title": "New Photo Alerts",
+            "type": "boolean"
           },
           "organizer_terms_accepted": {
             "readOnly": true,
@@ -3367,8 +4486,15 @@
             "type": "boolean"
           },
           "organizer_terms_version": {
-            "title": "Organizer Terms Version",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organizer Terms Version"
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -3380,8 +4506,15 @@
             "type": "boolean"
           },
           "terms_version": {
-            "title": "Terms Version",
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Version"
           },
           "theme": {
             "$ref": "#/components/schemas/ThemePreference"
@@ -3391,6 +4524,7 @@
           "id",
           "email",
           "role",
+          "email_verified_at",
           "created_at",
           "theme",
           "terms_accepted",
@@ -3846,6 +4980,100 @@
         ]
       }
     },
+    "/api/billing/addon-checkout/{session_ref}": {
+      "get": {
+        "operationId": "billing_addon_test_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonTestCheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Test Checkout",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
+    "/api/billing/addon-checkout/{session_ref}/pay": {
+      "post": {
+        "operationId": "billing_addon_test_pay",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestPaymentIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonTestPaymentOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Test Pay",
+        "tags": [
+          "billing"
+        ]
+      }
+    },
     "/api/billing/checkout": {
       "post": {
         "operationId": "billing_start_checkout",
@@ -4131,7 +5359,7 @@
     },
     "/api/billing/webhook/fake": {
       "post": {
-        "description": "Server-to-server payment confirmation. No session: authenticated only by its HMAC\nsignature and timestamp (replays and forgeries are refused; each event applies once).\nExempt from CSRF because it carries no cookies (api/csrf.py).",
+        "description": "Server-to-server payment confirmation. No session: authenticated only by its HMAC\nsignature and timestamp (replays and forgeries are refused; each event applies once).\nExempt from CSRF because it carries no cookies (api/csrf.py). Routes to whichever\ntable's provider_ref matches: an Order (event purchase) or an AddonOrder (photo add-on) \u2014\nnever both, so each webhook event id is only ever inserted into WebhookEvent once.",
         "operationId": "billing_fake_webhook",
         "parameters": [
           {
@@ -4394,7 +5622,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EventPublicOut"
+                  "$ref": "#/components/schemas/EventMemberOut"
                 }
               }
             },
@@ -4508,6 +5736,59 @@
         "summary": "Rotate Access Code",
         "tags": [
           "events"
+        ]
+      }
+    },
+    "/api/events/{event_id}/addons/checkout": {
+      "post": {
+        "operationId": "billing_addon_checkout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddonCheckoutIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddonCheckoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Addon Checkout",
+        "tags": [
+          "billing"
         ]
       }
     },
@@ -5472,6 +6753,100 @@
         ]
       }
     },
+    "/api/events/{event_id}/photo-alerts": {
+      "get": {
+        "operationId": "photo_alerts_get_photo_alerts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAlertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Photo Alerts",
+        "tags": [
+          "photo_alerts"
+        ]
+      },
+      "put": {
+        "operationId": "photo_alerts_set_photo_alerts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotoAlertIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhotoAlertOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Set Photo Alerts",
+        "tags": [
+          "photo_alerts"
+        ]
+      }
+    },
     "/api/events/{event_id}/photos": {
       "get": {
         "description": "`faceless=true`: only photos that may be shared with everyone (services/sharing.py).",
@@ -5516,7 +6891,14 @@
             "name": "index_status",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/IndexStatus",
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/IndexStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Index Status"
             }
           },
@@ -5525,7 +6907,14 @@
             "name": "status",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/PhotoStatus",
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PhotoStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
               "title": "Status"
             }
           },
@@ -5558,8 +6947,15 @@
             "name": "shared",
             "required": false,
             "schema": {
-              "title": "Shared",
-              "type": "boolean"
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Shared"
             }
           }
         ],
@@ -7318,12 +8714,19 @@
             "name": "lang",
             "required": false,
             "schema": {
-              "enum": [
-                "de",
-                "en"
+              "anyOf": [
+                {
+                  "enum": [
+                    "de",
+                    "en"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
               ],
-              "title": "Lang",
-              "type": "string"
+              "title": "Lang"
             }
           }
         ],

@@ -48,6 +48,7 @@ class EventBase(BaseModel):
     guest_upload_enabled: bool = False
     moderation_mode: ModerationMode = ModerationMode.manual
     auto_publish_faceless_photos: bool = True
+    notify_new_photos: bool = True
     allow_selfie_file_upload: bool = False
     delete_photos_on_expiry: bool = False
     drive_folder: DriveFolder = None
@@ -69,6 +70,7 @@ class EventUpdate(BaseModel):
     guest_upload_enabled: bool | None = None
     moderation_mode: ModerationMode | None = None
     auto_publish_faceless_photos: bool | None = None
+    notify_new_photos: bool | None = None
     allow_selfie_file_upload: bool | None = None
     delete_photos_on_expiry: bool | None = None
     drive_folder: DriveFolder = None
@@ -93,11 +95,19 @@ class EventPublicOut(BaseModel):
     upload_max_bytes: int | None = None
 
 
+class EventMemberOut(EventPublicOut):
+    """GET /api/events/{id} for the requesting member: plus their own new-photo banner flag
+    (never on admin views: organizers don't see who searched)."""
+
+    new_photos_since_last_search: bool = False
+
+
 class EventAdminOut(EventPublicOut):
     join_mode: JoinMode
     access_code: str
     moderation_mode: ModerationMode
     auto_publish_faceless_photos: bool
+    notify_new_photos: bool
     delete_photos_on_expiry: bool
     drive_folder_id: str | None
     created_at: dt.datetime

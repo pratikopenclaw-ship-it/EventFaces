@@ -263,6 +263,8 @@ OPS: list[Op] = [
     # --- members of event A ---
     Op("GET", f"/api/events/{E}", "MEMBER"),
     Op("GET", f"/api/events/{E}/logo", "MEMBER"),
+    Op("GET", f"/api/events/{E}/photo-alerts", "MEMBER"),
+    Op("PUT", f"/api/events/{E}/photo-alerts", "MEMBER", json={"enabled": False}),
     Op("POST", f"/api/events/{E}/capture-token", "MEMBER"),
     Op("POST", f"/api/events/{E}/search?source=upload", "MEMBER", content=b"x", headers={"content-type": "image/jpeg"}),
     Op("GET", f"/api/events/{E}/my-photos", "MEMBER"),
