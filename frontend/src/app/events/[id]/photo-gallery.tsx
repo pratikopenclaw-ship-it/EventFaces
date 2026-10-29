@@ -1,12 +1,16 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { Alert, Button } from "@/components/ui";
 import { del, post, triggerDownload } from "@/lib/api";
-import type { DownloadTicket, MatchedPhoto, Verdict } from "@/lib/types";
+import type { AddonCheckoutStart, DownloadTicket, MatchedPhoto, Verdict } from "@/lib/types";
 
 import { ReportDialog } from "./report-dialog";
+
+// Matches AddonCheckoutIn.photo_ids (backend/app/schemas/billing.py).
+const MAX_ORDER_PHOTOS = 50;
 
 type Section = { key: string; title: string; note: string | null };
 
@@ -24,6 +28,7 @@ export function PhotoGallery({
   reveal = false,
   heading,
   shortlist = true,
+  orderEdits = true,
 }: {
   eventId: string;
   photos: MatchedPhoto[];
@@ -35,6 +40,8 @@ export function PhotoGallery({
   heading?: string;
   /** Show the shortlist star (the shortlist only holds matched and own photos). */
   shortlist?: boolean;
+  /** Offer the paid professional edit (web only; the iOS app has no purchase UI). */
+  orderEdits?: boolean;
 }) {
   const sections: Section[] = heading ? [{ key: "all", title: heading, note: null }] : SECTIONS;
   const sectionOf = (p: MatchedPhoto) => (heading ? "all" : (p.tier ?? "upload"));
@@ -45,6 +52,7 @@ export function PhotoGallery({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [reporting, setReporting] = useState<string | null>(null);
+  const router = useRouter();
 
   async function toggleShortlist(photo: MatchedPhoto) {
     const next = !photo.shortlisted;
@@ -85,6 +93,24 @@ export function PhotoGallery({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Download failed");
     } finally {
+      setBusy(false);
+    }
+  }
+
+  async function orderEdit(ids: string[]) {
+    if (ids.length > MAX_ORDER_PHOTOS) {
+      setError(`An order can hold up to ${MAX_ORDER_PHOTOS} photos. Select fewer and order the rest separately.`);
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      const start = await post<AddonCheckoutStart>(`/api/events/${eventId}/addons/checkout`, { kind: "human_edit", photo_ids: ids });
+      // The test provider's page is ours; a real provider's hosted page would be on its own domain.
+      if (start.checkout_url.startsWith("/")) router.push(start.checkout_url);
+      else window.location.assign(start.checkout_url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Couldn't start the order");
       setBusy(false);
     }
   }
@@ -146,6 +172,11 @@ export function PhotoGallery({
           {selected.size > 0 && ` · ${selected.size} selected`}
         </p>
         <div className="flex gap-2">
+          {orderEdits && selected.size > 0 && (
+            <Button variant="ghost" className="text-ink hover:bg-mist hover:text-ink" disabled={busy} onClick={() => void orderEdit([...selected])}>
+              Order editing ({selected.size})
+            </Button>
+          )}
           {selected.size > 0 && (
             <Button variant="secondary" disabled={busy} onClick={() => void download([...selected])}>
               Download selected
@@ -274,6 +305,16 @@ export function PhotoGallery({
                   onClick={() => void toggleShortlist(current)}
                 >
                   {current.shortlisted ? "★ Shortlisted" : "☆ Shortlist"}
+                </Button>
+              )}
+              {orderEdits && (
+                <Button
+                  variant="ghost"
+                  className="text-ink hover:bg-mist hover:text-ink"
+                  disabled={busy}
+                  onClick={() => void orderEdit([current.id])}
+                >
+                  Order editing
                 </Button>
               )}
               <Button

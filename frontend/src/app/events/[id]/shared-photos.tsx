@@ -17,7 +17,7 @@ export function SharedPhotos({ eventId }: { eventId: string }) {
       <h2 className="font-display text-xl tracking-tight text-ink">Event photos</h2>
       <p className="mt-1 text-sm text-muted">Shared with everyone by the organizers.</p>
       <div className="mt-4">
-        <PhotoGallery eventId={eventId} photos={photos} heading="Venue, food & more" shortlist={false} onVerdict={() => {}} />
+        <PhotoGallery eventId={eventId} photos={photos} heading="Venue, food & more" shortlist={false} orderEdits={false} onVerdict={() => {}} />
       </div>
     </section>
   );
