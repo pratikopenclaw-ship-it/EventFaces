@@ -14,6 +14,8 @@ class Mail:
     subject: str
     body: str
     reply_to: str | None = None  # e.g. the sender of a contact-form message
+    # Extra headers, e.g. List-Unsubscribe (RFC 8058); values are flattened to one line.
+    headers: tuple[tuple[str, str], ...] = ()
 
 
 class Mailer(Protocol):
@@ -95,6 +97,8 @@ def build_message(mail: Mail) -> EmailMessage:
     msg["Subject"] = _one_line(mail.subject)
     if mail.reply_to:
         msg["Reply-To"] = _one_line(mail.reply_to)
+    for name, value in mail.headers:
+        msg[_one_line(name)] = _one_line(value)
     msg.set_content(mail.body)
     msg.add_alternative(render_html(mail), subtype="html")
     return msg

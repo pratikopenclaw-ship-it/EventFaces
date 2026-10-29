@@ -28,7 +28,7 @@ from app.models import Device, EventMember, MemberRole, MemberStatus
 
 log = logging.getLogger(__name__)
 
-Kind = Literal["search_ready", "search_rejected", "moderation_pending"]
+Kind = Literal["search_ready", "search_rejected", "moderation_pending", "new_photos"]
 HOSTS = {"sandbox": "https://api.sandbox.push.apple.com", "production": "https://api.push.apple.com"}
 # The only top-level keys a payload may have (tests enforce it).
 PAYLOAD_KEYS = {"aps", "kind", "event_id", "search_id"}

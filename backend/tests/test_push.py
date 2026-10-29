@@ -57,7 +57,7 @@ def _device(db: Session, user: User, token: str | None = TOKEN, env: str = "sand
     return d
 
 
-@pytest.mark.parametrize("kind", ["search_ready", "search_rejected", "moderation_pending"])
+@pytest.mark.parametrize("kind", ["search_ready", "search_rejected", "moderation_pending", "new_photos"])
 def test_payload_has_only_ids_and_localization_keys(kind: push.Kind) -> None:
     event_id = uuid.uuid4()
     body = push.payload(push.Notice(kind, event_id, search_id="s-1"))

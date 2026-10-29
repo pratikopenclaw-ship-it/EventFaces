@@ -111,6 +111,10 @@ class Settings(BaseSettings):
     search_overflow_queue_size: int = Field(default=20, ge=0, le=500)
     search_queue_max_bytes: int = Field(default=64 * 1024 * 1024, ge=0)
     search_queue_ttl_seconds: int = Field(default=900, ge=60, le=3600)
+    # New-photo alerts (services/photo_alerts.py): wait until an upload burst has been quiet
+    # this long, and send at most one notice per user and event per interval.
+    new_photo_alert_quiet_minutes: int = Field(default=10, ge=1, le=240)
+    new_photo_alert_min_interval_hours: int = Field(default=24, ge=1, le=24 * 30)
     download_token_seconds: int = 120
     zip_max_photos: int = 500
 
