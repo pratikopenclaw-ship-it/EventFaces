@@ -1,3 +1,5 @@
+import type { AddonKind } from "./types";
+
 // Prices arrive in minor units (cents), gross incl. VAT.
 
 export function formatMoney(cents: number, currency: string): string {
@@ -13,4 +15,8 @@ export const FAILURE_MESSAGES: Record<string, string> = {
   card_declined: "The card was declined. Try another test card.",
   insufficient_funds: "The card has insufficient funds. Try another test card.",
   payment_failed: "The payment didn't go through. Please try again.",
+};
+
+export const ADDON_NAMES: Record<AddonKind, string> = {
+  human_edit: "Professional photo edit",
 };

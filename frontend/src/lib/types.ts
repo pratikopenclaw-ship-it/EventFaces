@@ -408,3 +408,35 @@ export interface EventUsage {
   attendees: number;
   photos: number;
 }
+
+export type AddonKind = "human_edit";
+
+export interface AddonCheckoutStart {
+  order_id: string;
+  checkout_url: string;
+}
+
+export interface AddonOrder {
+  id: string;
+  event_id: string | null;
+  kind: AddonKind;
+  photo_ids: string[];
+  amount_cents: number;
+  vat_cents: number;
+  currency: string;
+  vat_rate: number;
+  status: "pending" | "paid" | "canceled";
+  failure_code: string | null;
+  created_at: string;
+  paid_at: string | null;
+}
+
+export interface AddonTestCheckout {
+  order: AddonOrder;
+  test_cards: string[];
+}
+
+export interface AddonTestPaymentResult {
+  outcome: "paid" | "failed" | "duplicate" | "ignored";
+  order: AddonOrder;
+}
