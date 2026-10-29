@@ -200,6 +200,7 @@ OPS: list[Op] = [
     # --- public ---
     Op("GET", "/api/health", "PUBLIC"),
     Op("GET", "/api/auth/csrf", "PUBLIC"),
+    Op("POST", "/api/alerts/unsubscribe", "PUBLIC", json={"token": "not-a-real-token-123", "scope": "event"}),
     Op("POST", "/api/auth/signup", "PUBLIC", json={"accept_terms": True, "email": "new-person@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/login", "PUBLIC", json={"email": "member@example.com", "password": PASSWORD}),
     Op("POST", "/api/auth/logout", "PUBLIC"),

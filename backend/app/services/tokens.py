@@ -1,11 +1,11 @@
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.core.security import hash_token, new_opaque_token, utcnow
-from app.models import AuthToken, TokenKind, User
+from app.models import AlertToken, AuthToken, TokenKind, User
 
 
 def issue_token(db: Session, user: User, kind: TokenKind, ttl: timedelta) -> str:
@@ -110,5 +110,21 @@ def find_valid_token(db: Session, raw: str, kind: TokenKind) -> AuthToken | None
     before doing expensive work such as password hashing."""
     token = db.scalar(select(AuthToken).where(AuthToken.token_hash == hash_token(raw), AuthToken.kind == kind))
     if token is None or token.used_at is not None or token.expires_at <= utcnow():
+        return None
+    return token
+
+
+def issue_alert_token(db: Session, user_id: uuid.UUID, event_id: uuid.UUID, expires_at: datetime) -> str:
+    """Unsubscribe-link token for new-photo alert emails; only its hash is stored."""
+    raw = new_opaque_token()
+    db.add(AlertToken(token_hash=hash_token(raw), user_id=user_id, event_id=event_id, expires_at=expires_at))
+    return raw
+
+
+def find_alert_token(db: Session, raw: str) -> AlertToken | None:
+    """The unexpired token, or None. Not consumed: one email's link can stop alerts for the
+    event and then for everything."""
+    token = db.get(AlertToken, hash_token(raw))
+    if token is None or token.expires_at <= utcnow():
         return None
     return token

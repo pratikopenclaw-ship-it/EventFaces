@@ -22,11 +22,13 @@ ALL_OPTIONAL = {
     ("PATCH", "/api/events/{event_a}"),
     ("PATCH", "/api/events/{event_a}/members/{member_a}"),
     ("DELETE", "/api/me"),  # password or code: {} is well-formed (and then refused with 403)
+    ("PATCH", "/api/me/preferences"),  # each preference is optional; {} changes nothing
 }
 
 # Every endpoint that enforces a rate limit (see `rate_limit.enforce` call sites).
 RATE_LIMITED = {
     ("POST", "/api/contact"),
+    ("POST", "/api/alerts/unsubscribe"),
     ("POST", "/api/billing/checkout"),
     ("POST", "/api/events/{event_a}/addons/checkout"),
     ("POST", "/api/billing/addon-checkout/fcs_not-a-session/pay"),
