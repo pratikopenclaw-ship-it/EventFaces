@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, CheckConstraint, Date, DateTime, Enum, ForeignKey, Integer, String, Text, func, true
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -33,6 +33,8 @@ class Event(Base):
     # matches prior behaviour) or hold it as `pending_review` for an organizer to approve
     # via the moderation queue, same as under `moderation_mode.manual`.
     auto_publish_faceless_photos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Organizer switch: tell attendees who searched when new photos go live (photo_alerts).
+    notify_new_photos: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True, server_default=true())
     allow_selfie_file_upload: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     delete_photos_on_expiry: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     drive_folder_id: Mapped[str | None] = mapped_column(String(200))

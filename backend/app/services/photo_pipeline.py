@@ -197,6 +197,13 @@ def import_drive_photo(db: Session, photo_id: uuid.UUID, enqueue_index: Enqueue)
 # --- Indexing (shared by Drive and guest uploads) --------------------------------
 
 
+def publish(photo: Photo) -> None:
+    """Make a photo live. The only way to publish (tests/test_photo_alerts.py): new-photo
+    alerts batch on published_at, so no path may set the status without it."""
+    photo.status = PhotoStatus.published
+    photo.published_at = utcnow()
+
+
 def index_photo(db: Session, photo_id: uuid.UUID) -> int:
     """Detect all faces in the stored original and replace the photo's embeddings.
 
@@ -254,7 +261,7 @@ def index_photo(db: Session, photo_id: uuid.UUID) -> int:
         if len(faces) == 0 and not event.auto_publish_faceless_photos:
             photo.status = PhotoStatus.pending_review
         else:
-            photo.status = PhotoStatus.published
+            publish(photo)
     db.commit()
     return len(faces)
 

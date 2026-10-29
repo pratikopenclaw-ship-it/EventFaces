@@ -26,7 +26,10 @@ DEFAULT_FACE_MODEL = "insightface/buffalo_l"  # model of every face indexed befo
 
 class Photo(Base):
     __tablename__ = "photos"
-    __table_args__ = (UniqueConstraint("event_id", "drive_file_id", name="uq_photos_event_drive_file"),)
+    __table_args__ = (
+        UniqueConstraint("event_id", "drive_file_id", name="uq_photos_event_drive_file"),
+        Index("ix_photos_event_published", "event_id", "published_at"),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     event_id: Mapped[uuid.UUID] = mapped_column(
@@ -62,6 +65,9 @@ class Photo(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
     indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # When the photo last went live (photo_pipeline.publish, the only way to publish).
+    # New-photo alerts batch on it (services/photo_alerts.py); reindexing keeps it.
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # Set when an organizer shares a published photo with no detected face with every
     # member of the event (services/sharing.py). Cleared when faces are found or the photo
     # is retired; photo_access only honours it for face_count == 0.

@@ -14,11 +14,13 @@ from app.models import (
     AddonKind,
     AddonOrder,
     AddonOrderStatus,
+    AlertToken,
     Device,
     AuthToken,
     DriveSyncRun,
     Event,
     EventMember,
+    EventPhotoAlert,
     EventVideo,
     Face,
     FeedbackVerdict,
@@ -61,7 +63,7 @@ def populate(session: Session) -> None:
     session.add(ev)
     session.flush()
     session.add(EventMember(event_id=ev.id, user_id=guest.id, role=MemberRole.attendee, status=MemberStatus.approved))
-    photo = Photo(id=uuid.uuid4(), event_id=ev.id, source=PhotoSource.drive, drive_file_id="drill-1", original_filename="a.jpg", status=PhotoStatus.published, index_status=IndexStatus.indexed, face_count=1)
+    photo = Photo(id=uuid.uuid4(), event_id=ev.id, source=PhotoSource.drive, drive_file_id="drill-1", original_filename="a.jpg", status=PhotoStatus.published, index_status=IndexStatus.indexed, face_count=1, indexed_at=now, published_at=now)
     upload = Photo(id=uuid.uuid4(), event_id=ev.id, source=PhotoSource.guest, uploaded_by=guest.id, original_filename="b.jpg", status=PhotoStatus.pending_review, index_status=IndexStatus.indexed)
     session.add_all([photo, upload])
     session.flush()
@@ -112,6 +114,9 @@ def populate(session: Session) -> None:
             provider_ref="drill-addon-session",
         )
     )
+    # New-photo alerts (0021): an attendee's subscription after a search, and an unsubscribe token.
+    session.add(EventPhotoAlert(user_id=guest.id, event_id=ev.id, last_searched_at=now))
+    session.add(AlertToken(token_hash=hash_token("drill-alert"), user_id=guest.id, event_id=ev.id, expires_at=now + timedelta(days=30)))
     session.commit()
 
 
