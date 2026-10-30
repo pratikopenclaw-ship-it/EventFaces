@@ -13,6 +13,8 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   theme: ThemePref;
+  /** Account-wide switch for new-photo alerts (each event can also be turned off). */
+  new_photo_alerts: boolean;
 }
 
 export interface EventPublic {
@@ -27,6 +29,14 @@ export interface EventPublic {
   /** Organizer's brand colour (#rrggbb), or null for the default accent. */
   accent_color: string | null;
   has_logo: boolean;
+  /** GET /api/events/{id} only: photos with faces went live since the caller last searched. */
+  new_photos_since_last_search?: boolean;
+}
+
+/** GET/PUT /api/events/{id}/photo-alerts. `subscribed` = the user has searched this event. */
+export interface PhotoAlertState {
+  subscribed: boolean;
+  enabled: boolean;
 }
 
 export interface EventListItem extends EventPublic {
@@ -42,6 +52,7 @@ export interface EventAdmin extends EventPublic {
   access_code: string;
   moderation_mode: ModerationMode;
   auto_publish_faceless_photos: boolean;
+  notify_new_photos: boolean;
   delete_photos_on_expiry: boolean;
   drive_folder_id: string | null;
   created_at: string;
@@ -56,6 +67,7 @@ export interface EventInput {
   guest_upload_enabled: boolean;
   moderation_mode: ModerationMode;
   auto_publish_faceless_photos: boolean;
+  notify_new_photos: boolean;
   allow_selfie_file_upload: boolean;
   delete_photos_on_expiry: boolean;
   drive_folder: string | null;

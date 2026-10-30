@@ -4,7 +4,8 @@ Runs the real FastAPI app against the *test* database, Redis DB and bucket, with
 - Celery tasks inline (eager), so Drive sync and indexing happen within the request;
 - a fake Google Drive (the brief: "mocked Drive API") holding group-photo fixtures;
 - a captured mailbox instead of SMTP;
-- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event);
+- a few /__e2e control endpoints (reset, seed, read mail, fixture images, expire event,
+  add a Drive photo, run the new-photo alerts);
 - a fake GlitchTip envelope endpoint, so error reports from the web app can be inspected.
 
     docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d api web
@@ -256,6 +257,43 @@ def expire_event(event_id: uuid.UUID) -> dict[str, str]:
         ev.access_expires_at = utcnow() - timedelta(minutes=1)
         db.commit()
     return {"ok": "expired"}
+
+
+@router.post("/event/{event_id}/new-drive-photo")
+def new_drive_photo(event_id: uuid.UUID) -> dict[str, str]:
+    """The organizer adds a photo with faces to the Drive folder and syncs it (a mirrored
+    group photo, so it isn't a duplicate of anything already imported)."""
+    import io
+
+    from PIL import Image, ImageOps
+
+    from app.models import DriveSyncRun, SyncStatus
+    from app.workers.tasks import sync_drive
+
+    out = io.BytesIO()
+    ImageOps.mirror(Image.open(io.BytesIO(group_photo_bytes())).convert("RGB")).save(out, format="JPEG", quality=90)
+    client = drive.get_drive_client()
+    assert isinstance(client, FakeDrive)  # nosec B101 - test server
+    client.folders[FOLDER][f"new-{uuid.uuid4().hex[:6]}"] = ("new.jpg", out.getvalue())
+    with SessionLocal() as db:
+        org = db.scalar(select(User).where(User.email == "org@e2e.test"))
+        if org is None:
+            raise HTTPException(404)
+        run = DriveSyncRun(event_id=event_id, folder_id=FOLDER, status=SyncStatus.queued, started_by=org.id)
+        db.add(run)
+        db.commit()
+        sync_drive.delay(str(run.id))  # eager
+    return {"ok": "synced"}
+
+
+@router.post("/run-photo-alerts")
+def run_photo_alerts() -> dict[str, int]:
+    """One beat of the new-photo alert task, with the clock moved past the quiet window."""
+    from app.services import photo_alerts
+
+    later = utcnow() + timedelta(minutes=get_settings().new_photo_alert_quiet_minutes + 1)
+    with SessionLocal() as db:
+        return {"sent": photo_alerts.run(db, later)}
 
 
 _held_slots = 0
