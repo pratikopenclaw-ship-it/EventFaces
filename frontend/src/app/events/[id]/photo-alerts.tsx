@@ -34,10 +34,13 @@ export function PhotoAlerts({
   if (!state.data?.subscribed) return null;
 
   async function setEnabled(enabled: boolean) {
+    const before = state.data!;
     setError(false);
+    state.setData({ ...before, enabled }); // the box flips at once; reverted if the save fails
     try {
       state.setData(await put<PhotoAlertState>(`/api/events/${eventId}/photo-alerts`, { enabled }));
     } catch {
+      state.setData(before);
       setError(true);
     }
   }

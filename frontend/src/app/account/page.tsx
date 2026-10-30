@@ -116,14 +116,17 @@ export default function AccountPage() {
 
 function AlertsCard({ user, onSaved }: { user: User; onSaved: () => Promise<void> }) {
   const [state, setState] = useState<"idle" | "saved" | "error">("idle");
+  const [checked, setChecked] = useState(user.new_photo_alerts);
 
   async function save(on: boolean) {
     setState("idle");
+    setChecked(on); // the box flips at once; reverted if the save fails
     try {
       await patch("/api/me/preferences", { new_photo_alerts: on });
       await onSaved();
       setState("saved");
     } catch {
+      setChecked(!on);
       setState("error");
     }
   }
@@ -135,7 +138,7 @@ function AlertsCard({ user, onSaved }: { user: User; onSaved: () => Promise<void
       <Toggle
         label="Tell me when new photos are added to events I searched"
         hint="By email and in the app, at most once a day per event."
-        checked={user.new_photo_alerts}
+        checked={checked}
         onChange={(v) => void save(v)}
       />
       {state === "saved" && <p className="mt-3 text-sm text-leaf">Saved.</p>}
