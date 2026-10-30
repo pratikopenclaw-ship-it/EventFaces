@@ -110,6 +110,14 @@ struct AuthService: Sendable {
         }
     }
 
+    func setNewPhotoAlerts(_ on: Bool) async throws -> User {
+        switch try await unwrapped({ try await api.meUpdatePreferences(body: .json(.init(newPhotoAlerts: on))) }) {
+        case let .ok(ok): return try ok.body.json
+        case .unprocessableContent: throw AppError.server(status: 422)
+        case let .undocumented(status, _): throw Self.error(status)
+        }
+    }
+
     /// Sign out here: tell the server (best effort) and wipe local secrets regardless.
     func signOut() async {
         _ = try? await api.mobileLogout()

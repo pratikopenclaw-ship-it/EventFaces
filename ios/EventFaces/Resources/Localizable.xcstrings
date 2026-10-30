@@ -96,6 +96,16 @@
         }
       }
     },
+    "A notification or email, at most once a day. We only keep when you last searched, nothing about your face.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eine Mitteilung oder E-Mail, höchstens einmal am Tag. Wir speichern nur, wann du zuletzt gesucht hast, nichts über dein Gesicht."
+          }
+        }
+      }
+    },
     "About": {
       "localizations": {
         "de": {
@@ -246,6 +256,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fragt, wenn du zur App zurückkehrst."
+          }
+        }
+      }
+    },
+    "At events you searched, at most once a day per event.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei Events, bei denen du gesucht hast, höchstens einmal am Tag pro Event."
           }
         }
       }
@@ -437,6 +457,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deine Einwilligung konnte nicht gespeichert werden. Versuch es gleich noch einmal."
+          }
+        }
+      }
+    },
+    "Couldn't save. Check your connection and try again.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Konnte nicht gespeichert werden. Prüfe deine Verbindung und versuche es noch einmal."
           }
         }
       }
@@ -1240,6 +1270,26 @@
         }
       }
     },
+    "New photos were added since your last scan": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seit deinem letzten Scan wurden neue Fotos hinzugefügt"
+          }
+        }
+      }
+    },
+    "New-photo alerts": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hinweise auf neue Fotos"
+          }
+        }
+      }
+    },
     "Next": {
       "localizations": {
         "de": {
@@ -1792,6 +1842,16 @@
         }
       }
     },
+    "Scan again": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Noch einmal scannen"
+          }
+        }
+      }
+    },
     "Scan the organizer's QR code, open their link, or type the access code.": {
       "localizations": {
         "de": {
@@ -2072,6 +2132,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Foto jetzt aufnehmen"
+          }
+        }
+      }
+    },
+    "Tell me about new photos": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sag mir Bescheid, wenn es neue Fotos gibt"
+          }
+        }
+      }
+    },
+    "Tell me about new photos here": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sag mir Bescheid, wenn es hier neue Fotos gibt"
           }
         }
       }
@@ -2803,6 +2883,16 @@
         }
       }
     },
+    "You can also turn them off for a single event on its screen.": {
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du kannst sie auch für ein einzelnes Event auf dessen Seite ausschalten."
+          }
+        }
+      }
+    },
     "You can't join this event: its access has ended or was revoked.": {
       "localizations": {
         "de": {
@@ -2992,6 +3082,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Photos waiting for review"
+          }
+        }
+      }
+    },
+    "push.new_photos.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zu einem Event, bei dem du gesucht hast, wurden neue Fotos hinzugefügt. Tippe, um noch einmal zu scannen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New photos were added to an event you searched. Tap to scan again."
+          }
+        }
+      }
+    },
+    "push.new_photos.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neue Fotos"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New photos"
           }
         }
       }

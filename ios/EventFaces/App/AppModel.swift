@@ -95,6 +95,8 @@ final class AppModel {
         case let .searchResults(id), let .searchRejected(id):
             path = [id]
             if case .searchResults = route { openResultsFor = id }
+        case let .newPhotos(id):
+            path = [id]
         }
     }
 
@@ -130,6 +132,12 @@ final class AppModel {
         requiredAcceptance = nil
         termsTickedForSignIn = false
         pendingMagicToken = nil
+    }
+
+    /// The account-wide new-photo alert switch (each event also has its own).
+    func setNewPhotoAlerts(_ on: Bool) async throws {
+        let user = try await auth.setNewPhotoAlerts(on)
+        if case .signedIn = account { account = .signedIn(user) }
     }
 
     private func adopt(_ user: User) {

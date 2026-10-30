@@ -71,7 +71,10 @@ struct SettingsView: View {
                         RowAction(title: "Sign in", color: Palette.accent) { model.showSignIn = true }
                     }
                 }
-                if case .signedIn = model.account {
+                if case let .signedIn(user) = model.account {
+                    section("New-photo alerts", footer: "You can also turn them off for a single event on its screen.") {
+                        NewPhotoAlertsRow(on: user.newPhotoAlerts ?? true)
+                    }
                     section("Privacy") { PrivacySection() }
                     section("Devices", footer: "Sign out a phone or tablet you no longer use.") { DevicesSection() }
                     section("Delete account") {
@@ -126,6 +129,42 @@ struct SettingsView: View {
                     .foregroundStyle(Palette.textMuted)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+}
+
+/// The account-wide switch (PATCH /api/me/preferences); the profile is the source of truth.
+private struct NewPhotoAlertsRow: View {
+    let on: Bool
+    @Environment(AppModel.self) private var model
+    @State private var failed = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Toggle(isOn: Binding(get: { on }, set: { v in Task { await save(v) } })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Tell me about new photos").foregroundStyle(Palette.text)
+                    Text("At events you searched, at most once a day per event.").font(.footnote).foregroundStyle(Palette.textMuted)
+                }
+            }
+            .tint(Palette.accent)
+            .frame(minHeight: 56)
+            .accessibilityIdentifier("new-photo-alerts")
+            if failed {
+                Text("Couldn't save. Check your connection and try again.")
+                    .font(.footnote)
+                    .foregroundStyle(Palette.dangerText)
+                    .padding(.bottom, 8)
+            }
+        }
+    }
+
+    private func save(_ v: Bool) async {
+        do {
+            try await model.setNewPhotoAlerts(v)
+            failed = false
+        } catch {
+            failed = true
         }
     }
 }

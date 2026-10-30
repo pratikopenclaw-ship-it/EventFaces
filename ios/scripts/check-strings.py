@@ -62,6 +62,12 @@ def main() -> int:
         k for k, v in catalog.items()
         if v.get("localizations", {}).get("de", {}).get("stringUnit", {}).get("state") != "translated"
     )
+    # Notification text is resolved on the device from loc-keys (backend push.payload):
+    # every kind the app routes needs its title and body.
+    routing = (IOS / "EventFaces" / "Core" / "Push" / "PushRouting.swift").read_text()
+    kinds = re.search(r"static let kinds: Set<String> = \[([^\]]*)\]", routing)
+    for kind in re.findall(r'"([a-z_]+)"', kinds.group(1) if kinds else ""):
+        missing += [k for k in (f"push.{kind}.title", f"push.{kind}.body") if k not in catalog]
     for k in missing:
         print(f"missing from catalog: {k!r}")
     for k in untranslated:

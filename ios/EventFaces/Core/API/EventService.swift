@@ -4,6 +4,9 @@ import OpenAPIRuntime
 
 typealias EventSummary = Components.Schemas.EventListItem
 typealias EventDetail = Components.Schemas.EventPublicOut
+/// GET /api/events/{id} for a member: the public fields plus the new-photo banner flag.
+typealias EventPage = Components.Schemas.EventMemberOut
+typealias PhotoAlertState = Components.Schemas.PhotoAlertOut
 typealias ConsentInfo = Components.Schemas.ConsentInfo
 typealias SelfieRequirements = Components.Schemas.SelfieRequirementsOut
 typealias SearchResult = Components.Schemas.SearchOut
@@ -95,8 +98,25 @@ struct EventService: Sendable {
         }
     }
 
-    func event(_ id: String) async throws -> EventDetail {
+    func event(_ id: String) async throws -> EventPage {
         switch try await call({ try await api.eventsGetEvent(path: .init(eventId: id)) }) {
+        case let .ok(ok): return try ok.body.json
+        case .unprocessableContent: throw AppError.server(status: 422)
+        case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+        }
+    }
+
+    /// Whether the user has searched this event (`subscribed`) and wants to hear about new photos.
+    func photoAlerts(eventID: String) async throws -> PhotoAlertState {
+        switch try await call({ try await api.photoAlertsGetPhotoAlerts(path: .init(eventId: eventID)) }) {
+        case let .ok(ok): return try ok.body.json
+        case .unprocessableContent: throw AppError.server(status: 422)
+        case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
+        }
+    }
+
+    func setPhotoAlerts(eventID: String, enabled: Bool) async throws -> PhotoAlertState {
+        switch try await call({ try await api.photoAlertsSetPhotoAlerts(path: .init(eventId: eventID), body: .json(.init(enabled: enabled))) }) {
         case let .ok(ok): return try ok.body.json
         case .unprocessableContent: throw AppError.server(status: 422)
         case let .undocumented(status, _): throw status == 403 ? AppError.noAccess : AuthService.error(status)
