@@ -4,7 +4,7 @@ import SwiftUI
 struct EventView: View {
     let eventID: String
     @Environment(AppModel.self) private var model
-    @State private var event: EventDetail?
+    @State private var event: EventPage?
     @State private var error: LocalizedStringKey?
     @State private var logo: UIImage?
     @State private var flow: Flow?
@@ -15,6 +15,8 @@ struct EventView: View {
     @State private var showUpload = false
     @State private var stats: OrganizerStats?
     @State private var videos: [EventVideo] = []
+    @State private var alerts: PhotoAlertState?
+    @State private var searchedThisVisit = false
 
     enum Flow: Identifiable { case consent(ConsentInfo), capture; var id: String { switch self { case .consent: "consent"; case .capture: "capture" } } }
 
@@ -27,6 +29,12 @@ struct EventView: View {
                     if !event.description.isEmpty {
                         Text(event.description).foregroundStyle(Palette.textMuted).fixedSize(horizontal: false, vertical: true)
                     }
+                    PhotoAlertsSection(
+                        display: PhotoAlertDisplay(state: alerts, newPhotosSinceLastSearch: event.newPhotosSinceLastSearch == true, searchedThisVisit: searchedThisVisit),
+                        enabled: alerts?.enabled == true,
+                        onToggle: { on in Task { await setAlerts(on) } },
+                        onScan: { Task { await findMyPhotos() } }
+                    )
                     if hasPhotos {
                         Button("My photos") { showResults = true }
                             .buttonStyle(.secondary)
@@ -94,7 +102,11 @@ struct EventView: View {
                 case .capture:
                     CaptureView(eventID: eventID) {
                         self.flow = nil
-                        Task { hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty }
+                        searchedThisVisit = true
+                        Task {
+                            hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty
+                            alerts = (try? await model.events.photoAlerts(eventID: eventID)) ?? alerts
+                        }
                     }
                 }
             }
@@ -112,6 +124,7 @@ struct EventView: View {
             let e = try await model.events.event(eventID)
             event = e
             hasPhotos = !((try? await model.events.photos(eventID: eventID)) ?? []).isEmpty
+            alerts = try? await model.events.photoAlerts(eventID: eventID)
             if e.hasLogo == true, let data = try? await model.events.image(path: "/api/events/\(eventID)/logo") { logo = UIImage(data: data) }
             videos = (try? await model.events.videos(eventID: eventID)) ?? []
             hasShared = !((try? await model.events.sharedPhotos(eventID: eventID)) ?? []).isEmpty
@@ -122,6 +135,14 @@ struct EventView: View {
             error = "You don't have access to this event (any more)."
         } catch {
             self.error = "Couldn't load this event. Check your connection and try again."
+        }
+    }
+
+    private func setAlerts(_ on: Bool) async {
+        do {
+            alerts = try await model.events.setPhotoAlerts(eventID: eventID, enabled: on)
+        } catch {
+            self.error = "Couldn't save. Check your connection and try again."
         }
     }
 
@@ -137,7 +158,7 @@ struct EventView: View {
     /// The accent band with the seeded tile pattern, the organizer's logo and the event's
     /// name/date on solid accent below it (never over the pattern, for contrast).
     @ViewBuilder
-    private func cover(_ event: EventDetail) -> some View {
+    private func cover(_ event: EventPage) -> some View {
         let accent = EventAccent.color(event.accentColor) ?? Palette.accent
         let onAccent = EventAccent.onColor(event.accentColor) ?? Palette.onAccent
         VStack(alignment: .leading, spacing: 0) {

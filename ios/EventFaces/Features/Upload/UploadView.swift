@@ -4,7 +4,7 @@ import SwiftUI
 /// Guest uploads: choose event photos (the photo library is allowed here, unlike selfies),
 /// see the limits first, watch each upload, retry, and follow moderation.
 struct UploadView: View {
-    let event: EventDetail
+    let event: EventPage
     @Environment(AppModel.self) private var model
     @Environment(\.dismiss) private var dismiss
     @State private var picked: [PhotosPickerItem] = []

@@ -90,27 +90,13 @@
             "type": "string"
           },
           "event_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
           },
           "failure_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Failure Code"
+            "title": "Failure Code",
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -121,16 +107,9 @@
             "$ref": "#/components/schemas/AddonKind"
           },
           "paid_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Paid At"
+            "format": "date-time",
+            "title": "Paid At",
+            "type": "string"
           },
           "photo_ids": {
             "items": {
@@ -155,16 +134,13 @@
         },
         "required": [
           "id",
-          "event_id",
           "kind",
           "photo_ids",
           "amount_cents",
           "currency",
           "vat_rate",
           "status",
-          "failure_code",
-          "created_at",
-          "paid_at"
+          "created_at"
         ],
         "title": "AddonOrderOut",
         "type": "object"
@@ -322,23 +298,15 @@
             "type": "number"
           },
           "wrong_rate": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Wrong Rate"
+            "title": "Wrong Rate",
+            "type": "number"
           }
         },
         "required": [
           "lower",
           "upper",
           "me",
-          "not_me",
-          "wrong_rate"
+          "not_me"
         ],
         "title": "BandOut",
         "type": "object"
@@ -353,18 +321,10 @@
             "type": "array"
           },
           "subscription": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SubscriptionOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/SubscriptionOut"
           }
         },
         "required": [
-          "subscription",
           "orders"
         ],
         "title": "BillingOverviewOut",
@@ -391,29 +351,15 @@
       "CheckoutIn": {
         "properties": {
           "event_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Date"
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
           },
           "event_name": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Name"
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Event Name",
+            "type": "string"
           },
           "plan": {
             "enum": [
@@ -531,16 +477,9 @@
             "type": "boolean"
           },
           "given_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Given At"
+            "format": "date-time",
+            "title": "Given At",
+            "type": "string"
           },
           "grant_days": {
             "title": "Grant Days",
@@ -558,7 +497,6 @@
           "version",
           "grant_days",
           "given",
-          "given_at",
           "text"
         ],
         "title": "ConsentInfo",
@@ -704,28 +642,14 @@
         "description": "Re-authenticate with the password, or (accounts without one: app sign-in) with the\ncode from POST /api/me/reauth-code.",
         "properties": {
           "code": {
-            "anyOf": [
-              {
-                "pattern": "^\\d{6}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Code"
+            "pattern": "^\\d{6}$",
+            "title": "Code",
+            "type": "string"
           },
           "password": {
-            "anyOf": [
-              {
-                "maxLength": 128,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Password"
+            "maxLength": 128,
+            "title": "Password",
+            "type": "string"
           }
         },
         "title": "DeleteMeIn",
@@ -865,31 +789,17 @@
       "EventAdminOut": {
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_code": {
             "title": "Access Code",
             "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
@@ -905,16 +815,9 @@
             "type": "string"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "delete_photos_on_expiry": {
             "title": "Delete Photos On Expiry",
@@ -925,15 +828,8 @@
             "type": "string"
           },
           "drive_folder_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Drive Folder Id"
+            "title": "Drive Folder Id",
+            "type": "string"
           },
           "guest_upload_enabled": {
             "title": "Guest Upload Enabled",
@@ -968,24 +864,15 @@
             "type": "string"
           },
           "upload_max_bytes": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Upload Max Bytes"
+            "title": "Upload Max Bytes",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
-          "date",
           "description",
-          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload",
           "join_mode",
@@ -994,7 +881,6 @@
           "auto_publish_faceless_photos",
           "notify_new_photos",
           "delete_photos_on_expiry",
-          "drive_folder_id",
           "created_at"
         ],
         "title": "EventAdminOut",
@@ -1003,27 +889,13 @@
       "EventCreate": {
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
             "default": false,
@@ -1036,16 +908,9 @@
             "type": "boolean"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "delete_photos_on_expiry": {
             "default": false,
@@ -1059,15 +924,8 @@
             "type": "string"
           },
           "drive_folder": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Drive Folder"
+            "title": "Drive Folder",
+            "type": "string"
           },
           "guest_upload_enabled": {
             "default": false,
@@ -1103,27 +961,13 @@
       "EventListItem": {
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
@@ -1135,16 +979,9 @@
             "type": "boolean"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "description": {
             "title": "Description",
@@ -1165,14 +1002,7 @@
             "type": "string"
           },
           "my_role": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MemberRole"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/MemberRole"
           },
           "name": {
             "title": "Name",
@@ -1184,39 +1014,23 @@
             "type": "integer"
           },
           "search_state": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Search State"
+            "title": "Search State",
+            "type": "string"
           },
           "slug": {
             "title": "Slug",
             "type": "string"
           },
           "upload_max_bytes": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Upload Max Bytes"
+            "title": "Upload Max Bytes",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
-          "date",
           "description",
-          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload"
         ],
@@ -1247,15 +1061,8 @@
             "type": "integer"
           },
           "wrong_rate": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Wrong Rate"
+            "title": "Wrong Rate",
+            "type": "number"
           }
         },
         "required": [
@@ -1263,7 +1070,6 @@
           "event_name",
           "searches",
           "feedback",
-          "wrong_rate",
           "missing_reports"
         ],
         "title": "EventMatchQualityOut",
@@ -1273,43 +1079,22 @@
         "description": "GET /api/events/{id} for the requesting member: plus their own new-photo banner flag\n(never on admin views: organizers don't see who searched).",
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
             "type": "boolean"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "description": {
             "title": "Description",
@@ -1343,24 +1128,15 @@
             "type": "string"
           },
           "upload_max_bytes": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Upload Max Bytes"
+            "title": "Upload Max Bytes",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
-          "date",
           "description",
-          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload"
         ],
@@ -1371,43 +1147,22 @@
         "description": "What attendees see: no access code, no admin settings.",
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
             "title": "Allow Selfie File Upload",
             "type": "boolean"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "description": {
             "title": "Description",
@@ -1436,24 +1191,15 @@
             "type": "string"
           },
           "upload_max_bytes": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Upload Max Bytes"
+            "title": "Upload Max Bytes",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "slug",
           "name",
-          "date",
           "description",
-          "access_expires_at",
           "guest_upload_enabled",
           "allow_selfie_file_upload"
         ],
@@ -1464,150 +1210,59 @@
         "description": "All fields optional; only provided fields are changed.",
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "access_expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Access Expires At"
+            "format": "date-time",
+            "title": "Access Expires At",
+            "type": "string"
           },
           "allow_selfie_file_upload": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Allow Selfie File Upload"
+            "title": "Allow Selfie File Upload",
+            "type": "boolean"
           },
           "auto_publish_faceless_photos": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Auto Publish Faceless Photos"
+            "title": "Auto Publish Faceless Photos",
+            "type": "boolean"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "delete_photos_on_expiry": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Delete Photos On Expiry"
+            "title": "Delete Photos On Expiry",
+            "type": "boolean"
           },
           "description": {
-            "anyOf": [
-              {
-                "maxLength": 5000,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
+            "maxLength": 5000,
+            "title": "Description",
+            "type": "string"
           },
           "drive_folder": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Drive Folder"
+            "title": "Drive Folder",
+            "type": "string"
           },
           "guest_upload_enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Guest Upload Enabled"
+            "title": "Guest Upload Enabled",
+            "type": "boolean"
           },
           "join_mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/JoinMode"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/JoinMode"
           },
           "moderation_mode": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ModerationMode"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/ModerationMode"
           },
           "name": {
-            "anyOf": [
-              {
-                "maxLength": 200,
-                "minLength": 1,
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Name"
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
           },
           "notify_new_photos": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notify New Photos"
+            "title": "Notify New Photos",
+            "type": "boolean"
           }
         },
         "title": "EventUpdate",
@@ -1620,59 +1275,27 @@
             "type": "integer"
           },
           "max_attendees": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Attendees"
+            "title": "Max Attendees",
+            "type": "integer"
           },
           "max_photos": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Max Photos"
+            "title": "Max Photos",
+            "type": "integer"
           },
           "photos": {
             "title": "Photos",
             "type": "integer"
           },
           "plan": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Plan"
+            "title": "Plan",
+            "type": "string"
           },
           "plan_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Plan Name"
+            "title": "Plan Name",
+            "type": "string"
           }
         },
         "required": [
-          "plan",
-          "plan_name",
-          "max_attendees",
-          "max_photos",
           "attendees",
           "photos"
         ],
@@ -1823,15 +1446,8 @@
             "type": "integer"
           },
           "suggested_threshold": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Suggested Threshold"
+            "title": "Suggested Threshold",
+            "type": "number"
           },
           "suggestion_note": {
             "title": "Suggestion Note",
@@ -1845,7 +1461,6 @@
           "bands",
           "current_possible",
           "current_best",
-          "suggested_threshold",
           "suggestion_note",
           "quality_histogram",
           "rejection_reasons",
@@ -1899,16 +1514,9 @@
       "InviteOut": {
         "properties": {
           "accepted_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accepted At"
+            "format": "date-time",
+            "title": "Accepted At",
+            "type": "string"
           },
           "email": {
             "title": "Email",
@@ -1925,16 +1533,9 @@
             "type": "string"
           },
           "sent_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Sent At"
+            "format": "date-time",
+            "title": "Sent At",
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/InviteStatus"
@@ -1944,9 +1545,7 @@
           "id",
           "email",
           "status",
-          "sent_at",
-          "expires_at",
-          "accepted_at"
+          "expires_at"
         ],
         "title": "InviteOut",
         "type": "object"
@@ -1966,16 +1565,9 @@
             "type": "string"
           },
           "event_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Date"
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
           },
           "event_name": {
             "title": "Event Name",
@@ -1984,7 +1576,6 @@
         },
         "required": [
           "event_name",
-          "event_date",
           "email",
           "account_exists",
           "accepted"
@@ -2117,27 +1708,13 @@
       "JoinPreviewOut": {
         "properties": {
           "accent_color": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Accent Color"
+            "title": "Accent Color",
+            "type": "string"
           },
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "join_mode": {
             "$ref": "#/components/schemas/JoinMode"
@@ -2154,7 +1731,6 @@
         "required": [
           "slug",
           "name",
-          "date",
           "join_mode"
         ],
         "title": "JoinPreviewOut",
@@ -2288,15 +1864,8 @@
       "MatchOut": {
         "properties": {
           "height": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height"
+            "title": "Height",
+            "type": "integer"
           },
           "id": {
             "format": "uuid",
@@ -2316,23 +1885,14 @@
             "type": "string"
           },
           "width": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Width"
+            "title": "Width",
+            "type": "integer"
           }
         },
         "required": [
           "id",
           "similarity",
-          "tier",
-          "width",
-          "height"
+          "tier"
         ],
         "title": "MatchOut",
         "type": "object"
@@ -2389,15 +1949,8 @@
             "type": "integer"
           },
           "suggested_threshold": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Suggested Threshold"
+            "title": "Suggested Threshold",
+            "type": "number"
           },
           "suggestion_note": {
             "title": "Suggestion Note",
@@ -2411,7 +1964,6 @@
           "bands",
           "current_possible",
           "current_best",
-          "suggested_threshold",
           "suggestion_note",
           "quality_histogram",
           "rejection_reasons",
@@ -2428,16 +1980,9 @@
             "type": "string"
           },
           "expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expires At"
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
           },
           "joined_at": {
             "format": "date-time",
@@ -2461,8 +2006,7 @@
           "email",
           "role",
           "status",
-          "joined_at",
-          "expires_at"
+          "joined_at"
         ],
         "title": "MemberOut",
         "type": "object"
@@ -2487,26 +2031,12 @@
       "MemberUpdate": {
         "properties": {
           "expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expires At"
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
           },
           "status": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/MemberStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/MemberStatus"
           }
         },
         "title": "MemberUpdate",
@@ -2601,32 +2131,16 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Original Filename"
+            "title": "Original Filename",
+            "type": "string"
           },
           "uploader_email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Uploader Email"
+            "title": "Uploader Email",
+            "type": "string"
           }
         },
         "required": [
           "id",
-          "original_filename",
-          "uploader_email",
           "index_status",
           "face_count",
           "created_at"
@@ -2645,27 +2159,13 @@
       "MyPhotoOut": {
         "properties": {
           "expires_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expires At"
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
           },
           "height": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height"
+            "title": "Height",
+            "type": "integer"
           },
           "id": {
             "format": "uuid",
@@ -2677,66 +2177,32 @@
             "type": "boolean"
           },
           "similarity": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Similarity"
+            "title": "Similarity",
+            "type": "number"
           },
           "tier": {
-            "anyOf": [
-              {
-                "enum": [
-                  "best",
-                  "possible"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "best",
+              "possible"
             ],
-            "title": "Tier"
+            "title": "Tier",
+            "type": "string"
           },
           "verdict": {
-            "anyOf": [
-              {
-                "enum": [
-                  "me",
-                  "not_me"
-                ],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
+            "enum": [
+              "me",
+              "not_me"
             ],
-            "title": "Verdict"
+            "title": "Verdict",
+            "type": "string"
           },
           "width": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Width"
+            "title": "Width",
+            "type": "integer"
           }
         },
         "required": [
           "id",
-          "width",
-          "height",
-          "similarity",
-          "tier",
-          "verdict",
-          "expires_at",
           "shortlisted"
         ],
         "title": "MyPhotoOut",
@@ -2750,15 +2216,8 @@
             "type": "string"
           },
           "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
+            "title": "Error",
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -2769,15 +2228,8 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Original Filename"
+            "title": "Original Filename",
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/PhotoStatus"
@@ -2785,10 +2237,8 @@
         },
         "required": [
           "id",
-          "original_filename",
           "status",
           "index_status",
-          "error",
           "created_at"
         ],
         "title": "MyUploadOut",
@@ -2819,50 +2269,22 @@
             "type": "string"
           },
           "event_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Date"
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
           },
           "event_id": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Id"
+            "format": "uuid",
+            "title": "Event Id",
+            "type": "string"
           },
           "event_name": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Name"
+            "title": "Event Name",
+            "type": "string"
           },
           "failure_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Failure Code"
+            "title": "Failure Code",
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -2873,16 +2295,9 @@
             "$ref": "#/components/schemas/OrderKind"
           },
           "paid_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Paid At"
+            "format": "date-time",
+            "title": "Paid At",
+            "type": "string"
           },
           "plan": {
             "title": "Plan",
@@ -2914,12 +2329,7 @@
           "currency",
           "vat_rate",
           "status",
-          "failure_code",
-          "event_name",
-          "event_date",
-          "event_id",
-          "created_at",
-          "paid_at"
+          "created_at"
         ],
         "title": "OrderOut",
         "type": "object"
@@ -2959,30 +2369,16 @@
             "type": "integer"
           },
           "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
+            "title": "Error",
+            "type": "string"
           },
           "face_count": {
             "title": "Face Count",
             "type": "integer"
           },
           "height": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height"
+            "title": "Height",
+            "type": "integer"
           },
           "id": {
             "format": "uuid",
@@ -2993,27 +2389,13 @@
             "$ref": "#/components/schemas/IndexStatus"
           },
           "original_filename": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Original Filename"
+            "title": "Original Filename",
+            "type": "string"
           },
           "shared_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Shared At"
+            "format": "date-time",
+            "title": "Shared At",
+            "type": "string"
           },
           "source": {
             "$ref": "#/components/schemas/PhotoSource"
@@ -3022,15 +2404,8 @@
             "$ref": "#/components/schemas/PhotoStatus"
           },
           "width": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Width"
+            "title": "Width",
+            "type": "integer"
           }
         },
         "required": [
@@ -3038,12 +2413,8 @@
           "source",
           "status",
           "index_status",
-          "original_filename",
-          "width",
-          "height",
           "face_count",
           "download_count",
-          "error",
           "created_at"
         ],
         "title": "PhotoAdminOut",
@@ -3210,25 +2581,11 @@
         "description": "Only the provided preferences change.",
         "properties": {
           "new_photo_alerts": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "New Photo Alerts"
+            "title": "New Photo Alerts",
+            "type": "boolean"
           },
           "theme": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/ThemePreference"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/ThemePreference"
           }
         },
         "title": "PreferencesIn",
@@ -3303,17 +2660,10 @@
       "RefreshIn": {
         "properties": {
           "assertion": {
-            "anyOf": [
-              {
-                "maxLength": 1400,
-                "pattern": "^[A-Za-z0-9+/]+={0,2}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Assertion"
+            "maxLength": 1400,
+            "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+            "title": "Assertion",
+            "type": "string"
           },
           "device_id": {
             "format": "uuid",
@@ -3381,16 +2731,9 @@
       "RemovalInfo": {
         "properties": {
           "event_date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Event Date"
+            "format": "date",
+            "title": "Event Date",
+            "type": "string"
           },
           "event_name": {
             "title": "Event Name",
@@ -3398,8 +2741,7 @@
           }
         },
         "required": [
-          "event_name",
-          "event_date"
+          "event_name"
         ],
         "title": "RemovalInfo",
         "type": "object"
@@ -3458,20 +2800,13 @@
             "type": "string"
           },
           "photo_ids": {
-            "anyOf": [
-              {
-                "items": {
-                  "format": "uuid",
-                  "type": "string"
-                },
-                "maxItems": 500,
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Photo Ids"
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "title": "Photo Ids",
+            "type": "array"
           }
         },
         "required": [
@@ -3541,15 +2876,8 @@
             "type": "string"
           },
           "reporter_email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reporter Email"
+            "title": "Reporter Email",
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/ReportStatus"
@@ -3561,7 +2889,6 @@
           "reason",
           "details",
           "status",
-          "reporter_email",
           "created_at"
         ],
         "title": "ReportOut",
@@ -3627,19 +2954,11 @@
             "type": "integer"
           },
           "user_email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "User Email"
+            "title": "User Email",
+            "type": "string"
           }
         },
         "required": [
-          "user_email",
           "match_count",
           "created_at"
         ],
@@ -3678,59 +2997,24 @@
       "SearchStatusOut": {
         "properties": {
           "code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Code"
+            "title": "Code",
+            "type": "string"
           },
           "match_count": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Match Count"
+            "title": "Match Count",
+            "type": "integer"
           },
           "message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Message"
+            "title": "Message",
+            "type": "string"
           },
           "queued_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Queued At"
+            "title": "Queued At",
+            "type": "string"
           },
           "shot": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Shot"
+            "title": "Shot",
+            "type": "string"
           },
           "state": {
             "enum": [
@@ -3745,15 +3029,8 @@
             "type": "string"
           },
           "updated_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Updated At"
+            "title": "Updated At",
+            "type": "string"
           }
         },
         "required": [
@@ -3862,20 +3139,10 @@
       "ServiceAccountOut": {
         "properties": {
           "email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email"
+            "title": "Email",
+            "type": "string"
           }
         },
-        "required": [
-          "email"
-        ],
         "title": "ServiceAccountOut",
         "type": "object"
       },
@@ -3937,15 +3204,8 @@
       "SharedPhotoOut": {
         "properties": {
           "height": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Height"
+            "title": "Height",
+            "type": "integer"
           },
           "id": {
             "format": "uuid",
@@ -3953,21 +3213,12 @@
             "type": "string"
           },
           "width": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Width"
+            "title": "Width",
+            "type": "integer"
           }
         },
         "required": [
-          "id",
-          "width",
-          "height"
+          "id"
         ],
         "title": "SharedPhotoOut",
         "type": "object"
@@ -4003,17 +3254,10 @@
             "type": "string"
           },
           "next": {
-            "anyOf": [
-              {
-                "maxLength": 130,
-                "pattern": "^/join/[a-z0-9-]{1,80}(\\?code=[A-Za-z0-9]{1,32})?$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Next"
+            "maxLength": 130,
+            "pattern": "^/join/[a-z0-9-]{1,80}(\\?code=[A-Za-z0-9]{1,32})?$",
+            "title": "Next",
+            "type": "string"
           },
           "password": {
             "maxLength": 128,
@@ -4033,16 +3277,9 @@
       "SubscriptionEventIn": {
         "properties": {
           "date": {
-            "anyOf": [
-              {
-                "format": "date",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Date"
+            "format": "date",
+            "title": "Date",
+            "type": "string"
           },
           "name": {
             "maxLength": 200,
@@ -4060,16 +3297,9 @@
       "SubscriptionOut": {
         "properties": {
           "canceled_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Canceled At"
+            "format": "date-time",
+            "title": "Canceled At",
+            "type": "string"
           },
           "current_period_end": {
             "format": "date-time",
@@ -4114,8 +3344,7 @@
           "plan",
           "status",
           "current_period_start",
-          "current_period_end",
-          "canceled_at"
+          "current_period_end"
         ],
         "title": "SubscriptionOut",
         "type": "object"
@@ -4136,15 +3365,8 @@
             "type": "string"
           },
           "error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error"
+            "title": "Error",
+            "type": "string"
           },
           "files_listed": {
             "title": "Files Listed",
@@ -4164,16 +3386,9 @@
             "type": "integer"
           },
           "finished_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Finished At"
+            "format": "date-time",
+            "title": "Finished At",
+            "type": "string"
           },
           "folder_id": {
             "title": "Folder Id",
@@ -4185,16 +3400,9 @@
             "type": "string"
           },
           "started_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Started At"
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
           },
           "status": {
             "$ref": "#/components/schemas/SyncStatus"
@@ -4207,10 +3415,7 @@
           "files_listed",
           "files_new",
           "files_retried",
-          "error",
-          "created_at",
-          "started_at",
-          "finished_at"
+          "created_at"
         ],
         "title": "SyncRunOut",
         "type": "object"
@@ -4236,29 +3441,15 @@
             "type": "integer"
           },
           "folder_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Folder Id"
+            "title": "Folder Id",
+            "type": "string"
           },
           "in_progress": {
             "title": "In Progress",
             "type": "boolean"
           },
           "last_run": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/SyncRunOut"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/SyncRunOut"
           },
           "pipeline": {
             "$ref": "#/components/schemas/PipelineCounts"
@@ -4268,22 +3459,12 @@
             "type": "integer"
           },
           "service_account_email": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Service Account Email"
+            "title": "Service Account Email",
+            "type": "string"
           }
         },
         "required": [
           "drive_configured",
-          "service_account_email",
-          "folder_id",
-          "last_run",
           "in_progress",
           "pipeline",
           "published_photos",
@@ -4459,16 +3640,9 @@
             "type": "string"
           },
           "email_verified_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Email Verified At"
+            "format": "date-time",
+            "title": "Email Verified At",
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -4486,15 +3660,8 @@
             "type": "boolean"
           },
           "organizer_terms_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Organizer Terms Version"
+            "title": "Organizer Terms Version",
+            "type": "string"
           },
           "role": {
             "$ref": "#/components/schemas/UserRole"
@@ -4506,15 +3673,8 @@
             "type": "boolean"
           },
           "terms_version": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Terms Version"
+            "title": "Terms Version",
+            "type": "string"
           },
           "theme": {
             "$ref": "#/components/schemas/ThemePreference"
@@ -4524,7 +3684,6 @@
           "id",
           "email",
           "role",
-          "email_verified_at",
           "created_at",
           "theme",
           "terms_accepted",
@@ -4640,16 +3799,9 @@
             "name": "token",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "maxLength": 200,
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Token"
+              "maxLength": 200,
+              "title": "Token",
+              "type": "string"
             }
           }
         ],
@@ -6986,14 +6138,7 @@
             "name": "index_status",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/IndexStatus"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "$ref": "#/components/schemas/IndexStatus",
               "title": "Index Status"
             }
           },
@@ -7002,14 +6147,7 @@
             "name": "status",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "$ref": "#/components/schemas/PhotoStatus"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "$ref": "#/components/schemas/PhotoStatus",
               "title": "Status"
             }
           },
@@ -7042,15 +6180,8 @@
             "name": "shared",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "boolean"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Shared"
+              "title": "Shared",
+              "type": "boolean"
             }
           }
         ],
@@ -8809,19 +7940,12 @@
             "name": "lang",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "enum": [
-                    "de",
-                    "en"
-                  ],
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
+              "enum": [
+                "de",
+                "en"
               ],
-              "title": "Lang"
+              "title": "Lang",
+              "type": "string"
             }
           }
         ],
