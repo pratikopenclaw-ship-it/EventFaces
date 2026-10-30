@@ -26,7 +26,7 @@ RECENT = timedelta(days=7)  # only events with photos this recent are looked at
 TOKEN_MAX_AGE = timedelta(days=180)  # unsubscribe links work this long at most
 
 
-def _qualifying_after(event_id: uuid.UUID, since: datetime):  # type: ignore[no-untyped-def]
+def _qualifying_after(event_id: uuid.UUID, since: datetime):
     """Live photos with faces that went live after `since` (faceless photos never count)."""
     return (
         Photo.event_id == event_id,
@@ -163,7 +163,7 @@ def collect_due(db: Session, now: datetime) -> list[PendingAlert]:
             if through is None:
                 continue
             user = db.get(User, row.user_id)
-            if not _user_eligible(user, FACE_CONSENT_VERSION):
+            if user is None or not _user_eligible(user, FACE_CONSENT_VERSION):
                 continue
             member = db.scalar(select(EventMember).where(EventMember.event_id == event_id, EventMember.user_id == row.user_id))
             if not membership.is_active_member(event, member):
@@ -218,7 +218,7 @@ def deliver(alerts: list[PendingAlert]) -> None:
     for alert in alerts:
         try:
             get_mailer().send(_mail(alert))
-        except Exception as e:  # noqa: BLE001 - a mail outage must not stop the batch
+        except Exception as e:  # a mail outage must not stop the batch
             log.warning("New-photo alert email failed: %s", type(e).__name__)
         by_event[alert.event_id].append(alert.user_id)
     for event_id, user_ids in by_event.items():
