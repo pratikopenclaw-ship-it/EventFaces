@@ -6,9 +6,9 @@ import { useState, type FormEvent } from "react";
 
 import { useSession } from "@/components/session";
 import { ThemeOptions } from "@/components/theme";
-import { Alert, Button, Card, Field, Input, PageHeader } from "@/components/ui";
-import { del } from "@/lib/api";
-import type { ConsentInfo } from "@/lib/types";
+import { Alert, Button, Card, Field, Input, PageHeader, Toggle } from "@/components/ui";
+import { del, patch } from "@/lib/api";
+import type { ConsentInfo, User } from "@/lib/types";
 import { useApi } from "@/lib/use-api";
 
 import { DevicesCard } from "./devices";
@@ -62,6 +62,8 @@ export default function AccountPage() {
         </Card>
 
         <DevicesCard />
+        <AlertsCard user={user} onSaved={reload} />
+
         <Card>
           <h2 className="font-medium">Billing</h2>
           <p className="mt-1 mb-4 text-sm text-muted">Your orders, receipts and subscription.</p>
@@ -109,5 +111,35 @@ export default function AccountPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+function AlertsCard({ user, onSaved }: { user: User; onSaved: () => Promise<void> }) {
+  const [state, setState] = useState<"idle" | "saved" | "error">("idle");
+
+  async function save(on: boolean) {
+    setState("idle");
+    try {
+      await patch("/api/me/preferences", { new_photo_alerts: on });
+      await onSaved();
+      setState("saved");
+    } catch {
+      setState("error");
+    }
+  }
+
+  return (
+    <Card>
+      <h2 className="font-medium">New-photo alerts</h2>
+      <p className="mt-1 mb-4 text-sm text-muted">You can also turn them off for a single event on its page.</p>
+      <Toggle
+        label="Tell me when new photos are added to events I searched"
+        hint="By email and in the app, at most once a day per event."
+        checked={user.new_photo_alerts}
+        onChange={(v) => void save(v)}
+      />
+      {state === "saved" && <p className="mt-3 text-sm text-leaf">Saved.</p>}
+      {state === "error" && <p className="mt-3 text-sm text-alarm">Couldn&apos;t save, try again.</p>}
+    </Card>
   );
 }

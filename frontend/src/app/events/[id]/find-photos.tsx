@@ -12,6 +12,7 @@ import type { ConsentInfo, EventPublic, MatchedPhoto, QueuedSearch, SearchResult
 import { useApi } from "@/lib/use-api";
 
 import { ConsentPanel } from "./consent-panel";
+import { PhotoAlerts } from "./photo-alerts";
 import { PhotoGallery } from "./photo-gallery";
 
 type Step = "auto" | "capture" | "results" | "queued";
@@ -54,6 +55,8 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   const [searching, setSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attempt, setAttempt] = useState(0);
+  const [searches, setSearches] = useState(0); // finished on this page (new-photo banner, alerts)
+  const [scanAgain, setScanAgain] = useState(false);
 
   // A search queued while the service was busy: show it on return, and poll while open.
   useEffect(() => {
@@ -67,6 +70,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         } else if (step === "queued") {
           if (s.state === "done") {
             setResults(null); // the finished search's grants arrive via my-photos
+            setSearches((n) => n + 1);
             await previous.reload();
             setStep("results");
           } else {
@@ -108,6 +112,7 @@ export function FindPhotos({ event }: { event: EventPublic }) {
   function showResults(r: SearchResult) {
     setResults(r.matches.map((m) => ({ ...m, verdict: null, shortlisted: false })));
     setStep("results");
+    setSearches((n) => n + 1);
     void previous.reload();
   }
 
@@ -188,6 +193,18 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         <div className="mx-auto max-w-xl">
           <Alert>{error}</Alert>
         </div>
+      )}
+
+      {effective === "results" && (
+        <PhotoAlerts
+          eventId={event.id}
+          newPhotos={!!event.new_photos_since_last_search && searches === 0 && !scanAgain}
+          searches={searches}
+          onScan={() => {
+            setScanAgain(true);
+            setStep("capture");
+          }}
+        />
       )}
 
       {effective === "queued" ? (

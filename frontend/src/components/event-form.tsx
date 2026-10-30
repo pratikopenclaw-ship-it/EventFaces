@@ -25,6 +25,7 @@ export function initialInput(event?: EventAdmin): EventInput {
     guest_upload_enabled: event?.guest_upload_enabled ?? false,
     moderation_mode: event?.moderation_mode ?? "manual",
     auto_publish_faceless_photos: event?.auto_publish_faceless_photos ?? true,
+    notify_new_photos: event?.notify_new_photos ?? true,
     allow_selfie_file_upload: event?.allow_selfie_file_upload ?? false,
     delete_photos_on_expiry: event?.delete_photos_on_expiry ?? false,
     drive_folder: event?.drive_folder_id ?? null,
@@ -157,6 +158,12 @@ export function EventForm({
           hint="Covers photos from Drive sync and guest uploads alike. Turn off to hold them for your review in the moderation queue instead of publishing automatically."
           checked={v.auto_publish_faceless_photos}
           onChange={(x) => set("auto_publish_faceless_photos", x)}
+        />
+        <Toggle
+          label="Tell attendees about new photos"
+          hint="Attendees who searched get one email or app notice, at most once a day, when new photos with faces go live. It never says how many or which."
+          checked={v.notify_new_photos}
+          onChange={(x) => set("notify_new_photos", x)}
         />
         <Toggle
           label="Delete photos when access ends"
