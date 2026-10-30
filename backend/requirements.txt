@@ -34,3 +34,5 @@ httpx[http2]==0.27.*
 cryptography==50.*
 # Error reporting to the self-hosted GlitchTip (Sentry protocol); off unless SENTRY_DSN is set.
 sentry-sdk[fastapi,celery]==2.71.*
+# Transitive (httpx, sentry-sdk, google-auth): floor for PYSEC-2026-4320.
+certifi>=2026.10.19
