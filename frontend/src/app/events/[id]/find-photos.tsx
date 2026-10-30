@@ -195,15 +195,20 @@ export function FindPhotos({ event }: { event: EventPublic }) {
         </div>
       )}
 
-      {effective === "results" && (
+      {/* Not only on results: someone whose search found nothing reopens on the camera step. */}
+      {effective !== "queued" && (
         <PhotoAlerts
           eventId={event.id}
           newPhotos={!!event.new_photos_since_last_search && searches === 0 && !scanAgain}
           searches={searches}
-          onScan={() => {
-            setScanAgain(true);
-            setStep("capture");
-          }}
+          onScan={
+            effective === "capture"
+              ? undefined // the camera is already below
+              : () => {
+                  setScanAgain(true);
+                  setStep("capture");
+                }
+          }
         />
       )}
 

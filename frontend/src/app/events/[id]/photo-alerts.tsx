@@ -10,7 +10,8 @@ import { useApi } from "@/lib/use-api";
 /** New-photo alerts for one event. A search subscribes, so both parts show only once the
  * user has searched here (`subscribed`). `newPhotos` comes from GET /api/events/{id}; pass
  * false once the user has scanned again on this page. `searches` counts this page's
- * searches, so the state is fetched again after each one. */
+ * searches, so the state is fetched again after each one. No `onScan` = no "Scan again"
+ * button (the camera is already on the page). */
 export function PhotoAlerts({
   eventId,
   newPhotos,
@@ -20,7 +21,7 @@ export function PhotoAlerts({
   eventId: string;
   newPhotos: boolean;
   searches: number;
-  onScan: () => void;
+  onScan?: () => void;
 }) {
   const state = useApi<PhotoAlertState>(`/api/events/${eventId}/photo-alerts`);
   const [error, setError] = useState(false);
@@ -46,9 +47,11 @@ export function PhotoAlerts({
       {newPhotos && (
         <div role="status" className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-accent px-5 py-4 text-on-accent">
           <p className="text-sm font-medium">New photos were added since your last scan</p>
-          <Button variant="secondary" onClick={onScan}>
-            Scan again
-          </Button>
+          {onScan && (
+            <Button variant="secondary" onClick={onScan}>
+              Scan again
+            </Button>
+          )}
         </div>
       )}
       <Toggle

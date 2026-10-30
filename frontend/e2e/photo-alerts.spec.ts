@@ -55,6 +55,23 @@ test("after a search, new photos show a banner and an email that can stop the al
   await expect(page.getByRole("checkbox", { name: EVENT_TOGGLE })).toBeChecked();
 });
 
+test("someone whose search found nothing still sees the banner and the toggle", async ({ page, request }) => {
+  // The people this is for: nobody in the event's photos yet, so the page reopens on the
+  // camera step (no earlier matches) rather than on results.
+  await reset(request);
+  const event = await seedEvent(request, { synced: false });
+  await fakeCamera(page);
+  await login(page, "alice@e2e.test");
+  await page.goto(`/events/${event.id}`);
+  await giveConsent(page);
+  await captureThreeShots(page);
+  await expect(page.getByText("No photos found yet")).toBeVisible({ timeout: 60_000 });
+  expect((await request.post(`${API}/__e2e/event/${event.id}/new-drive-photo`, { timeout: 120_000 })).ok()).toBeTruthy();
+  await page.reload();
+  await expect(page.getByText(BANNER)).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: EVENT_TOGGLE })).toBeChecked();
+});
+
 test("someone who never searched sees no alert toggle", async ({ page, request }) => {
   await reset(request);
   const event = await seedEvent(request);
