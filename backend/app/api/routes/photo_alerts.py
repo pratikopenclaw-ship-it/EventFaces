@@ -1,5 +1,7 @@
 """New-photo alert settings for the current user (services/photo_alerts.py)."""
 
+import hashlib
+
 from fastapi import APIRouter, HTTPException, Query, Request, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.exceptions import RequestValidationError
@@ -54,13 +56,19 @@ async def unsubscribe(request: Request, db: DB, token: str | None = Query(defaul
     (?token=..., scope "event"). Always answers ok, so it tells nothing about tokens or
     accounts. CSRF-exempt only without auth cookies (api/csrf.py); GET is not allowed, so
     link scanners can't unsubscribe anyone."""
-    rate_limit.enforce(f"alerts-unsub:{rate_limit.client_ip(request)}", rate_limit.Limit(30, 3600))
+    one_click = request.headers.get("content-type", "").startswith("application/x-www-form-urlencoded")
+    if one_click and token:
+        # Mail providers send these for many people from few IPs: a per-IP limit would drop
+        # real unsubscribes. Tokens are unguessable, so each gets its own small budget.
+        rate_limit.enforce(f"alerts-unsub-token:{hashlib.sha256(token.encode()).hexdigest()}", rate_limit.Limit(10, 3600))
+    else:
+        rate_limit.enforce(f"alerts-unsub:{rate_limit.client_ip(request)}", rate_limit.Limit(30, 3600))
     if int(request.headers.get("content-length") or 0) > MAX_UNSUBSCRIBE_BYTES:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Too large")
     raw = await request.body()
     if len(raw) > MAX_UNSUBSCRIBE_BYTES:
         raise HTTPException(status.HTTP_413_CONTENT_TOO_LARGE, "Too large")
-    if request.headers.get("content-type", "").startswith("application/x-www-form-urlencoded"):
+    if one_click:
         if raw.strip() != ONE_CLICK_BODY or not token:
             raise RequestValidationError([{"type": "value_error", "loc": ("body",), "msg": "Not a one-click unsubscribe", "input": None}])
         body = UnsubscribeIn(token=token, scope="event")

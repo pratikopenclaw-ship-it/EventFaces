@@ -10,7 +10,7 @@ from types import SimpleNamespace
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core import storage
@@ -289,6 +289,35 @@ def test_unsubscribe_is_rate_limited_per_ip(w: SimpleNamespace) -> None:
     c = _anonymous()
     codes = [c.post(UNSUB, json={"token": f"guess-{i}", "scope": "event"}).status_code for i in range(31)]
     assert codes[:30] == [200] * 30 and codes[30] == 429
+
+
+def _one_click(c: TestClient, token: str) -> int:
+    return c.post(f"{UNSUB}?token={token}", content=b"List-Unsubscribe=One-Click", headers={"content-type": "application/x-www-form-urlencoded"}).status_code
+
+
+def test_one_click_is_limited_per_token_not_per_ip(w: SimpleNamespace) -> None:
+    """RFC 8058 POSTs come from a few mail-provider IPs on behalf of many people: a per-IP
+    limit would silently drop real unsubscribes. Each token gets its own budget instead."""
+    c = _anonymous()
+    assert [_one_click(c, f"tok-{i:03d}") for i in range(40)] == [200] * 40
+    codes = [_one_click(c, "same-token") for _ in range(11)]
+    assert codes[:10] == [200] * 10 and codes[10] == 429
+
+
+def test_retention_purges_expired_alert_tokens(w: SimpleNamespace, db: Session) -> None:
+    """Unsubscribe tokens say who searched an event: they go when they expire, even for
+    events that never expire (GDPR storage limitation)."""
+    from app.services.retention import run_retention
+
+    now = utcnow()
+    tokens.issue_alert_token(db, w.attendee_user.id, w.event.id, now - timedelta(minutes=1))
+    live = tokens.issue_alert_token(db, w.attendee_user.id, w.event.id, now + timedelta(days=1))
+    db.commit()
+    report = run_retention(db, now)
+    db.commit()
+    assert report.alert_tokens_deleted == 1
+    assert db.scalar(select(func.count()).select_from(AlertToken)) == 1
+    assert tokens.find_alert_token(db, live) is not None
 
 
 # --- Task 4: the sender (beat task, push, email) ---------------------------------------

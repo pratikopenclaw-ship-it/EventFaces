@@ -26,6 +26,7 @@ from app.core.config import get_settings
 from app.core.db import affected
 from app.core.security import utcnow
 from app.models import (
+    AlertToken,
     AuthToken,
     Event,
     Face,
@@ -61,6 +62,7 @@ class RetentionReport:
     tokens_deleted: int = 0
     feedback_anonymized: int = 0
     quality_rows_deleted: int = 0
+    alert_tokens_deleted: int = 0
 
 
 def expire_event(db: Session, event: Event, report: RetentionReport) -> None:
@@ -145,6 +147,9 @@ def run_retention(db: Session, now: datetime | None = None) -> RetentionReport:
             )
         ))
     )
+    # Unsubscribe links record who searched an event: gone once expired, also for events
+    # that never expire.
+    report.alert_tokens_deleted = affected(db.execute(delete(AlertToken).where(AlertToken.expires_at <= now)))
     db.commit()
     # Logged on every run (not only when something was deleted): operators alert on a
     # missing hourly line, since retention is a GDPR duty (DEPLOYMENT.md, monitoring).
