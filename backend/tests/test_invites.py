@@ -162,7 +162,9 @@ def test_qr_code_encodes_join_link(make_user, login_as, make_event, add_member) 
     assert png.headers["content-type"] == "image/png"
 
     img = cv2.imdecode(np.frombuffer(png.content, np.uint8), cv2.IMREAD_COLOR)
-    decoded, _, _ = cv2.QRCodeDetector().detectAndDecode(img)
+    # The plain cv2.QRCodeDetector misreads ~1 in 250 valid codes (random slug + code made CI
+    # flaky); the ArUco-based detector read all of them and never failed in 2000 runs.
+    decoded, _, _ = cv2.QRCodeDetectorAruco().detectAndDecode(img)
     assert decoded == f"{get_settings().frontend_url}/join/{event.slug}?code={event.access_code}"
 
     attendee = make_user("att@example.com")
